@@ -1,0 +1,78 @@
+# -*- mode: python; -*-
+
+#
+# Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
+#
+import sys
+
+Import('SandeshEnv')
+
+env = SandeshEnv.Clone();
+
+test_depend_modules = [
+                       '__init__.py',
+                       'test_utils.py',
+                       'sandesh_req_impl.py'
+                      ]
+
+test_depend_modules_rules = []
+for module in test_depend_modules:
+    test_depend_modules_rules.append(
+        env.Install('', File(module).srcnode()))
+
+test_modules = [
+                'sandesh_encode_decode_test.py',
+                'sandesh_msg_test.py',
+                'sandesh_session_test.py',
+                'sandesh_trace_test.py',
+                'sandesh_http_test.py',
+                'sandesh_uve_alarm_test.py',
+                'conn_info_test.py',
+                'sandesh_stats_test.py',
+                'sandesh_client_test.py',
+                'work_queue_test.py'
+               ]
+
+test_modules_rules = []
+for module in test_modules:
+    test_modules_rules.append(
+        env.Install('', File(module).srcnode()))
+env.Depends(test_modules_rules, test_depend_modules_rules)
+
+gen_test_pkg = env.SandeshGenPy('encode_decode_test.sandesh')
+gen_test_pkg += env.SandeshGenPy('msg_test.sandesh')
+gen_test_pkg += env.SandeshGenPy('sandesh_http_test.sandesh')
+gen_test_pkg += env.SandeshGenPy('uve_alarm_test.sandesh')
+gen_test_pkg += env.SandeshGenPy('#tools/sandesh/library/common/sandesh_alarm_base.sandesh')
+gen_test_pkg += env.SandeshGenPy('#controller/src/base/sandesh/nodeinfo.sandesh')
+gen_test_pkg += env.SandeshGenPy('#controller/src/base/sandesh/process_info.sandesh', 'gen_py/nodeinfo/', False)
+gen_test_pkg += env.SandeshGenPy('#controller/src/base/sandesh/cpuinfo.sandesh', 'gen_py/nodeinfo/', False)
+env.Depends(test_modules_rules, gen_test_pkg)
+
+venv = env.setup_venv('pysandesh_test', 'pysandesh_test')
+env['env_venv'] = venv
+pip_pkgs = ['greenlet==0.4.1', 'gevent==1.1a2', 'eventlet==0.9.17',
+        'testtools==0.9.21', 'geventhttpclient==1.0a', 'bottle==0.11.6',
+        'mock==1.0.1']
+
+sandesh_pkgs = [
+                 env['TOP']+'/sandesh/common',
+                 env['TOP']+'/tools/sandesh/library/python'
+               ]
+env.Requires(env['pysandesh_test'],
+             env['TOP']+'/tools/sandesh/library/python/dist/sandesh-0.1dev.tar.gz')
+env.Requires(env['pysandesh_test'],
+             env['TOP']+'/sandesh/common/dist/')
+
+_deps = []
+_deps += env.venv_add_pip_pkg(venv, pip_pkgs)
+_deps += env.venv_add_build_pkg(venv, map(lambda x: Dir(x).abspath, sandesh_pkgs))
+
+pysandesh_ut = env.PyTestSuite('sandesh-py-test', test_modules, venv=env['env_venv'])
+for d in _deps:
+    env.Requires(pysandesh_ut, d.name)
+env.Depends(pysandesh_ut, test_depend_modules_rules)
+env.Depends(pysandesh_ut, test_modules_rules)
+env.Depends(pysandesh_ut, gen_test_pkg)
+env.Alias('sandesh:pysandesh_test', pysandesh_ut)
+Return('pysandesh_ut')

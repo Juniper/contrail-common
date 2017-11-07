@@ -1,0 +1,157 @@
+# -*- mode: python; -*-
+
+#
+# Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
+#
+
+Import('SandeshEnv');
+
+env = SandeshEnv.Clone();
+
+PYSANDESH_PATH = 'pysandesh/'
+PYSANDESH_INSTALL_PATH = 'pysandesh/'
+
+local_modules = [
+                 'setup.py',
+                 'MANIFEST.in'
+                ]
+
+local_modules_rules = []
+for module in local_modules:
+    local_modules_rules.append(
+        env.Install(Dir('.'), '#tools/sandesh/library/python/' + module))
+
+web_srv_rules = []
+web_srv_files = [
+('#/tools/sandesh/library/common/webs','css/bootstrap.min.css'),
+('#/tools/sandesh/library/common/webs','css/DT_bootstrap.css'),
+('#/tools/sandesh/library/common/webs','css/images/sort_asc.png'),
+('#/tools/sandesh/library/common/webs','css/images/sort_asc_disabled.png'),
+('#/tools/sandesh/library/common/webs','css/images/sort_both.png'),
+('#/tools/sandesh/library/common/webs','css/images/sort_desc.png'),
+('#/tools/sandesh/library/common/webs','css/images/sort_desc_disabled.png'),
+('#/tools/sandesh/library/common/webs','css/style.css'),
+('#/tools/sandesh/library/common/webs','js/bootstrap.min.js'),
+('#/tools/sandesh/library/common/webs','js/DT_bootstrap.js'),
+('#/tools/sandesh/library/common/webs','js/jquery-2.0.3.min.js'),
+('#/tools/sandesh/library/common/webs','js/jquery.dataTables.min.js'),
+('#/tools/sandesh/library/common/webs','js/util.js'),
+('#/tools/sandesh/library/common/webs','universal_parse.xsl')]
+
+for elem in web_srv_files:
+    terms = elem[1].rsplit("/",1)
+    if len(terms) == 1:
+        hpath = ""
+        hfile = terms[0]
+    else:
+        hpath = "/" + terms[0]
+        hfile = terms[1]
+
+    web_srv_rules.append(env.Install(
+            Dir(PYSANDESH_INSTALL_PATH + '/webs' + hpath), elem[0] + "/" + elem[1]))
+
+pysandesh_modules = [
+                     '__init__.py',
+                     'Thrift.py',
+                     'tcp_session.py',
+                     'ssl_session.py',
+                     'work_queue.py',
+                     'util.py',
+                     'trace.py',
+                     'sandesh_base.py',
+                     'sandesh_base_logger.py',
+                     'sandesh_client.py',
+                     'sandesh_connection.py',
+                     'sandesh_http.py',
+                     'sandesh_logger.py',
+                     'sandesh_session.py',
+                     'sandesh_state_machine.py',
+                     'sandesh_uve.py',
+                     'sandesh_req_impl.py',
+                     'sandesh_stats.py',
+                     'sandesh_trace.py',
+                     'connection_info.py',
+                    ]
+
+pysandesh_modules_rules = []
+for module in pysandesh_modules:
+    pysandesh_modules_rules.append(
+        env.Install(PYSANDESH_INSTALL_PATH,
+                    str(File(PYSANDESH_PATH + module).srcnode())))
+
+fysom_sources_rules = []
+fysom_sources_rules.append(
+    env.Command(PYSANDESH_INSTALL_PATH + '/fysom.py',
+                "#/third_party/fysom-1.0.8/fysom/__init__.py",
+                Copy("$TARGET", "$SOURCE")))
+
+transport_modules = [
+                     '__init__.py',
+                     'TTransport.py'
+                    ]
+
+transport_modules_rules = []
+for module in transport_modules:
+    transport_modules_rules.append(
+            env.Install(PYSANDESH_INSTALL_PATH + 'transport/',
+                        File(PYSANDESH_PATH + 'transport/' + module).srcnode()))
+
+protocol_modules = [
+                    '__init__.py',
+                    'TProtocol.py',
+                    'TBinaryProtocol.py',
+                    'TXMLProtocol.py'
+                   ]
+
+protocol_modules_rules = []
+for module in protocol_modules:
+    protocol_modules_rules.append(
+        env.Install(PYSANDESH_INSTALL_PATH + 'protocol/',
+                    File(PYSANDESH_PATH + 'protocol/' + module).srcnode()))
+
+# Auto-generated SandeshHeader package
+sandesh_hdr_pkg = env.SandeshGenPy('#tools/sandesh/library/common/sandesh.sandesh', 'pysandesh/')
+# Auto-generated Sandesh Ctrl package
+sandesh_ctrl_pkg = env.SandeshGenPy('#tools/sandesh/library/common/sandesh_ctrl.sandesh', 'pysandesh/')
+# Auto-generated Sandesh UVE package
+sandesh_uve_pkg = env.SandeshGenPy('#tools/sandesh/library/common/sandesh_uve.sandesh', 'pysandesh/')
+# Auto-generated Sandesh Alarm package
+sandesh_alarm_pkg = env.SandeshGenPy('#tools/sandesh/library/common/sandesh_alarm.sandesh', 'pysandesh/')
+# Auto-generated Sandesh Trace package
+sandesh_trace_pkg = env.SandeshGenPy('#tools/sandesh/library/common/sandesh_trace.sandesh', 'pysandesh/')
+# Auto-generated derived stats
+ds_pkg = env.SandeshGenPy('#tools/sandesh/library/common/derived_stats_results.sandesh', 'pysandesh/gen_py/sandesh_uve/', False)
+env.Depends(ds_pkg, sandesh_uve_pkg)
+# Generate the io files and install in sandesh_uve
+io_pkg = env.SandeshGenPy('#controller/src/io/io.sandesh', 'pysandesh/gen_py/sandesh_uve/', False)
+env.Depends(io_pkg, sandesh_uve_pkg)
+# Auto-generated Connection Info package
+process_info_pkg = env.SandeshGenPy('#controller/src/base/sandesh/process_info.sandesh', 'pysandesh/')
+
+sdist_depends = [local_modules_rules, web_srv_rules,
+                 pysandesh_modules_rules, transport_modules_rules,
+                 protocol_modules_rules, sandesh_hdr_pkg,
+                 sandesh_ctrl_pkg, sandesh_uve_pkg,
+                 sandesh_alarm_pkg, sandesh_trace_pkg,
+                 fysom_sources_rules,
+                 io_pkg, ds_pkg, process_info_pkg]
+
+env['pysandesh_target'] = sdist_depends
+
+sdist_gen = env.Command('dist/sandesh-0.1dev.tar.gz', 'setup.py',
+                        'cd ' + Dir('.').path + ' && python setup.py sdist')
+
+# install everything before building distribution
+env.Depends(sdist_gen, sdist_depends)
+
+env.Default(sdist_gen)
+env.Alias('sandesh/library/python:pysandesh', sdist_gen)
+
+if 'install' in BUILD_TARGETS:
+    cmd = 'cd ' + Dir('.').path + ' && python setup.py install %s'
+    install_cmd = env.Command(None, 'setup.py', cmd % env['PYTHON_INSTALL_OPT'])
+    env.Depends(install_cmd, sdist_depends)
+    env.Alias('install', install_cmd)
+
+test_suite = SConscript('pysandesh/SConscript', exports='env', duplicate = 0)
+Return('test_suite')
