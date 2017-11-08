@@ -12,7 +12,7 @@ env = SandeshEnv.Clone();
 env.Append(CPPPATH = [
         Dir('#build/include').abspath,
         Dir('#controller/src').abspath,
-        Dir('#tools').abspath,
+        Dir('#src/contrail-common').abspath,
         '../../common/test/',
         './gen-c/',
         ])
