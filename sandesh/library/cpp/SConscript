@@ -13,7 +13,7 @@ env.Append(CPPPATH = [
     '#build/include',
     '#controller/src',
     Dir('.').abspath,
-    '#tools',
+    '#src/contrail-common',
     SandeshEnv['TOP'] + '/io',
     SandeshEnv['TOP'],
 ])
@@ -66,20 +66,20 @@ def WebServerBuild(wenv, abs_pth, loc, inp):
 
 
 WebServerSpec = [
-('tools/sandesh/library/common/webs','css/bootstrap.min.css'),
-('tools/sandesh/library/common/webs','css/DT_bootstrap.css'),
-('tools/sandesh/library/common/webs','css/images/sort_asc.png'),
-('tools/sandesh/library/common/webs','css/images/sort_asc_disabled.png'),
-('tools/sandesh/library/common/webs','css/images/sort_both.png'),
-('tools/sandesh/library/common/webs','css/images/sort_desc.png'),
-('tools/sandesh/library/common/webs','css/images/sort_desc_disabled.png'),
-('tools/sandesh/library/common/webs','css/style.css'),
-('tools/sandesh/library/common/webs','js/bootstrap.min.js'),
-('tools/sandesh/library/common/webs','js/DT_bootstrap.js'),
-('tools/sandesh/library/common/webs','js/jquery-2.0.3.min.js'),
-('tools/sandesh/library/common/webs','js/jquery.dataTables.min.js'),
-('tools/sandesh/library/common/webs','js/util.js'),
-('tools/sandesh/library/common/webs','universal_parse.xsl')]
+('src/contrail-common/sandesh/library/common/webs','css/bootstrap.min.css'),
+('src/contrail-common/sandesh/library/common/webs','css/DT_bootstrap.css'),
+('src/contrail-common/sandesh/library/common/webs','css/images/sort_asc.png'),
+('src/contrail-common/sandesh/library/common/webs','css/images/sort_asc_disabled.png'),
+('src/contrail-common/sandesh/library/common/webs','css/images/sort_both.png'),
+('src/contrail-common/sandesh/library/common/webs','css/images/sort_desc.png'),
+('src/contrail-common/sandesh/library/common/webs','css/images/sort_desc_disabled.png'),
+('src/contrail-common/sandesh/library/common/webs','css/style.css'),
+('src/contrail-common/sandesh/library/common/webs','js/bootstrap.min.js'),
+('src/contrail-common/sandesh/library/common/webs','js/DT_bootstrap.js'),
+('src/contrail-common/sandesh/library/common/webs','js/jquery-2.0.3.min.js'),
+('src/contrail-common/sandesh/library/common/webs','js/jquery.dataTables.min.js'),
+('src/contrail-common/sandesh/library/common/webs','js/util.js'),
+('src/contrail-common/sandesh/library/common/webs','universal_parse.xsl')]
 
 abs_path = Dir('.').abspath
 WebServerOutput = []
@@ -172,16 +172,16 @@ def code_coverage(target, source, env):
               ' -c -o sandesh_cpp_test_intermediate.info')
 
     os.system('lcov -e sandesh_cpp_test_intermediate.info ' +
-            Dir('#').abspath + '/tools/sandesh/library/cpp/*' +
+            Dir('#').abspath + '/src/contrail-common/sandesh/library/cpp/*' +
             ' -o sandesh_cpp_test.info')
 
-    # genhtml -o tools/sandesh/library/cpp/test_coverage sandesh_cpp_test.info
+    # genhtml -o src/contrail-common/sandesh/library/cpp/test_coverage sandesh_cpp_test.info
     os.system('genhtml --no-branch-coverage -o ' + target[0].path +
               ' -t "test coverage" --num-spaces 4 sandesh_cpp_test.info')
 
 if env['OPT'] == 'coverage':
     test_coverage = env.Command(Dir('test_coverage'), '', code_coverage)
     env.AlwaysBuild(test_coverage)
-    env.Alias('tools/sandesh:test_coverage', test_coverage)
+    env.Alias('src/contrail-common/sandesh:test_coverage', test_coverage)
 
 Return('test_suite')

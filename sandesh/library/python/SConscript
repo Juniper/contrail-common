@@ -19,24 +19,24 @@ local_modules = [
 local_modules_rules = []
 for module in local_modules:
     local_modules_rules.append(
-        env.Install(Dir('.'), '#tools/sandesh/library/python/' + module))
+        env.Install(Dir('.'), '#src/contrail-common/sandesh/library/python/' + module))
 
 web_srv_rules = []
 web_srv_files = [
-('#/tools/sandesh/library/common/webs','css/bootstrap.min.css'),
-('#/tools/sandesh/library/common/webs','css/DT_bootstrap.css'),
-('#/tools/sandesh/library/common/webs','css/images/sort_asc.png'),
-('#/tools/sandesh/library/common/webs','css/images/sort_asc_disabled.png'),
-('#/tools/sandesh/library/common/webs','css/images/sort_both.png'),
-('#/tools/sandesh/library/common/webs','css/images/sort_desc.png'),
-('#/tools/sandesh/library/common/webs','css/images/sort_desc_disabled.png'),
-('#/tools/sandesh/library/common/webs','css/style.css'),
-('#/tools/sandesh/library/common/webs','js/bootstrap.min.js'),
-('#/tools/sandesh/library/common/webs','js/DT_bootstrap.js'),
-('#/tools/sandesh/library/common/webs','js/jquery-2.0.3.min.js'),
-('#/tools/sandesh/library/common/webs','js/jquery.dataTables.min.js'),
-('#/tools/sandesh/library/common/webs','js/util.js'),
-('#/tools/sandesh/library/common/webs','universal_parse.xsl')]
+('#/src/contrail-common/sandesh/library/common/webs','css/bootstrap.min.css'),
+('#/src/contrail-common/sandesh/library/common/webs','css/DT_bootstrap.css'),
+('#/src/contrail-common/sandesh/library/common/webs','css/images/sort_asc.png'),
+('#/src/contrail-common/sandesh/library/common/webs','css/images/sort_asc_disabled.png'),
+('#/src/contrail-common/sandesh/library/common/webs','css/images/sort_both.png'),
+('#/src/contrail-common/sandesh/library/common/webs','css/images/sort_desc.png'),
+('#/src/contrail-common/sandesh/library/common/webs','css/images/sort_desc_disabled.png'),
+('#/src/contrail-common/sandesh/library/common/webs','css/style.css'),
+('#/src/contrail-common/sandesh/library/common/webs','js/bootstrap.min.js'),
+('#/src/contrail-common/sandesh/library/common/webs','js/DT_bootstrap.js'),
+('#/src/contrail-common/sandesh/library/common/webs','js/jquery-2.0.3.min.js'),
+('#/src/contrail-common/sandesh/library/common/webs','js/jquery.dataTables.min.js'),
+('#/src/contrail-common/sandesh/library/common/webs','js/util.js'),
+('#/src/contrail-common/sandesh/library/common/webs','universal_parse.xsl')]
 
 for elem in web_srv_files:
     terms = elem[1].rsplit("/",1)
@@ -110,17 +110,17 @@ for module in protocol_modules:
                     File(PYSANDESH_PATH + 'protocol/' + module).srcnode()))
 
 # Auto-generated SandeshHeader package
-sandesh_hdr_pkg = env.SandeshGenPy('#tools/sandesh/library/common/sandesh.sandesh', 'pysandesh/')
+sandesh_hdr_pkg = env.SandeshGenPy('#src/contrail-common/sandesh/library/common/sandesh.sandesh', 'pysandesh/')
 # Auto-generated Sandesh Ctrl package
-sandesh_ctrl_pkg = env.SandeshGenPy('#tools/sandesh/library/common/sandesh_ctrl.sandesh', 'pysandesh/')
+sandesh_ctrl_pkg = env.SandeshGenPy('#src/contrail-common/sandesh/library/common/sandesh_ctrl.sandesh', 'pysandesh/')
 # Auto-generated Sandesh UVE package
-sandesh_uve_pkg = env.SandeshGenPy('#tools/sandesh/library/common/sandesh_uve.sandesh', 'pysandesh/')
+sandesh_uve_pkg = env.SandeshGenPy('#src/contrail-common/sandesh/library/common/sandesh_uve.sandesh', 'pysandesh/')
 # Auto-generated Sandesh Alarm package
-sandesh_alarm_pkg = env.SandeshGenPy('#tools/sandesh/library/common/sandesh_alarm.sandesh', 'pysandesh/')
+sandesh_alarm_pkg = env.SandeshGenPy('#src/contrail-common/sandesh/library/common/sandesh_alarm.sandesh', 'pysandesh/')
 # Auto-generated Sandesh Trace package
-sandesh_trace_pkg = env.SandeshGenPy('#tools/sandesh/library/common/sandesh_trace.sandesh', 'pysandesh/')
+sandesh_trace_pkg = env.SandeshGenPy('#src/contrail-common/sandesh/library/common/sandesh_trace.sandesh', 'pysandesh/')
 # Auto-generated derived stats
-ds_pkg = env.SandeshGenPy('#tools/sandesh/library/common/derived_stats_results.sandesh', 'pysandesh/gen_py/sandesh_uve/', False)
+ds_pkg = env.SandeshGenPy('#src/contrail-common/sandesh/library/common/derived_stats_results.sandesh', 'pysandesh/gen_py/sandesh_uve/', False)
 env.Depends(ds_pkg, sandesh_uve_pkg)
 # Generate the io files and install in sandesh_uve
 io_pkg = env.SandeshGenPy('#controller/src/io/io.sandesh', 'pysandesh/gen_py/sandesh_uve/', False)
