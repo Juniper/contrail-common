@@ -38,5 +38,5 @@ libio = env.Library('io',
              'usock_server',
              'process_signal.cc',
             ])
-
+env.Install(env['TOP_LIB'], libio)
 env.SConscript('test/SConscript', exports='BuildEnv', duplicate = 0)
