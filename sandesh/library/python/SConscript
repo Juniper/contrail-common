@@ -123,10 +123,10 @@ sandesh_trace_pkg = env.SandeshGenPy('#src/contrail-common/sandesh/library/commo
 ds_pkg = env.SandeshGenPy('#src/contrail-common/sandesh/library/common/derived_stats_results.sandesh', 'pysandesh/gen_py/sandesh_uve/', False)
 env.Depends(ds_pkg, sandesh_uve_pkg)
 # Generate the io files and install in sandesh_uve
-io_pkg = env.SandeshGenPy('#controller/src/io/io.sandesh', 'pysandesh/gen_py/sandesh_uve/', False)
+io_pkg = env.SandeshGenPy('#src/contrail-common/io/io.sandesh', 'pysandesh/gen_py/sandesh_uve/', False)
 env.Depends(io_pkg, sandesh_uve_pkg)
 # Auto-generated Connection Info package
-process_info_pkg = env.SandeshGenPy('#controller/src/base/sandesh/process_info.sandesh', 'pysandesh/')
+process_info_pkg = env.SandeshGenPy('#src/contrail-common/base/sandesh/process_info.sandesh', 'pysandesh/')
 
 sdist_depends = [local_modules_rules, web_srv_rules,
                  pysandesh_modules_rules, transport_modules_rules,

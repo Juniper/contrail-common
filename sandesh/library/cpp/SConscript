@@ -11,9 +11,9 @@ env.CppDisableExceptions()
 
 env.Append(CPPPATH = [
     '#build/include',
-    '#controller/src',
-    Dir('.').abspath,
+#    '#controller/src',
     '#src/contrail-common',
+    Dir('.').abspath,
     SandeshEnv['TOP'] + '/io',
     SandeshEnv['TOP'],
 ])
