@@ -69,12 +69,12 @@ public:
                               boost::asio::ssl::verify_fail_if_no_peer_cert), ec);
         assert(ec.value() == 0);
         ctx->use_certificate_chain_file
-            ("controller/src/io/test/newcert.pem", ec);
+            ("src/contrail-common/io/test/newcert.pem", ec);
         assert(ec.value() == 0);
-        ctx->use_private_key_file("controller/src/io/test/privkey.pem",
+        ctx->use_private_key_file("src/contrail-common/io/test/privkey.pem",
                                   boost::asio::ssl::context::pem, ec);
         assert(ec.value() == 0);
-        ctx->load_verify_file("controller/src/io/test/ssl_client_cert.pem",
+        ctx->load_verify_file("src/contrail-common/io/test/ssl_client_cert.pem",
                               ec);
         assert(ec.value() == 0);
     }
@@ -85,7 +85,7 @@ public:
     void set_verify_fail_certs() {
         boost::asio::ssl::context *ctx = context();
         boost::system::error_code ec;
-        ctx->load_verify_file("controller/src/io/test/newcert.pem",
+        ctx->load_verify_file("src/contrail-common/io/test/newcert.pem",
                               ec);
         assert(ec.value() == 0);
     }
@@ -196,12 +196,12 @@ public:
         ctx->set_verify_mode(boost::asio::ssl::context::verify_none, ec);
         assert(ec.value() == 0);
         ctx->use_certificate_chain_file
-            ("controller/src/io/test/ssl_client_cert.pem", ec);
+            ("src/contrail-common/io/test/ssl_client_cert.pem", ec);
         assert(ec.value() == 0);
-        ctx->use_private_key_file("controller/src/io/test/ssl_client_privkey.pem",
+        ctx->use_private_key_file("src/contrail-common/io/test/ssl_client_privkey.pem",
                                   boost::asio::ssl::context::pem, ec);
         assert(ec.value() == 0);
-        ctx->load_verify_file("controller/src/io/test/newcert.pem",
+        ctx->load_verify_file("src/contrail-common/io/test/newcert.pem",
                               ec);
         assert(ec.value() == 0);
     }
@@ -220,9 +220,9 @@ public:
                               boost::asio::ssl::verify_fail_if_no_peer_cert), ec);
         assert(ec.value() == 0);
         ctx->use_certificate_chain_file
-            ("controller/src/io/test/newcert.pem", ec);
+            ("src/contrail-common/io/test/newcert.pem", ec);
         assert(ec.value() == 0);
-        ctx->load_verify_file("controller/src/io/test/ssl_client_cert.pem",
+        ctx->load_verify_file("src/contrail-common/io/test/ssl_client_cert.pem",
                               ec);
         assert(ec.value() == 0);
     }

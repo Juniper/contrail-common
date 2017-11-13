@@ -28,50 +28,50 @@ event_manager_test = env.UnitTest('event_manager_test',
                                   ['event_manager_test.cc'],
                                  )
 
-env.Alias('src/io:event_manager_test', event_manager_test)
+env.Alias('io:event_manager_test', event_manager_test)
 
 tcp_server_test = env.UnitTest('tcp_server_test',
                               ['tcp_server_test.cc'],
                               )
 
-env.Alias('src/io:tcp_server_test', tcp_server_test)
+env.Alias('io:tcp_server_test', tcp_server_test)
 
 ssl_server_test = env.UnitTest('ssl_server_test',
                               ['ssl_server_test.cc'],
                               )
 
-env.Alias('src/io:ssl_server_test', ssl_server_test)
+env.Alias('io:ssl_server_test', ssl_server_test)
 
 tcp_io_test = env.UnitTest('tcp_io_test',
                            ['tcp_io_test.cc'],
                          )
 
-env.Alias('src/io:tcp_io_test', tcp_io_test)
+env.Alias('io:tcp_io_test', tcp_io_test)
 
 
 tcp_stress_test = env.UnitTest('tcp_stress_test',
                            ['tcp_stress_test.cc'],
                          )
 
-env.Alias('src/io:tcp_stress_test', tcp_stress_test)
+env.Alias('io:tcp_stress_test', tcp_stress_test)
 
 udp_io_test = env.UnitTest('udp_io_test',
                            ['udp_io_test.cc'],
                          )
 
-env.Alias('src/io:udp_io_test', udp_io_test)
+env.Alias('io:udp_io_test', udp_io_test)
 
 usock_io_test = env.UnitTest('usock_io_test',
                              ['usock_io_test.cc'],
                              )
 
-env.Alias('src/io:usock_io_test', usock_io_test)
+env.Alias('io:usock_io_test', usock_io_test)
 
 process_signal_test = env.UnitTest('process_signal_test',
                           ['process_signal_test.cc'],
                           )
 
-env.Alias('src/io:process_signal_test', process_signal_test)
+env.Alias('io:process_signal_test', process_signal_test)
 
 # netlink_test = env.Program('netlink_test', ['netlink_test.cc'])
 # env.Alias('src/io:netlink_test', netlink_test)
@@ -116,10 +116,10 @@ def run_coverage(env, target, source):
 
 if env['OPT'] != 'coverage':
     test = env.TestSuite('io-test', test_suite)
-    env.Alias('controller/src/io:test', test)
+    env.Alias('src/contrail-common/io:test', test)
 
     flaky_test = env.TestSuite('io-flaky-test', flaky_test_suite)
-    env.Alias('controller/src/io:flaky-test', flaky_test)
+    env.Alias('src/contrail-common/io:flaky-test', flaky_test)
     Return('test_suite')
 else:
     test = env.TestSuite('io-test', test_suite)
@@ -129,7 +129,7 @@ else:
     run_coverage_cmd = env.Command('run_coverage', '', run_coverage)
     env.Depends(run_coverage_cmd, test[0])
     env.AlwaysBuild(run_coverage_cmd)
-    env.Alias('controller/src/io:test', run_coverage_cmd)
+    env.Alias('src/contrail-common/io:test', run_coverage_cmd)
 
     if len(flaky_test_suite) != 0:
         flaky_test = env.TestSuite('io-flaky-test', flaky_test_suite)
@@ -139,6 +139,6 @@ else:
         run_coverage_cmd = env.Command('run_coverage', '', run_coverage)
         env.Depends(run_coverage_cmd, flaky_test[0])
         env.AlwaysBuild(run_coverage_cmd)
-        env.Alias('controller/src/io:flaky-test', run_coverage_cmd)
+        env.Alias('src/contrail-common/io:flaky-test', run_coverage_cmd)
 
     Return('test_suite')
