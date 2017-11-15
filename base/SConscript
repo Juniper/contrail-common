@@ -78,5 +78,6 @@ libbase = env.Library('base',
                        ]])
 env.Requires(libbase, '#/build/lib/liblog4cplus.a')
 env.Requires(libbase, '#/build/include/boost')
+env.Install(env['TOP_LIB'], libbase)
 
 env.SConscript('test/SConscript', exports='BuildEnv', duplicate = 0)

@@ -113,8 +113,33 @@ test_suite = [
     conn_info_test,
     ]
 
+#Required by base:test
+#controller/src/bgp
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/bgp', '#controller/src/bgp/bgp_attr.h')
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/bgp', '#controller/src/bgp/bgp_aspath.h')
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/bgp', '#controller/src/bgp/bgp_attr_base.h')
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/bgp', '#controller/src/bgp/bgp_common.h')
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/bgp', '#controller/src/bgp/bgp_origin_vn_path.h')
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/bgp', '#controller/src/bgp/community.h')
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/bgp', '#controller/src/bgp/bgp_route.h')
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/bgp', '#controller/src/bgp/bgp_path.h')
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/bgp/extended-community', '#controller/src/bgp/extended-community/types.h')
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/bgp/inet', '#controller/src/bgp/inet/inet_route.h')
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/bgp/l3vpn', '#controller/src/bgp/l3vpn/inetvpn_address.h')
+#controller/src/net
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/net', '#controller/src/net/esi.h')
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/net', '#controller/src/net/mac_address.h')
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/net', '#controller/src/net/rd.h')
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/net', '#controller/src/net/bgp_af.h')
+#controller/src/route
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/route', '#controller/src/route/path.h')
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/route', '#controller/src/route/route.h')
+#controller/src/db
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/db', '#controller/src/db/db_table.h')
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/db', '#controller/src/db/db_entry.h')
+
 test = env.TestSuite('base-test', test_suite)
-env.Alias('controller/src/base:test', test)
+env.Alias('src/contrail-common/base:test', test)
 
 flaky_test_suite = [
     proto_test,
@@ -123,8 +148,9 @@ flaky_test_suite = [
 ]
 
 flaky_test = env.TestSuite('base-flaky-test', flaky_test_suite)
-env.Alias('controller/src/base:flaky-test', flaky_test)
+env.Alias('src/contrail-common/base:flaky-test', flaky_test)
 
 
 
 Return('test_suite')
+
