@@ -138,6 +138,8 @@ BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/route', '#controller/src/route/rout
 BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/db', '#controller/src/db/db_table.h')
 BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/db', '#controller/src/db/db_entry.h')
 
+env.Install(env['TOP_LIB'], libtask_test)
+
 test = env.TestSuite('base-test', test_suite)
 env.Alias('src/contrail-common/base:test', test)
 
