@@ -23,45 +23,45 @@ if sys.platform != 'darwin':
 libtask_test = env.Library('task_test',
                            ['task_test_util.cc',
                             'addr_test_util.cc'])
-env.Alias('src/base:libtask_test', libtask_test)
+env.Alias('base:libtask_test', libtask_test)
 
 bitset_test = env.UnitTest('bitset_test', ['bitset_test.cc'])
-env.Alias('src/base:bitset_test', bitset_test)
+env.Alias('base:bitset_test', bitset_test)
 
 index_allocator_test = env.UnitTest('index_allocator_test', ['index_allocator_test.cc'])
-env.Alias('src/base:index_allocator_test', index_allocator_test)
+env.Alias('base:index_allocator_test', index_allocator_test)
 
 dependency_test = env.UnitTest('dependency_test', ['dependency_test.cc'])
-env.Alias('src/base:dependency_test', dependency_test)
+env.Alias('base:dependency_test', dependency_test)
 
 label_block_test = env.UnitTest('label_block_test', ['label_block_test.cc'])
-env.Alias('src/base:label_block_test', label_block_test)
+env.Alias('base:label_block_test', label_block_test)
 
 queue_task_test = env.UnitTest('queue_task_test', ['queue_task_test.cc'])
-env.Alias('src/base:queue_task_test', queue_task_test)
+env.Alias('base:queue_task_test', queue_task_test)
 
 proto_test = env.UnitTest('proto_test', ['proto_test.cc'])
-env.Alias('src/base:proto_test', proto_test)
+env.Alias('base:proto_test', proto_test)
 
 subset_test = env.UnitTest('subset_test', ['subset_test.cc'])
-env.Alias('src/base:subset_test', subset_test)
+env.Alias('base:subset_test', subset_test)
 
 task_test = env.UnitTest('task_test', ['task_test.cc'])
-env.Alias('src/base:task_test', task_test)
+env.Alias('base:task_test', task_test)
 
 timer_test = env.UnitTest('timer_test', ['timer_test.cc'])
-env.Alias('src/base:timer_test', timer_test)
+env.Alias('base:timer_test', timer_test)
 
 patricia_test = env.UnitTest('patricia_test', ['patricia_test.cc'])
-env.Alias('src/base:patricia_test', patricia_test)
+env.Alias('base:patricia_test', patricia_test)
 
 boost_US_test = env.UnitTest('boost_US_test', ['boost_unordered_set_test.cc'])
-env.Alias('src/base:boost_US_test', boost_US_test)
+env.Alias('base:boost_US_test', boost_US_test)
 
 conn_info_test = env.UnitTest('conn_info_test',
                                ['connection_info_test.cc']
                               )
-env.Alias('src/base:conn_info_test', conn_info_test)
+env.Alias('base:conn_info_test', conn_info_test)
 
 def AddLibraries(env, libs):
     for lib in libs:
@@ -75,7 +75,7 @@ def BuildTest(env, testname, sources, libs):
     build_env = env.Clone()
     AddLibraries(build_env, libs)
     target = build_env.UnitTest(testname, sources)
-    env.Alias('src/base:' + testname, target)
+    env.Alias('base:' + testname, target)
     return target
 
 task_annotations_test = BuildTest(env, 'task_annotations_test',
@@ -94,7 +94,7 @@ util_test = BuildTest(env, 'util_test',
           ['util_test.cc'], [])
 
 test_task_monitor = env.UnitTest('test_task_monitor', ['test_task_monitor.cc'])
-env.Alias('src/base:test_task_monitor', test_task_monitor)
+env.Alias('base:test_task_monitor', test_task_monitor)
 
 test_suite = [
     bitset_test,
