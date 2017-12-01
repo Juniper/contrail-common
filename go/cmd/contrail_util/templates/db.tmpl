@@ -1,0 +1,57 @@
+package db
+// {{ schema.ID }}
+
+import (
+  	"database/sql"
+    "github.com/Juniper/contrail-common/go/pkg/generated/models"
+)
+
+const insert{{ schema.JSONSchema.GoName }}Query = "insert into `{{schema.ID}}` ({% for column in schema.Columns %}`{{column}}`{% if not forloop.Last %},{% endif %}{% endfor %}) values ({% for column in schema.Columns %}?{% if not forloop.Last %},{% endif %}{% endfor %});"
+const update{{ schema.JSONSchema.GoName }}Query = "update `{{schema.ID}}` set {% for column in schema.Columns %}`{{column}}` = ?{% if not forloop.Last %},{% endif %}{% endfor %};"
+const delete{{ schema.JSONSchema.GoName }}Query = "delete from `{{schema.ID}}`"
+const select{{ schema.JSONSchema.GoName }}Query = "select {% for column in schema.Columns %}`{{column}}`{% if not forloop.Last %},{% endif %}{% endfor %} from `{{schema.ID}}`"
+
+func Create{{ schema.JSONSchema.GoName }}(tx *sql.Tx, model *models.{{ schema.JSONSchema.GoName }}) error {
+	// Prepare statement for inserting data
+	stmt, err := tx.Prepare(insert{{ schema.JSONSchema.GoName }}Query)
+	if err != nil {
+        return err
+	}
+	defer stmt.Close()
+    _, err = stmt.Exec({% for gopath in schema.GoPath%}model{{ gopath }}{% if not forloop.Last %},
+    {% endif %}{% endfor %})
+    return err
+}
+
+func List{{ schema.JSONSchema.GoName }}(tx *sql.Tx) ([]*models.{{ schema.JSONSchema.GoName }}, error) {
+    result := models.Make{{ schema.JSONSchema.GoName }}Slice()
+    rows, err := tx.Query(select{{ schema.JSONSchema.GoName }}Query)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+    for rows.Next() {
+            m := models.Make{{ schema.JSONSchema.GoName }}()
+            if err := rows.Scan({% for gopath in schema.GoPath %}&m{{ gopath }}{% if not forloop.Last %},
+                {% endif %}{% endfor %}); err != nil {
+                    return nil, err
+            }
+            result = append(result, m)
+    }
+    if err := rows.Err(); err != nil {
+            return nil, err
+    }
+    return result, nil
+}
+
+func Show{{ schema.JSONSchema.GoName }}(db *sql.DB, id string, model *models.{{ schema.JSONSchema.GoName }}) error {
+    return nil
+}
+
+func Update{{ schema.JSONSchema.GoName }}(db *sql.DB, id string, model *models.{{ schema.JSONSchema.GoName }}) error {
+    return nil
+}
+
+func Delete{{ schema.JSONSchema.GoName }}(db *sql.DB, id string) error {
+    return nil
+}
