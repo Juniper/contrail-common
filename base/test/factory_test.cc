@@ -73,8 +73,8 @@ class TestModule : public Factory<TestModule> {
 template <>
 TestModule *Factory<TestModule>::singleton_ = NULL;
 
-FACTORY_STATIC_REGISTER(TestModule, TypeA, TypeA);
-FACTORY_STATIC_REGISTER(TestModule, TypeB, TypeB);
+FACTORY_N0_STATIC_REGISTER(TestModule, TypeA, TypeA);
+FACTORY_N0_STATIC_REGISTER(TestModule, TypeB, TypeB); 
 FACTORY_STATIC_REGISTER(TestModule, TypeX, TypeX);
 FACTORY_STATIC_REGISTER(TestModule, TypeY, TypeY);
 FACTORY_STATIC_REGISTER(TestModule, TypeW, TypeW);
