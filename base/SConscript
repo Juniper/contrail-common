@@ -53,6 +53,14 @@ libnodeinfo = env.Library('nodeinfo',
 VersionInfoSandeshGenFiles = env.SandeshGenCpp('sandesh/version.sandesh')
 VersionInfoSandeshGenSrcs = env.ExtractCpp(VersionInfoSandeshGenFiles)
 
+# base
+genv_base_doc_files = []
+base_doc_target = BuildEnv['TOP'] + '/base/sandesh/'
+genv_base_doc_files += BuildEnv.SandeshGenDoc('#src/contrail-common/base/sandesh/cpuinfo.sandesh', base_doc_target)
+genv_base_doc_files += BuildEnv.SandeshGenDoc('#src/contrail-common/base/sandesh/process_info.sandesh', base_doc_target)
+BuildEnv['BASE_DOC_FILES'] = genv_base_doc_files
+Export('genv_base_doc_files')
+
 env.Append(CPPPATH = env['TOP'])
 libbase = env.Library('base',
                       [VersionInfoSandeshGenSrcs +
