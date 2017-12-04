@@ -39,6 +39,9 @@
 #include <tbb/reader_writer_lock.h>
 #include <tbb/task.h>
 #include <tbb/task_scheduler_init.h>
+#ifdef _WIN32
+#include <unistd.h>
+#endif
 #include "base/util.h"
 
 class TaskGroup;
