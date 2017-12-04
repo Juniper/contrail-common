@@ -12,6 +12,9 @@
 #include "base/task_annotations.h"
 #include "io/event_manager.h"
 #include "testing/gunit.h"
+#ifdef _WIN32
+#include <unistd.h>
+#endif
 
 using namespace boost::posix_time;
 

@@ -4,6 +4,9 @@
 
 #include <iostream>
 #include <fstream>
+#ifdef _WIN32
+#include <stdlib.h>
+#endif
 #include "tbb/atomic.h"
 #include "io/test/event_manager_test.h"
 #include "base/test/task_test_util.h"
@@ -12,11 +15,11 @@
 #include "testing/gunit.h"
 
 using namespace std;
-using tbb::atomic;
+
 
 TaskScheduler       *scheduler;
-atomic<int> timer_count_;
-atomic<bool> timer_hold_;
+tbb::atomic<int> timer_count_;
+tbb::atomic<bool> timer_hold_;
 
 class TimerTest : public Timer {
 public:
@@ -38,9 +41,9 @@ public:
         count_--;
     }
 
-    static atomic<uint32_t> count_;
+    static tbb::atomic<uint32_t> count_;
 };
-atomic<uint32_t> TimerTest::count_;
+tbb::atomic<uint32_t> TimerTest::count_;
 
 class TimerUT : public ::testing::Test {
 public:
@@ -349,7 +352,11 @@ TEST_F(TimerUT, reschedule_failed_2) {
 int main(int argc, char *argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     // Run timer test with one thread
+#ifdef _WIN32
+    _putenv_s("TBB_THREAD_COUNT", "1");
+#else
     setenv("TBB_THREAD_COUNT", "1", 1);
+#endif
     scheduler = TaskScheduler::GetInstance();
     LoggingInit();
     return RUN_ALL_TESTS();

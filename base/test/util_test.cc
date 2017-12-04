@@ -16,8 +16,11 @@ static inline uint64_t UTCgettimeofday() {
     if (gettimeofday(&tv, (struct timezone *)0) != 0) {
         assert(0);
     }
-
+#ifndef _WIN32
     return tv.tv_sec * 1000000 + tv.tv_usec;
+#else
+    return tv.tv_sec * 1000000ULL + tv.tv_usec;
+#endif
 }
 
 static boost::posix_time::ptime epoch_ptime(boost::gregorian::date(1970,1,1));

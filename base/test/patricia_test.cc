@@ -76,7 +76,7 @@ Rt rt [] = {{0x00000000,  0, 1},
             {0x0b01010a, 32, 58}
             };
 
-std::size_t rt_size = sizeof(rt)/sizeof(rt[0]);
+const std::size_t rt_size = sizeof(rt) / sizeof(rt[0]);
 
 class Route {
 public:
