@@ -24,6 +24,13 @@ usock_env.CppEnableExceptions()
 usock_env.Append(CPPPATH = env['TOP'])
 usock_server = usock_env.Object('usock_server.o', 'usock_server.cc')
 
+# IO
+contrail_common_io_doc_files = []
+io_doc_target = BuildEnv['TOP'] + '/io/'
+contrail_common_io_doc_files += BuildEnv.SandeshGenDoc('#src/contrail-common/io/io.sandesh', io_doc_target)
+env['IO_DOC_FILES'] = contrail_common_io_doc_files
+Export('contrail_common_io_doc_files')
+
 libio = env.Library('io',
             SandeshGenSrcs +
             EventManagerSrc +
