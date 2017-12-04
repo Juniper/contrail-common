@@ -2,11 +2,14 @@
  * Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
  */
 
-#ifdef __APPLE__
+#if defined(__APPLE__)
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #include <mach/mach.h>
 #include <mach/task.h>
+#elif defined(_WIN32)
+#include <thread>
+#include <posix_stdlib.h>
 #endif
 
 #include "sys/times.h"
@@ -29,10 +32,12 @@ static uint32_t NumCpus() {
         return count;
     }
 
-#ifdef __APPLE__
+#if defined(__APPLE__)
     size_t len = sizeof(count);
     sysctlbyname("hw.logicalcpu", &count, &len, NULL, 0);
     return count;
+#elif defined(_WIN32)
+    return count = std::thread::hardware_concurrency();
 #else
     std::ifstream file("/proc/cpuinfo");
     std::string content((std::istreambuf_iterator<char>(file)),
@@ -59,7 +64,7 @@ static void LoadAvg(CpuLoad &load) {
 }
 
 static void ProcessMemInfo(ProcessMemInfo &info) {
-#ifdef __APPLE__
+#if defined(__APPLE__)
     struct task_basic_info t_info;
     mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
     if (KERN_SUCCESS != task_info(mach_task_self(),
@@ -73,6 +78,8 @@ static void ProcessMemInfo(ProcessMemInfo &info) {
     // XXX Peak virt not availabe, just fill in virt
     info.peakvirt = t_info.virtual_size;
     return;
+#elif defined(_WIN32)
+    // TODO(WINDOWS) JW-1121
 #else
     std::ifstream file("/proc/self/status");
     bool vmsize = false;
@@ -102,6 +109,9 @@ static void ProcessMemInfo(ProcessMemInfo &info) {
 }
 
 static void SystemMemInfo(SystemMemInfo &info) {
+#if defined(_WIN32)
+    // TODO(WINDOWS) JW-1121
+#else
     std::ifstream file("/proc/meminfo");
     std::string tmp;
     // MemTotal:       132010576 kB
@@ -114,6 +124,7 @@ static void SystemMemInfo(SystemMemInfo &info) {
     file >> tmp; file >> info.cached;
     // Used = Total - Free
     info.used = info.total - info.free;
+#endif
 }
 
 static clock_t snapshot, prev_sys_cpu, prev_user_cpu;
