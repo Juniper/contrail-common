@@ -10,7 +10,11 @@
 namespace detail {
 
 extern bool debug_;
+#ifdef _WIN32
+#define PROTO_DEBUG(...) if (detail::debug_) LOG(DEBUG, ##__VA_ARGS__)
+#else
 #define PROTO_DEBUG(args...) if (detail::debug_) LOG(DEBUG, ##args)
+#endif
 
 template <typename T>
 struct ApplySetter {

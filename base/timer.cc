@@ -237,8 +237,11 @@ int Timer::GetElapsedTime() const {
     int64_t elapsed;
 
 #if BOOST_VERSION >= 104900
-    elapsed =
-        boost::chrono::nanoseconds(impl_->timer_.expires_from_now()).count();
+#ifdef _WIN32
+    elapsed = std::chrono::nanoseconds(impl_->timer_.expires_from_now()).count();
+#else
+    elapsed = boost::chrono::nanoseconds(impl_->timer_.expires_from_now()).count();
+#endif
 #else
     elapsed = impl_->timer_.expires_from_now().total_nanoseconds();
 #endif
