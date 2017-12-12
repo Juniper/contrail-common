@@ -7,7 +7,8 @@
 //
 // Sandesh Implementation
 //
-
+#include <fstream>
+#include <boost/filesystem.hpp>
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <base/logging.h>
@@ -166,26 +167,23 @@ bool Sandesh::Initialize(SandeshRole::type role,
 }
 
 void Sandesh::RecordPort(const std::string& name, const std::string& module,
-        unsigned short port) {
-    int fd;
+    unsigned short port) {
     std::ostringstream myfifoss;
-    myfifoss << "/tmp/" << module << "." << getppid() << "." << name << "_port";
-    std::string myfifo = myfifoss.str();
-    std::ostringstream hss;
-    hss << port << "\n";
-    std::string hstr = hss.str();
+    myfifoss << module << "." << getppid() << "." << name << "_port";
+    std::string myfifo = (boost::filesystem::temp_directory_path() / myfifoss.str()).string();
 
-    fd = open(myfifo.c_str(), O_WRONLY | O_NONBLOCK);
-    if (fd != -1) {
+    std::ofstream temp_file(myfifo.c_str());
+    if (temp_file) {
         SANDESH_LOG(INFO, "SANDESH: Write " << name << "_port " << port <<
-                          "TO : " << myfifo);
-        write(fd, hstr.c_str(), hstr.length());
-        close(fd);
-    } else {
+            "TO : " << myfifo);
+        temp_file << port << "\n";
+    }
+    else {
         SANDESH_LOG(INFO, "SANDESH: NOT Writing " << name << "_port " << port <<
-                          "TO : " << myfifo);
-    } 
+            "TO : " << myfifo);
+    }
 }
+
 
 bool Sandesh::ConnectToCollector(const std::string &collector_ip,
                                  int collector_port, bool periodicuve) {
