@@ -20,10 +20,6 @@
 #ifndef _SANDESH_THRIFT_H_
 #define _SANDESH_THRIFT_H_ 1
 
-#ifdef _WIN32
-#include "windows/config.h"
-#endif
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -54,6 +50,10 @@
 
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_convertible.hpp>
+
+#ifdef _WIN32
+#include <posix_time.h>
+#endif
 
 /**
  * Helper macros to allow function overloading even when using
@@ -95,7 +95,11 @@ class TEnumIterator : public std::iterator<std::forward_iterator_tag, std::pair<
     assert(end.n_ == -1);
     return (ii_ != n_);
   }
-
+#ifdef _WIN32
+  bool operator ==(const TEnumIterator& end) {
+    return !(operator !=(end));
+  }
+#endif
   std::pair<int, const char*> operator*() const {
     return std::make_pair(enums_[ii_], names_[ii_]);
   }
