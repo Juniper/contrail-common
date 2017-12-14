@@ -23,7 +23,7 @@ public:
     typedef typename MapType::iterator iterator;
     typedef typename MapType::const_iterator const_iterator;
 
-    IndexMap() : reserved_bits_(0) { }
+    IndexMap() { }
     ~IndexMap() {
         STLDeleteValues(&values_);
     }
@@ -43,7 +43,6 @@ public:
         if (bits_.test(index))
             assert(!values_[index]);
         bits_.set(index);
-        reserved_bits_++;
         values_.resize(values_.size() + 1);
     }
 
@@ -58,8 +57,7 @@ public:
         if (index == -1)
             bit = bits_.find_first_clear();
         if (bit >= values_.size()) {
-            if (reserved_bits_ == 0)
-                assert(bit == values_.size());
+            assert(bit == values_.size());
             values_.push_back(value);
         } else {
             values_[bit] = value;
@@ -73,15 +71,15 @@ public:
         assert(loc != map_.end());
         assert(loc->second == values_[index]);
         map_.erase(loc);
-        ValueType *value = values_[index];
-        values_[index] = NULL;
-        delete value;
         if (clear_bit)
             ResetBit(index);
     }
 
     void ResetBit(int index) {
         bits_.reset(index);
+        ValueType *value = values_[index];
+        values_[index] = NULL;
+        delete value;
         for (ssize_t i = values_.size() - 1; i >= 0; i--) {
             if (values_[i] != NULL) {
                 break;
@@ -124,7 +122,6 @@ public:
 
 private:
     BitsetType bits_;
-    int reserved_bits_;
     VectorType values_;
     MapType map_;
     DISALLOW_COPY_AND_ASSIGN(IndexMap);
