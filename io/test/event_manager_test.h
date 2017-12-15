@@ -8,7 +8,7 @@
 #include "io/event_manager.h"
 
 #include <boost/scoped_ptr.hpp>
-#include <pthread.h>
+#include <boost/thread.hpp>
 #include <tbb/atomic.h>
 
 #include "base/logging.h"
@@ -17,7 +17,7 @@
 class ServerThread {
 public:
     explicit ServerThread(EventManager *evm)
-    : thread_id_(pthread_self()), evm_(evm), tbb_scheduler_(NULL) {
+    : evm_(evm), tbb_scheduler_(NULL) {
     }
     void Run() {
         tbb_scheduler_.reset(
@@ -32,17 +32,16 @@ public:
         obj->Run();
         return NULL;
     }
+
     void Start() {
-        int res = pthread_create(&thread_id_, NULL, &ThreadRun, this);
-        assert(res == 0);
+        thread_.reset(new boost::thread(&ServerThread::Run, this));
     }
     void Join() {
-        int res = pthread_join(thread_id_, NULL);
-        assert(res == 0);
-    }
+        thread_->join();
+     }
     
 private:
-    pthread_t thread_id_;
+    boost::scoped_ptr<boost::thread> thread_;
     tbb::atomic<bool> running_;
     EventManager *evm_;
     boost::scoped_ptr<tbb::task_scheduler_init> tbb_scheduler_;

@@ -106,7 +106,7 @@ private:
     std::string name_;
     boost::asio::ip::udp::endpoint remote_endpoint_;
     tbb::mutex mutex_;
-    std::vector<u_int8_t *> pbuf_;
+    std::vector<uint8_t *> pbuf_;
     tbb::atomic<int> refcount_;
     io::SocketStats stats_;
 

@@ -68,8 +68,8 @@ private:
     size_t ReadSome(boost::asio::mutable_buffer buffer,
                     boost::system::error_code *error);
     std::size_t WriteSome(const uint8_t *data, std::size_t len,
-                          boost::system::error_code *error);
-    void AsyncWrite(const u_int8_t *data, std::size_t size);
+                          boost::system::error_code &error);
+    void AsyncWrite(const uint8_t *data, std::size_t size);
 
     static void TriggerSslHandShakeInternal(SslSessionPtr ptr,
                                             SslHandShakeCallbackHandler cb);

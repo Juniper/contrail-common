@@ -63,7 +63,7 @@ public:
                bool async_read_ready = true, 
                size_t buffer_send_size = TcpSession::kDefaultWriteBufferSize);
     // Performs a non-blocking send operation.
-    virtual bool Send(const u_int8_t *data, size_t size, size_t *sent);
+    virtual bool Send(const uint8_t *data, size_t size, size_t *sent);
 
     // Called by TcpServer to trigger async read.
     virtual bool Connected(Endpoint remote);
@@ -197,8 +197,8 @@ protected:
     virtual size_t ReadSome(boost::asio::mutable_buffer buffer,
                             boost::system::error_code *error);
     virtual std::size_t WriteSome(const uint8_t *data, std::size_t len,
-                                  boost::system::error_code *error);
-    virtual void AsyncWrite(const u_int8_t *data, std::size_t size);
+                                  boost::system::error_code &error);
+    virtual void AsyncWrite(const uint8_t *data, std::size_t size);
 
     virtual int reader_task_id() const {
         return reader_task_id_;
@@ -304,7 +304,7 @@ inline void intrusive_ptr_release(TcpSession *session) {
 class TcpMessageReader {
 public:
     typedef boost::asio::const_buffer Buffer;
-    typedef boost::function<bool(const u_int8_t *, size_t)> ReceiveCallback;
+    typedef boost::function<bool(const uint8_t *, size_t)> ReceiveCallback;
 
     TcpMessageReader(TcpSession *session, ReceiveCallback callback);
     virtual ~TcpMessageReader();
