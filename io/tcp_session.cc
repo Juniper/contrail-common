@@ -115,7 +115,7 @@ TcpSession::~TcpSession() {
 }
 
 mutable_buffer TcpSession::AllocateBuffer(size_t buffer_size) {
-    u_int8_t *data = new u_int8_t[buffer_size];
+    uint8_t *data = new uint8_t[buffer_size];
     mutable_buffer buffer = mutable_buffer(data, buffer_size);
     buffer_queue_.push_back(buffer);
     return buffer;
@@ -203,12 +203,12 @@ void TcpSession::AsyncReadSome() {
     }
 }
 
-size_t TcpSession::WriteSome(const uint8_t *data, size_t len,
-                             error_code *error) {
+std::size_t TcpSession::WriteSome(const uint8_t *data, std::size_t len,
+                                  error_code *error) {
     return socket()->write_some(buffer(data, len), *error);
 }
 
-void TcpSession::AsyncWrite(const u_int8_t *data, size_t size) {
+void TcpSession::AsyncWrite(const uint8_t *data, std::size_t size) {
     async_write(*socket(), buffer(data, size),
         bind(&TcpSession::AsyncWriteHandler, TcpSessionPtr(this),
              error, bytes_transferred));
@@ -464,7 +464,7 @@ void TcpSession::AsyncWriteInternal(TcpSessionPtr session) {
     session->writer_->TriggerAsyncWrite();
 }
 
-bool TcpSession::Send(const u_int8_t *data, size_t size, size_t *sent) {
+bool TcpSession::Send(const uint8_t *data, size_t size, size_t *sent) {
     bool ret = true;
     tbb::mutex::scoped_lock lock(mutex_);
 
@@ -837,6 +837,12 @@ error_code TcpSession::SetSocketKeepaliveOptions(int keepalive_time,
         return ec;
     }
 #endif
+// TCP_KEEPCNT and TCP_KEEPINTVL are not supported on windows. But boost tries to set them, causing
+// an exception. See:
+// https://msdn.microsoft.com/en-us/library/windows/desktop/ms738596(v=vs.85).aspx
+// Issue similar to this one:
+// https://git.openstack.org/cgit/openstack/python-keystoneclient/commit/?id=33b24a6984c8de2f26af7900202bb85b6b5db125
+#ifndef _WIN32
 #ifdef TCP_KEEPINTVL
     typedef integer< IPPROTO_TCP, TCP_KEEPINTVL > keepalive_interval;
     keepalive_interval keepalive_interval_option(keepalive_intvl);
@@ -856,6 +862,7 @@ error_code TcpSession::SetSocketKeepaliveOptions(int keepalive_time,
             "keepalive_probes: " << keepalive_probes << " set error: " << ec);
         return ec;
     }
+#endif
 #endif
 #ifdef TCP_USER_TIMEOUT
     typedef integer< IPPROTO_TCP, TCP_USER_TIMEOUT > tcp_user_timeout;
