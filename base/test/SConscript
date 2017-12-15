@@ -31,6 +31,9 @@ env.Alias('base:bitset_test', bitset_test)
 index_allocator_test = env.UnitTest('index_allocator_test', ['index_allocator_test.cc'])
 env.Alias('base:index_allocator_test', index_allocator_test)
 
+indexmap_test = env.UnitTest('indexmap_test', ['index_map_test.cc'])
+env.Alias('base:indexmap_test', indexmap_test)
+
 dependency_test = env.UnitTest('dependency_test', ['dependency_test.cc'])
 env.Alias('base:dependency_test', dependency_test)
 
@@ -99,6 +102,7 @@ env.Alias('base:test_task_monitor', test_task_monitor)
 test_suite = [
     bitset_test,
     index_allocator_test,
+    indexmap_test,
     dependency_test,
     label_block_test,
     subset_test,
