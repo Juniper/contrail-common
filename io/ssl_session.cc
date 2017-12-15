@@ -158,7 +158,7 @@ size_t SslSession::WriteSome(const uint8_t *data, size_t len,
     }
 }
 
-void SslSession::AsyncWrite(const u_int8_t *data, size_t size) {
+void SslSession::AsyncWrite(const uint8_t *data, size_t size) {
     if (IsSslHandShakeSuccessLocked()) {
         async_write(*ssl_socket_.get(), buffer(data, size),
             bind(&TcpSession::AsyncWriteHandler,
