@@ -172,7 +172,7 @@ void TcpMessageWriter::HandleWriteReady(error_code *error) {
 }
 
 void TcpMessageWriter::BufferAppend(const uint8_t *src, int bytes) {
-    u_int8_t *data = new u_int8_t[bytes];
+    uint8_t *data = new uint8_t[bytes];
     memcpy(data, src, bytes);
     mutable_buffer buffer = mutable_buffer(data, bytes);
     buffer_queue_.push_back(buffer);
