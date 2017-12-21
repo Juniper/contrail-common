@@ -37,8 +37,8 @@ public:
         struct rt_msghdr        *rtm = &msg_.m_rtm;
         struct sockaddr_inarp   dst;
 
-        bzero(&msg_, sizeof(msg_));
-        bzero(&dst, sizeof(dst));
+        memset(&msg_, 0, sizeof(msg_));
+        memset(&dst, 0, sizeof(dst));
         dst.sin_len = sizeof(dst);
         dst.sin_family = AF_INET;
         dst.sin_addr.s_addr = inet_addr("192.168.0.5");

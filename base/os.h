@@ -56,5 +56,9 @@
 # define SIOCGIFHWADDR SIOCGIFADDR
 #endif
 
+#if defined(_WIN32)
+# define strtok_r strtok_s
+#endif
+
 #endif /* ndef _agent_os_h_ */
 
