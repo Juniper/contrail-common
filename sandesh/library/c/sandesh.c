@@ -45,7 +45,7 @@ sandesh_decode_one (u_int8_t *buf, u_int32_t buf_len, sandesh_find_info_fn sinfo
     } bytes4;
 
     /* Read the sandesh name */
-    if (buf_len < rxfer + 4) {
+    if (buf_len < (uint32_t)(rxfer + 4)) {
         os_log(OS_LOG_ERR, "Read sandesh begin FAILED");
         ret = -1;
         goto exit;
@@ -54,7 +54,7 @@ sandesh_decode_one (u_int8_t *buf, u_int32_t buf_len, sandesh_find_info_fn sinfo
     rxfer += 4;
     sread_len = ntohl(bytes4.all);
     if (sread_len > 0) {
-        if (buf_len < rxfer + sread_len) {
+        if (buf_len < (uint32_t)(rxfer + sread_len)) {
             os_log(OS_LOG_ERR, "Read sandesh begin: Length(%d) FAILED",
                 sread_len);
             ret = -1;
