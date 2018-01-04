@@ -19,18 +19,18 @@
 
 /**
  * define for mkdir,since the method signature
- * is different for the non-POSIX MinGW
+ * is different for the non-POSIX MinGW/MSVC
  */
 
-#ifdef MINGW
-#include <io.h>
+#ifdef _WIN32
+#include <direct.h>
 #else
 #include <sys/types.h>
 #include <sys/stat.h>
 #endif
 
-#if defined MINGW
-#define MKDIR(x) mkdir(x)
+#ifdef _WIN32
+#define MKDIR(x) _mkdir(x)
 #else
 #define MKDIR(x) mkdir(x, S_IRWXU | S_IRWXG | S_IRWXO)
 #endif
