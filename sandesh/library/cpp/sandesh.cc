@@ -167,6 +167,8 @@ bool Sandesh::Initialize(SandeshRole::type role,
 
 void Sandesh::RecordPort(const std::string& name, const std::string& module,
         unsigned short port) {
+// Not yet supported on Windows
+#ifndef _WIN32
     int fd;
     std::ostringstream myfifoss;
     myfifoss << "/tmp/" << module << "." << getppid() << "." << name << "_port";
@@ -184,7 +186,8 @@ void Sandesh::RecordPort(const std::string& name, const std::string& module,
     } else {
         SANDESH_LOG(INFO, "SANDESH: NOT Writing " << name << "_port " << port <<
                           "TO : " << myfifo);
-    } 
+    }
+#endif
 }
 
 bool Sandesh::ConnectToCollector(const std::string &collector_ip,
