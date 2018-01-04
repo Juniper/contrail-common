@@ -39,10 +39,8 @@ static void win_kfree(void *mem) {
 
 static void * win_krealloc(void *mem, unsigned int size) {
     unsigned int old_size;
-    if (!mem)
-        return NULL;
     void *mem_tmp = win_kmalloc(size);
-    if (!mem_tmp)
+    if (!mem)
         return NULL;
     old_size = *(unsigned int*)((char*)mem - sizeof(unsigned int));
     RtlCopyMemory(mem_tmp, mem, old_size);
