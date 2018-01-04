@@ -52,7 +52,7 @@
 #include <boost/type_traits/is_convertible.hpp>
 
 #ifdef _WIN32
-#include <posix_time.h>//This file is part of the windows stubs repo and not needed on linux
+#include <posix_time.h>
 #endif
 
 /**

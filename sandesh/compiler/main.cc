@@ -1225,9 +1225,7 @@ int main(int argc, char** argv) {
         {
           out_path.erase(last);
         }
-#endif
 
-#ifdef _WIN32
         DWORD fa = GetFileAttributesA(out_path.c_str());
         if (fa == INVALID_FILE_ATTRIBUTES) {
           fprintf(stderr, "Output directory %s is unusable: error nr %d\n", out_path.c_str(), GetLastError());
