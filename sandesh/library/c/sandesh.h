@@ -51,6 +51,7 @@ MALLOC_DECLARE(M_VROUTER);
 #define os_realloc(ptr, size)         realloc(ptr, size, M_VROUTER, M_NOWAIT)
 #define os_free(ptr)                  free(ptr, M_VROUTER)
 #define os_log(level, format, arg...) printf(level format, ##arg)
+
 #elif defined(_WIN32)
 #include "windows/win_kernel_mem.h"
 
@@ -94,7 +95,7 @@ extern int vrouter_dbg;
 
 #undef uuid_t
 
-#else
+#else /* _WIN32 */
 #include <syslog.h>
 #include <sys/errno.h>
 
@@ -107,7 +108,7 @@ extern int vrouter_dbg;
 #define os_free(ptr)                     free(ptr)
 #define os_log(level, format, arg...)    syslog(level, format, ##arg)
 
-#endif
+#endif /* _WIN32 */
 
 #endif /* __KERNEL__ */
 
