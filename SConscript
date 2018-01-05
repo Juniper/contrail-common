@@ -29,7 +29,8 @@ else:
 
 common.Append(LIBPATH = libpath)
 common.Prepend(LIBS = libs)
-common.Append(CCFLAGS = '-Wall -Werror -Wsign-compare')
+if sys.platform != 'win32':
+    common.Append(CCFLAGS = '-Wall -Werror -Wsign-compare')
 if not sys.platform.startswith('darwin'):
     if platform.system().startswith('Linux'):
         if not platform.linux_distribution()[0].startswith('XenServer'):
@@ -37,7 +38,7 @@ if not sys.platform.startswith('darwin'):
 if sys.platform.startswith('freebsd'):
     common.Append(CCFLAGS = ['-Wno-unused-local-typedefs'])
 common.Append(CPPPATH = include)
-common.Append(CCFLAGS = ['-DRAPIDJSON_NAMESPACE=contrail_rapidjson'])
+common.Append(CCFLAGS = [common['CPPDEFPREFIX'] + 'RAPIDJSON_NAMESPACE=contrail_rapidjson'])
 
 BuildEnv = common.Clone()
 
