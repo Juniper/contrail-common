@@ -149,15 +149,6 @@ size_t SslSession::ReadSome(mutable_buffer buffer, error_code *error) {
     return ssl_socket_->read_some(mutable_buffers_1(buffer), *error);
 }
 
-size_t SslSession::WriteSome(const uint8_t *data, size_t len,
-                             error_code *error) {
-    if (IsSslHandShakeSuccessLocked()) {
-        return ssl_socket_->write_some(buffer(data, len), *error);
-    } else {
-        return (TcpSession::WriteSome(data, len, error));
-    }
-}
-
 void SslSession::AsyncWrite(const uint8_t *data, size_t size) {
     if (IsSslHandShakeSuccessLocked()) {
         async_write(*ssl_socket_.get(), buffer(data, size),

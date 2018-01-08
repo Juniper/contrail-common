@@ -186,26 +186,11 @@ void TcpSession::SetDeferReader(bool defer_reader) {
     }
 }
 
-void TcpSession::DeferWriter() {
-    // Update socket write block count.
-    stats_.write_blocked++;
-    server_->stats_.write_blocked++;
-    socket()->async_write_some(null_buffers(),
-                io_strand_->wrap(bind(&TcpSession::WriteReadyInternal,
-                                 TcpSessionPtr(this),
-                                 error, UTCTimestampUsec())));
-}
-
 void TcpSession::AsyncReadSome() {
     if (IsEstablishedLocked()) {
         socket()->async_read_some(null_buffers(),
             bind(&TcpSession::AsyncReadHandler, TcpSessionPtr(this)));
     }
-}
-
-std::size_t TcpSession::WriteSome(const uint8_t *data, std::size_t len,
-                                  error_code *error) {
-    return socket()->write_some(buffer(data, len), *error);
 }
 
 void TcpSession::AsyncWrite(const uint8_t *data, std::size_t size) {
@@ -376,44 +361,6 @@ void TcpSession::Close() {
 void TcpSession::WriteReady(const error_code &error) {
 }
 
-void TcpSession::WriteReadyInternal(TcpSessionPtr session,
-                                    const error_code &error,
-                                    uint64_t block_start_time) {
-    error_code ec = error;
-    tbb::mutex::scoped_lock lock(session->mutex_);
-
-    // Update socket write block time.
-    uint64_t blocked_usecs = UTCTimestampUsec() - block_start_time;
-    session->stats_.write_blocked_duration_usecs += blocked_usecs;
-    session->server_->stats_.write_blocked_duration_usecs += blocked_usecs;
-
-    if (session->IsSocketErrorHard(ec)) {
-        goto session_error;
-    }
-
-    //
-    // Ignore if connection is already closed.
-    //
-    if (session->IsClosedLocked()) return;
-
-    session->writer_->HandleWriteReady(&ec);
-    if (session->IsSocketErrorHard(ec)) {
-        goto session_error;
-    }
-
-    lock.release();
-    session->WriteReady(ec);
-    return;
-
-session_error:
-    lock.release();
-    TCP_SESSION_LOG_ERROR(session.get(), TCP_DIR_OUT,
-                          "Write failed due to error: " << ec.value()
-                          << " category: " << ec.category().name()
-                          << " message: " << ec.message());
-    session->CloseInternal(ec, true);
-}
-
 void TcpSession::AsyncWriteHandler(TcpSessionPtr session,
                                    const error_code &error,
                                    std::size_t wrote) {
@@ -492,9 +439,6 @@ bool TcpSession::Send(const uint8_t *data, size_t size, size_t *sent) {
         if ((size_t) len != size)
             ret = false;
         if (sent) *sent = (len > 0) ? len : 0;
-    } else {
-        AsyncWrite(data, size);
-        if (sent) *sent = size;
     }
     return ret;
 }
