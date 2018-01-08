@@ -3,6 +3,11 @@
 //
 
 #include <sys/wait.h>
+
+#ifdef _WIN32
+#include <posix_string.h>
+#endif
+
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
@@ -61,11 +66,13 @@ void Signal::RegisterHandler(int sig, SignalHandler handler) {
 }
 
 void Signal::RegisterHandler(SignalChildHandler handler) {
+#ifndef _WIN32
     if (sigchld_callbacks_.size() == 0) {
         // Add signal first
         AddSignal(SIGCHLD, &signal_);
     }
     sigchld_callbacks_.push_back(handler);
+#endif
 }
 
 void Signal::NotifySigChld(const boost::system::error_code &error, int sig,
@@ -97,11 +104,13 @@ void Signal::HandleSig(const boost::system::error_code &error, int sig) {
         pid_t pid = 0;
 
         switch (sig) {
+#ifndef _WIN32
           case SIGCHLD:
             while ((pid = WaitPid(-1, &status, WNOHANG)) > 0) {
                 NotifySigChld(error, sig, pid, status);
             }
             break;
+#endif
           default:
             NotifySig(error, sig);
             break;
@@ -121,9 +130,11 @@ void Signal::Initialize() {
     BOOST_FOREACH(int sig, sig_callback_map_ | boost::adaptors::map_keys) {
         ec = AddSignal(sig, &signal_);
     }
+#ifndef _WIN32
     if (sigchld_callbacks_.size() != 0 || always_handle_sigchild_) {
         ec = AddSignal(SIGCHLD, &signal_);
     }
+#endif
     RegisterSigHandler();
 }
 

@@ -37,7 +37,6 @@ using std::min;
 using std::ostringstream;
 using std::string;
 
-using boost::asio::error::eof;
 using boost::asio::error::try_again;
 using boost::asio::error::would_block;
 using boost::asio::error::in_progress;
@@ -536,7 +535,7 @@ void TcpSession::AsyncReadHandler(TcpSessionPtr session) {
     if (session->IsSocketErrorHard(error)) {
         session->ReleaseBufferLocked(buffer);
         // eof is returned when the peer closed the socket, no need to log error
-        if (error != eof) {
+        if (error != boost::asio::error::eof) {
             TCP_SESSION_LOG_ERROR(session, TCP_DIR_IN,
                     "Read failed due to error "
                     << error.category().name() << " "

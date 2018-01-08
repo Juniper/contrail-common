@@ -503,7 +503,8 @@ int TcpServer::SetDscpSocketOption(int fd, uint8_t value) {
      * value in upper 6 bits of a byte. Hence left shift the value by 2 digits
      * before passing it to setsockopt */
     value = value << 2;
-    int retval = setsockopt(fd, IPPROTO_IP, IP_TOS, &value, sizeof(value));
+    int retval = setsockopt(fd, IPPROTO_IP, IP_TOS,
+                            reinterpret_cast<const char *>(&value), sizeof(value));
     if (retval < 0) {
         TCP_SERVER_LOG_ERROR(this, TCP_DIR_NA,
             "Failure in setting DSCP value on the socket " +
@@ -516,7 +517,9 @@ int TcpServer::SetDscpSocketOption(int fd, uint8_t value) {
 uint8_t TcpServer::GetDscpValue(int fd) const {
     uint8_t dscp = 0;
     unsigned int optlen = sizeof(dscp);
-    int retval = getsockopt(fd, IPPROTO_IP, IP_TOS, &dscp, &optlen);
+    int retval = getsockopt(fd, IPPROTO_IP, IP_TOS,
+                            reinterpret_cast<char *>(&dscp),
+                            reinterpret_cast<socklen_t *>(&optlen));
     if (retval < 0) {
         TCP_SERVER_LOG_ERROR(this, TCP_DIR_NA,
             "Failure in getting DSCP value on the socket " +

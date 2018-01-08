@@ -15,6 +15,10 @@
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/document.h"
 
+#ifdef _WIN32
+#include <posix_time.h>
+#endif
+
 using namespace contrail_rapidjson;
 using namespace pugi;
 using namespace std;
