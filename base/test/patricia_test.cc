@@ -363,6 +363,33 @@ TEST_F(PatriciaTest, FindNextAll) {
     EXPECT_EQ(route_next, (Route *)NULL);
 }
 
+TEST_F(PatriciaTest, GetPrev) {
+    std::size_t i;
+    Route *route;
+    Route route_key;
+
+    route_key.ip_ = rt[rt_size-1].ip;
+    route_key.len_ = rt[rt_size-1].len;
+    route = itbl_->Find(&route_key);
+    EXPECT_NE(route, (Route *)NULL);
+    for (i = 1; i < rt_size; i++) {
+        if (route) {
+            route = itbl_->GetPrev(route);
+            EXPECT_EQ(route->nexthop_, rt_size-i);
+        }
+        EXPECT_NE(route, (Route *)NULL);
+    }
+    route = itbl_->GetPrev(route);
+    EXPECT_EQ(route, (Route *)NULL);
+}
+
+TEST_F(PatriciaTest, GetLast) {
+    Route *route;
+
+    route = itbl_->GetLast();
+    EXPECT_EQ(route->nexthop_, rt_size);
+}
+
 TEST_F(PatriciaTest, FindnRemove) {
     std::size_t i;
     Route *route;
