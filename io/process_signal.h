@@ -6,6 +6,7 @@
 #define SRC_IO_PROCESS_SIGNAL_H_
 
 #include <signal.h>
+#include <unistd.h>
 #include <vector>
 #include <map>
 #include <boost/function.hpp>

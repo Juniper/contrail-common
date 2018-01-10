@@ -4,6 +4,7 @@
 
 #include "base/task_annotations.h"
 
+#include <strings.h>
 #include "base/task.h"
 
 bool ConcurrencyChecker::enable_ = getenv("CONCURRENCY_CHECK_ENABLE") != NULL &&

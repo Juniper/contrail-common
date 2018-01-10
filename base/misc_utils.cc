@@ -7,9 +7,6 @@
 #include <stdlib.h>
 #include <base/misc_utils.h>
 #include <base/logging.h>
-#ifdef _WIN32
-#include <base/paths.h>
-#endif
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -18,18 +15,10 @@
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
-#ifdef _WIN32
-#include "vnsw/agent/contrail/windows/resource.h"
-#endif
+
 using namespace std;
 
-#ifndef _WIN32
 const std::string MiscUtils::ContrailVersionCmd = "/usr/bin/contrail-version";
-const std::string MiscUtils::CoreFileDir = "/var/crashes/";
-#else
-const std::string MiscUtils::CoreFileDir = dir_paths::var + "crashes/";
-#endif
-
 
 const map<MiscUtils::BuildModule, string> MiscUtils::BuildModuleNames =
     MiscUtils::MapInit();
@@ -89,7 +78,7 @@ bool MiscUtils::GetVersionInfoInternal(const string &cmd, string &rpm_version,
 
 bool MiscUtils::GetContrailVersionInfo(BuildModule id, string &rpm_version,
                                        string &build_num) {
-    bool ret;
+    bool ret = false;
     stringstream cmd;
     //Initialize the version info here. Overide its value on finding version
     rpm_version.assign("unknown");
@@ -105,21 +94,6 @@ bool MiscUtils::GetContrailVersionInfo(BuildModule id, string &rpm_version,
     cmd << ContrailVersionCmd << " " << BuildModuleNames.at(id)
         << " | tail -1 | awk '{ print $2 \" \" $3 }'";
     ret = GetVersionInfoInternal(cmd.str(), rpm_version, build_num);
-#else // getting it from the binary resources
-    const int bufsize = 64;
-    char buffer[bufsize];
-    HMODULE hModule = GetModuleHandle(NULL);
-    if (hModule == NULL)
-        return false;
-    if (LoadString(hModule, IDS_CONTRAIL_RPM_VERSION, buffer, bufsize) == 0)
-        return false;
-    rpm_version = buffer;
-
-    if (LoadString(hModule, IDS_CONTRAIL_BUILD_NUM, buffer, bufsize) == 0)
-        return false;
-    build_num = buffer;
-
-    ret = true;
 #endif
 
     return ret;

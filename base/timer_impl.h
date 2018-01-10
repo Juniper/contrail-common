@@ -28,7 +28,7 @@ public:
 
 #if BOOST_VERSION >= 104900
     void expires_from_now(int ms, boost::system::error_code &ec) {
-#if  __cplusplus>=201103L
+#if __cplusplus >= 201103L || defined(_WIN32)
         timer_.expires_from_now(std::chrono::milliseconds(ms), ec);
 #else
         timer_.expires_from_now(boost::chrono::milliseconds(ms), ec);

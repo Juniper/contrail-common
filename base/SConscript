@@ -4,6 +4,8 @@
 
 # -*- mode: python; -*-
 
+import sys
+
 Import('BuildEnv')
 
 env = BuildEnv.Clone()
@@ -62,29 +64,38 @@ BuildEnv['BASE_DOC_FILES'] = contrail_common_base_doc_files
 Export('contrail_common_base_doc_files')
 
 env.Append(CPPPATH = env['TOP'])
-libbase = env.Library('base',
-                      [VersionInfoSandeshGenSrcs +
-                      ['backtrace.cc',
-                       'bgp_as_service_utils.cc',
-                       'contrail_ports.cc',
-                       'misc_utils.cc',
-                       'bitset.cc',
-                       'index_allocator.cc',
-                       'label_block.cc',
-                       'lifetime.cc',
-                       'logging.cc',
-                       'proto.cc',
-                       'watermark.cc',
-                       task,
-                       'task_annotations.cc',
-                       task_monitor,
-                       'task_sandesh.cc',
-                       'task_trigger.cc',
-                       'tdigest.c',
-                       timer,
-                       taskinfo_sandesh_files_,
-                       ]])
-env.Requires(libbase, '#/build/lib/liblog4cplus.a')
+libbase_src = [
+    VersionInfoSandeshGenSrcs +
+    [
+        'bgp_as_service_utils.cc',
+        'contrail_ports.cc',
+        'misc_utils.cc',
+        'bitset.cc',
+        'index_allocator.cc',
+        'label_block.cc',
+        'lifetime.cc',
+        'logging.cc',
+        'proto.cc',
+        'watermark.cc',
+        task,
+        'task_annotations.cc',
+        task_monitor,
+        'task_sandesh.cc',
+        'task_trigger.cc',
+        'tdigest.c',
+        timer,
+        taskinfo_sandesh_files_,
+    ]
+]
+
+if sys.platform == 'win32':
+    libbase_src.append('util.cc')
+else:
+    libbase_src.append('backtrace.cc')
+
+libbase = env.Library('base', libbase_src)
+env.Requires(libbase, '#/build/lib/' + env['LIBPREFIX'] + 'log4cplus' + env['LIBSUFFIX'])
+
 env.Requires(libbase, '#/build/include/boost')
 env.Install(env['TOP_LIB'], libcpuinfo)
 env.Install(env['TOP_LIB'], libprocessinfo)
