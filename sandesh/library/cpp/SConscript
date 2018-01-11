@@ -3,9 +3,11 @@
 #
 # Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
 #
-Import('SandeshEnv')
+
 import os
 import subprocess
+
+Import('SandeshEnv')
 env = SandeshEnv.Clone();
 
 env.CppDisableExceptions()  
