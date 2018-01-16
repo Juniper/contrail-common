@@ -806,6 +806,32 @@ error_code TcpSession::SetTcpNoDelay() {
     return ec;
 }
 
+error_code TcpSession::SetTcpSendBufSize(uint64_t size) {
+    error_code ec;
+    socket_base::send_buffer_size send_buffer_size_option(size);
+    socket()->set_option(send_buffer_size_option, ec);
+    if (ec) {
+        TCP_SESSION_LOG_ERROR(this, TCP_DIR_OUT,
+                              "send_buffer_size set error: " << ec);
+        return ec;
+    }
+
+    return ec;
+}
+
+error_code TcpSession::SetTcpRecvBufSize(uint64_t size) {
+    error_code ec;
+    socket_base::receive_buffer_size receive_buffer_size_option(size);
+    socket()->set_option(receive_buffer_size_option, ec);
+    if (ec) {
+        TCP_SESSION_LOG_ERROR(this, TCP_DIR_IN,
+                              "receive_buffer_size set error: " << ec);
+        return ec;
+    }
+
+    return ec;
+}
+
 error_code TcpSession::SetSocketKeepaliveOptions(int keepalive_time,
         int keepalive_intvl, int keepalive_probes, int tcp_user_timeout_val) {
     error_code ec;
