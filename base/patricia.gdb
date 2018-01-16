@@ -52,7 +52,7 @@ define print_pat_tree
 end
 
 define print_ipv4_format
-    set $__XRoute = (Route *) ((size_t)$Xnode - (size_t)&(Route::node_))
+    set $__XRoute = (Route *) ((size_t)$Xnode - (size_t)&(Route::rtnode_))
     set $__Xip = (char *) &($__XRoute->ip_)
     printf " %d.%d.%d.%d/%d \n", $__Xip[3], $__Xip[2], $__Xip[1], $__Xip[0], $__XRoute->len_
 end

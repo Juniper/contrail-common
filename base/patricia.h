@@ -112,6 +112,14 @@ public:
         return NodeToData(GetNextNode(DataToNode(data)));
     }
 
+    D * GetPrev(const D * data) {
+        return NodeToData(GetPrevNode(DataToNode(data)));
+    }
+
+    D * GetLast() {
+        return NodeToData(GetLastNode());
+    }
+
 private:
     const Node *DataToNode (const D * data) {
         if (data) {
@@ -524,6 +532,96 @@ private:
                     !IS_INT_NODE(x)) {
                     break;
                 }
+            }
+        }
+
+        return x;
+    }
+
+    Node * GetPrevNode(const Node * node) {
+        Node * p, * x, *l, *r, *right_turn, *greatest_partial;
+
+        p = NULL;
+        l = NULL;
+        x = root_;
+        right_turn = NULL;
+        greatest_partial = NULL;
+        while (x) {
+            if (x->bitpos_ > K::BitLength(NodeToData(node))) {
+                x = NULL;
+                break;
+            } else if (x->bitpos_ == K::BitLength(NodeToData(node)) && !IS_INT_NODE(x)) {
+                break;
+            }
+            p = x;
+            if (GetBit(node, x->bitpos_)) {
+                right_turn = x;
+                x = x->right_;
+            } else {
+                if (!IS_INT_NODE(x)) {
+                    greatest_partial = x;
+                }
+                x = x->left_;
+            }
+            if (x && (p->bitpos_ >= x->bitpos_)) {
+                x = NULL;
+                break;
+            }
+        }
+
+        if (!x || !Compare(node, x)) {
+            return NULL;
+        }
+
+        if (right_turn && greatest_partial) {
+            if (greatest_partial->bitpos_ > right_turn->bitpos_) {
+                return greatest_partial;
+            }
+        }
+
+        if (!right_turn) {
+            return greatest_partial;
+        }
+
+        x = right_turn->left_;
+        while (x) {
+            l = x->left_;
+            r = x->right_;
+            if (r && r->bitpos_ > x->bitpos_) {
+                x = r;
+            } else if (l) {
+                x = l;
+            } else {
+                return x;
+            }
+        }
+
+        return x;
+    }
+
+    Node * GetLastNode() {
+        Node *x;
+
+        if (!root_) {
+            return NULL;
+        }
+
+        x = root_;
+        while (x) {
+            if (x->right_) {
+                if (x->right_->bitpos_ < x->bitpos_) {
+                    if (!x->left_) {
+                        return x;
+                    }
+                    x = x->left_;
+                } else {
+                    x = x->right_;
+                }
+            } else {
+                if (!x->left_) {
+                    return x;
+                }
+                x = x->left_;
             }
         }
 
