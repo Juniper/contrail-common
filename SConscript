@@ -8,6 +8,7 @@ import platform
 subdirs = [
            'base',
            'io',
+           'http',
           ]
 
 include = ['#src/contrail-common', '#/build/include']
@@ -51,10 +52,12 @@ if sys.platform.startswith('freebsd'):
     BuildEnv.Prepend(LINKFLAGS = ['-lprocstat'])
 
 BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/net', '#controller/src/net/address.h')
-BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/http', '#controller/src/http/http_request.h')
-BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/http', '#controller/src/http/http_server.h')
-BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/http', '#controller/src/http/http_session.h')
-
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/http', '#src/contrail-common/http/http_request.h')
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/http', '#src/contrail-common/http/http_server.h')
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/http', '#src/contrail-common/http/http_session.h')
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/http', '#src/contrail-common/http/client/vncapi.h')
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/http', '#src/contrail-common/http/client/http_curl.h')
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/http', '#src/contrail-common/http/client/http_client.h')
 
 BuildEnv.SConscript(dirs=['sandesh'])
 
