@@ -67,8 +67,6 @@ private:
     // on same socket.
     size_t ReadSome(boost::asio::mutable_buffer buffer,
                     boost::system::error_code *error);
-    std::size_t WriteSome(const uint8_t *data, std::size_t len,
-                          boost::system::error_code *error);
     void AsyncWrite(const uint8_t *data, std::size_t size);
 
     static void TriggerSslHandShakeInternal(SslSessionPtr ptr,

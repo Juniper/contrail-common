@@ -198,8 +198,6 @@ protected:
     virtual size_t GetReadBufferSize() const;
     virtual size_t ReadSome(boost::asio::mutable_buffer buffer,
                             boost::system::error_code *error);
-    virtual std::size_t WriteSome(const uint8_t *data, std::size_t len,
-                                  boost::system::error_code *error);
     virtual void AsyncWrite(const uint8_t *data, std::size_t size);
 
     virtual int reader_task_id() const {
@@ -237,7 +235,6 @@ private:
     static void WriteReadyInternal(TcpSessionPtr session,
                                    const boost::system::error_code &error,
                                    uint64_t block_start_time);
-    void DeferWriter();
     void ReleaseBufferLocked(Buffer buffer);
     void SetEstablished(Endpoint remote, Direction dir);
 

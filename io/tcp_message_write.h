@@ -57,7 +57,6 @@ private:
     void DeleteBuffer(boost::asio::mutable_buffer buffer);
     /* DeleteBuffer and Update Buffer Queue */
     bool UpdateBufferQueue(size_t wrote, bool *send_ready);
-    void HandleWriteReady(boost::system::error_code *ec);
     void TriggerAsyncWrite();
 
     BufferQueue buffer_queue_;
