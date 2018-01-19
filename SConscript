@@ -50,11 +50,9 @@ elif sys.platform.startswith('darwin'):
 if sys.platform.startswith('freebsd'):
     BuildEnv.Prepend(LINKFLAGS = ['-lprocstat'])
 
-BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/net', '#controller/src/net/address.h')
 BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/http', '#controller/src/http/http_request.h')
 BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/http', '#controller/src/http/http_server.h')
 BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/http', '#controller/src/http/http_session.h')
-
 
 BuildEnv.SConscript(dirs=['sandesh'])
 
@@ -63,3 +61,7 @@ for dir in subdirs:
                         exports='BuildEnv',
                         variant_dir=BuildEnv['TOP'] + '/' + dir,
                         duplicate=0)
+
+# Local Variables:
+# mode: python
+# End:
