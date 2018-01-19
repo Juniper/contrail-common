@@ -33,9 +33,9 @@ class ConnInfoTest(unittest.TestCase):
     #end setUp
 
     def _check_process_status_cb(self, vcinfos):
-        self._expected_vcinfos.sort()
-        vcinfos.sort()
-        self.assertEqual(self._expected_vcinfos, vcinfos)
+        self.assertEqual(
+            sorted(self._expected_vcinfos, key=lambda item: item.name),
+            sorted(vcinfos, key=lambda item: item.name))
         return (ProcessState.FUNCTIONAL, '')
     #end _check_process_status_cb
 
