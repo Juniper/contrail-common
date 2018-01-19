@@ -16,11 +16,11 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/find_iterator.hpp>
 #include <boost/range/iterator_range.hpp>
-#include <boost/regex.hpp>
 #include <boost/spirit/include/classic.hpp>
 #include <boost/spirit/home/classic/tree/tree_to_xml.hpp>
 
 #include <base/logging.h>
+#include <base/regex.h>
 #include <base/util.h>
 #include <base/queue_task.h>
 
@@ -29,6 +29,9 @@
 #include <sandesh/sandesh.h>
 
 #include "sandesh_perf_test_types.h"
+
+using contrail::regex;
+using contrail::regex_replace;
 
 // Verfiy the performance of WorkQueue enqueue and dequeue for the following cases:
 // 1. Allocating new Sandesh
@@ -185,7 +188,7 @@ protected:
     std::string xml1_;
     std::string xml1_escaped_;
     std::string cmp_;
-    boost::regex expr_;
+    regex expr_;
 };
 
 std::string escapeXMLCharsSS(const std::string &str) {
@@ -232,9 +235,9 @@ std::string escapeXMLCharsBoostSpirit(const std::string &str) {
     return boost::spirit::classic::xml::encode(str.c_str());
 }
 
-std::string escapeXMLCharsBoostRegex(const std::string &str, boost::regex &expr) {
-    return boost::regex_replace(str, expr, format,
-            boost::match_default | boost::format_all);
+std::string escapeXMLCharsBoostRegex(const std::string &str, regex &expr) {
+    return regex_replace(str, expr, format,
+                         boost::match_default | boost::format_all);
 }
 
 std::string escapeXMLCharsFindFirstOf(const std::string &str) {
