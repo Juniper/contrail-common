@@ -50,6 +50,7 @@ elif sys.platform.startswith('darwin'):
 if sys.platform.startswith('freebsd'):
     BuildEnv.Prepend(LINKFLAGS = ['-lprocstat'])
 
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/net', '#controller/src/net/address.h')
 BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/http', '#controller/src/http/http_request.h')
 BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/http', '#controller/src/http/http_server.h')
 BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/http', '#controller/src/http/http_session.h')
