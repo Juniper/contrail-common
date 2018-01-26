@@ -11,46 +11,37 @@ using namespace std;
 Address::Address() {
 }
 
-static const std::map<string, Address::Family>  
+static const std::map<string, Address::Family>
     fromString = boost::assign::map_list_of
-        ("unspecified", Address::UNSPEC) 
-        ("inet", Address::INET) 
-        ("inet6", Address::INET6) 
-        ("inet-vpn", Address::INETVPN) 
-        ("inet6-vpn", Address::INET6VPN) 
-        ("route-target", Address::RTARGET) 
+        ("unspecified", Address::UNSPEC)
+        ("inet", Address::INET)
+        ("inet-labeled", Address::INETMPLS)
+        ("inet6", Address::INET6)
+        ("inet-vpn", Address::INETVPN)
+        ("inet6-vpn", Address::INET6VPN)
+        ("route-target", Address::RTARGET)
         ("e-vpn", Address::EVPN)
         ("inet-mvpn", Address::MVPN)
         ("erm-vpn", Address::ERMVPN);
 
-static const std::map<Address::Family, string>  
+static const std::map<Address::Family, string>
     toString = boost::assign::map_list_of
-        (Address::UNSPEC, "unspecified") 
-        (Address::INET, "inet") 
-        (Address::INET6, "inet6") 
-        (Address::INETVPN, "inet-vpn") 
-        (Address::INET6VPN, "inet6-vpn") 
-        (Address::RTARGET, "route-target") 
+        (Address::UNSPEC, "unspecified")
+        (Address::INET, "inet")
+        (Address::INETMPLS, "inet-labeled")
+        (Address::INET6, "inet6")
+        (Address::INETVPN, "inet-vpn")
+        (Address::INET6VPN, "inet6-vpn")
+        (Address::RTARGET, "route-target")
         (Address::EVPN, "e-vpn")
         (Address::MVPN, "inet-mvpn")
         (Address::ERMVPN, "erm-vpn");
-
-static const std::map<string, Address::Family>
-    fromTableName = boost::assign::map_list_of
-        ("unspecified", Address::UNSPEC)
-        ("inet", Address::INET)
-        ("inet6", Address::INET6)
-        ("l3vpn", Address::INETVPN)
-        ("l3vpn-inet6", Address::INET6VPN)
-        ("rtarget", Address::RTARGET)
-        ("evpn", Address::EVPN)
-        ("mvpn", Address::MVPN)
-        ("ermvpn", Address::ERMVPN);
 
 static const std::map<Address::Family, string>
     toTableName = boost::assign::map_list_of
         (Address::UNSPEC, "unspecified")
         (Address::INET, "inet")
+        (Address::INETMPLS, "inet")
         (Address::INET6, "inet6")
         (Address::INETVPN, "l3vpn")
         (Address::INET6VPN, "l3vpn-inet6")
@@ -70,20 +61,6 @@ Address::Family Address::FamilyFromString(const std::string &family) {
 
 std::string Address::FamilyToString(Address::Family family) {
     return toString.find(family)->second;
-}
-
-Address::Family Address::FamilyFromRoutingTableName(const std::string &name) {
-    size_t pos1 = name.rfind('.');
-    if (pos1 == string::npos) return Address::UNSPEC;
-    size_t pos2 = name.rfind('.', pos1);
-    if (pos2 == string::npos) pos2 = 0;
-
-    std::map<string, Address::Family>::const_iterator loc =
-            fromTableName.find(name.substr(pos2, pos1 - pos2));
-    if (loc != fromTableName.end()) {
-        return loc->second;
-    }
-    return Address::UNSPEC;
 }
 
 std::string Address::FamilyToTableString(Address::Family family) {
