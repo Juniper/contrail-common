@@ -73,8 +73,13 @@ class TestModule : public Factory<TestModule> {
 template <>
 TestModule *Factory<TestModule>::singleton_ = NULL;
 
+#ifndef _WIN32
+FACTORY_STATIC_REGISTER(TestModule, TypeA, TypeA);
+FACTORY_STATIC_REGISTER(TestModule, TypeB, TypeB);
+#else
 FACTORY_N0_STATIC_REGISTER(TestModule, TypeA, TypeA);
-FACTORY_N0_STATIC_REGISTER(TestModule, TypeB, TypeB); 
+FACTORY_N0_STATIC_REGISTER(TestModule, TypeB, TypeB);
+#endif
 FACTORY_STATIC_REGISTER(TestModule, TypeX, TypeX);
 FACTORY_STATIC_REGISTER(TestModule, TypeY, TypeY);
 FACTORY_STATIC_REGISTER(TestModule, TypeW, TypeW);
