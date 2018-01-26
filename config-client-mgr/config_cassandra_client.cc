@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Juniper Networks, Inc. All rights reserved.
  */
 
-#include "config/config-client-mgr/config_cassandra_client.h"
+#include "config-client-mgr/config_cassandra_client.h"
 
 #include <sandesh/request_pipeline.h>
 

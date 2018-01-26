@@ -85,6 +85,8 @@ libbase_src = [
         'tdigest.c',
         timer,
         taskinfo_sandesh_files_,
+        'address.cc',
+        'address_util.cc',
     ]
 ]
 

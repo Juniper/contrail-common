@@ -17,7 +17,7 @@ setup_sources = [
 setup_sources_rules = []
 for file in setup_sources:
     setup_sources_rules.append(
-        PartEnv.Install(Dir("."), '#controller/src/libpartition/' + file))
+        PartEnv.Install(Dir("."), '#src/contrail-common/libpartition/' + file))
 
 local_sources = [
            '__init__.py',
