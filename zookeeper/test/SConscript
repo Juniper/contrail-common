@@ -19,8 +19,8 @@ zookeeper_client_test = env.UnitTest('zookeeper_client_test',
 
 test_suite = [ zookeeper_client_test ]
 test = env.TestSuite('zookeeper_test_suite', test_suite)
-env.Alias('controller/src/zookeeper:test', test)
+env.Alias('src/contrail-common/zookeeper:test', test)
 
 flaky_test_suite = []
 flaky_test = env.TestSuite('zookeeper_flaky_test_suite', flaky_test_suite)
-env.Alias('controller/src/zookeeper:flaky-test', flaky_test)
+env.Alias('src/contrail-common/zookeeper:flaky-test', flaky_test)
