@@ -18,8 +18,8 @@ gendb_if_test = env.UnitTest('gendb_if_test',
 
 test_suite = [ gendb_if_test ]
 test = env.TestSuite('gendb_test_suite', test_suite)
-env.Alias('controller/src/database/gendb:test', test)
+env.Alias('src/contrail-common/database/gendb:test', test)
 
 flaky_test_suite = []
 flaky_test = env.TestSuite('gendb_flaky_test_suite', flaky_test_suite)
-env.Alias('controller/src/database/gendb:flaky-test', flaky_test)
+env.Alias('src/contrail-common/database/gendb:flaky-test', flaky_test)
