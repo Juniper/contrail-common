@@ -1,15 +1,13 @@
 /*
-* Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
-*/
+ * Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
+ */
 
 #ifndef __BASE__FACTORY_H__
 #define __BASE__FACTORY_H__
 
 #include <boost/function.hpp>
 #include <boost/functional/factory.hpp>
-#ifdef _WIN32
 #include <boost/functional/forward_adapter.hpp>
-#endif
 #include <boost/type_traits/is_same.hpp>
 #include <boost/utility/enable_if.hpp>
 
@@ -17,31 +15,19 @@
 
 template <class Derived>
 class Factory {
-protected:
+  protected:
     static Derived *GetInstance() {
         if (singleton_ == NULL) {
             singleton_ = new Derived();
         }
         return singleton_;
     }
-private:
+  private:
     static Derived *singleton_;
 };
 
 #include "base/factory_macros.h"
-#ifndef _WIN32
-#define FACTORY_STATIC_REGISTER(_Factory, _BaseType, _TypeImpl)\
-static void _Factory ## _TypeImpl ## Register () {\
-    _Factory::Register<_BaseType>(boost::factory<_TypeImpl *>());\
-}\
-MODULE_INITIALIZER(_Factory ## _TypeImpl ## Register)
 
-#define FACTORY_PARAM_STATIC_REGISTER(_Factory, _BaseType, _Param, _TypeImpl)\
-static void _Factory ## _TypeImpl ## Register () {\
-    _Factory::Register<_BaseType, _Param>(boost::factory<_TypeImpl *>());\
-}\
-MODULE_INITIALIZER(_Factory ## _TypeImpl ## Register)
-#else
 #define FACTORY_N0_STATIC_REGISTER(_Factory, _BaseType, _TypeImpl)\
 static void _Factory ## _TypeImpl ## Register () {\
     _Factory::Register<_BaseType>(boost::factory<_TypeImpl *>());\
@@ -60,5 +46,4 @@ static void _Factory ## _TypeImpl ## Register () {\
 }\
 MODULE_INITIALIZER(_Factory ## _TypeImpl ## Register)
 
-#endif //_WIN32
 #endif
