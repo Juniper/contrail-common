@@ -345,12 +345,14 @@ void Sandesh::Uninit() {
 }
 
 void Sandesh::SetLoggingParams(bool enable_local_log, std::string category,
-        std::string level, bool enable_trace_print, bool enable_flow_log) {
+        std::string level, bool enable_trace_print, bool enable_flow_log
+        bool enable_session_syslog) {
     SetLocalLogging(enable_local_log);
     SetLoggingCategory(category);
     SetLoggingLevel(level);
     SetTracePrint(enable_trace_print);
     SetFlowLogging(enable_flow_log);
+    SetSessionSyslogging(enable_session_syslog);
 }
 
 void Sandesh::SetLoggingParams(bool enable_local_log, std::string category,
@@ -445,6 +447,16 @@ void Sandesh::SetFlowLogging(bool enable_flow_log) {
             (enable_flow_log ? "ENABLED" : "DISABLED"));
         enable_flow_log_ = enable_flow_log;
     }
+}
+
+void Sandesh::SetSessionSyslogging(bool enable_session_syslog) {
+     if (enable_session_syslog_ != enable_session_syslog) {
+        SANDESH_LOG(INFO, "SANDESH: Flow Logging: " <<
+            (enable_session_syslog_ ? "ENABLED" : "DISABLED") << " -> " <<
+            (enable_session_syslog ? "ENABLED" : "DISABLED"));
+        enable_session_syslog_ = enable_session_syslog;
+    }
+
 }
 
 void Sandesh::DisableFlowCollection(bool disable) {

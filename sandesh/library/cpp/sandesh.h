@@ -212,7 +212,7 @@ public:
     // Logging and category APIs
     static void SetLoggingParams(bool enable_local_log, std::string category,
             std::string level, bool enable_trace_print = false,
-            bool enable_flow_log = false);
+            bool enable_flow_log = false, bool enable_session_syslog = false);
     static void SetLoggingParams(bool enable_local_log, std::string category,
             SandeshLevel::type level, bool enable_trace_print = false,
             bool enable_flow_log = false);
@@ -223,6 +223,7 @@ public:
     static bool IsLocalLoggingEnabled() { return enable_local_log_; }
     static void SetLocalLogging(bool enable);
     static bool IsFlowLoggingEnabled() { return enable_flow_log_; }
+    static bool IsSessionSysLoggingEnabled() { return enable_session_syslog_; }
     static void SetFlowLogging(bool enable);
     static bool IsTracePrintEnabled() { return enable_trace_print_; }
     static void SetTracePrint(bool enable);
@@ -397,6 +398,7 @@ private:
     static ModuleContextMap module_context_;
     static bool enable_local_log_;  // whether to just enable local logging
     static bool enable_flow_log_;  // whether to enable flow sandesh message logging
+    static bool enable_session_syslog_; // whether to enable syslog for SLO session messages
     static SandeshLevel::type logging_level_; // current logging level
     static SandeshLevel::type logging_ut_level_; // ut_debug logging level
     static std::string logging_category_; // current logging category
