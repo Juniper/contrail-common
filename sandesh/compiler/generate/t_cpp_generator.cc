@@ -1590,7 +1590,8 @@ void t_cpp_generator::generate_sandesh_flow_send_fn(ofstream &out,
     out << indent() << "return;" << endl;
     scope_down(out);
     out << indent() <<
-        "if (IsFlowLoggingEnabled() && LoggingUseSyslog()) {" << endl;
+        "if (IsFlowLoggingEnabled() && (LoggingUseSyslog() ||"
+             " IsSessionSysLoggingEnabled())) {" << endl;
     indent_up();
     out << indent() << "UpdateTxMsgFailStats(\"" << tsandesh->get_name() <<
         "\", 0, SandeshTxDropReason::SendingToSyslog);" << endl;
