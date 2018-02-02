@@ -41,8 +41,8 @@ cql_if_test = env.UnitTest('cql_if_test',
 
 test_suite = [ cql_if_test ]
 test = env.TestSuite('cqlif_test_suite', test_suite)
-env.Alias('controller/src/database/cassandra/cql:test', test)
+env.Alias('src/contrail-common/database/cassandra/cql:test', test)
 
 flaky_test_suite = []
 flaky_test = env.TestSuite('cqlif_flaky_test_suite', flaky_test_suite)
-env.Alias('controller/src/database/cassandra/cql:flaky-test', flaky_test)
+env.Alias('src/contrail-common/database/cassandra/cql:flaky-test', flaky_test)

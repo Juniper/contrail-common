@@ -12,7 +12,6 @@ env = SandeshEnv.Clone()
 env.Append(CPPPATH = [Dir('.').abspath,
                       Dir('#build/include').abspath,
                       Dir('#build/include/libxml2').abspath,
-#                      Dir('#controller/src').abspath,
                       Dir('#src/contrail-common').abspath,
                       '../',
                       '../../common/test/',
