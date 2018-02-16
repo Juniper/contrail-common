@@ -28,6 +28,9 @@ libtask_test = env.Library('task_test',
                             'addr_test_util.cc'])
 env.Alias('base:libtask_test', libtask_test)
 
+address_test = env.UnitTest('address_test', ['address_test.cc'])
+env.Alias('base:address_test', address_test)
+
 bitset_test = env.UnitTest('bitset_test', ['bitset_test.cc'])
 env.Alias('base:bitset_test', bitset_test)
 
@@ -103,6 +106,7 @@ test_task_monitor = env.UnitTest('test_task_monitor', ['test_task_monitor.cc'])
 env.Alias('base:test_task_monitor', test_task_monitor)
 
 test_suite = [
+    address_test,
     bitset_test,
     index_allocator_test,
     indexmap_test,
