@@ -130,6 +130,9 @@ protected:
 
     virtual void AcceptHandlerComplete(TcpSessionPtr session);
     virtual void ConnectHandlerComplete(TcpSessionPtr session);
+    const boost::scoped_ptr<boost::asio::ip::tcp::acceptor> &acceptor() const {
+        return acceptor_;
+    }
 
 
 private:
