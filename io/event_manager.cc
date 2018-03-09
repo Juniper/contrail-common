@@ -1,6 +1,9 @@
 /*
  * Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
  */
+#ifdef _WIN32
+#include "posix_time.h"
+#endif
 
 #include "Thrift.h"
 

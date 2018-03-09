@@ -787,23 +787,27 @@ error_code TcpSession::SetSocketKeepaliveOptions(int keepalive_time,
         return ec;
     }
 #ifdef TCP_KEEPIDLE
-    typedef integer< IPPROTO_TCP, TCP_KEEPIDLE > keepalive_idle_time;
-    keepalive_idle_time keepalive_idle_time_option(keepalive_time);
-    socket()->set_option(keepalive_idle_time_option, ec);
-    if (ec) {
-        TCP_SESSION_LOG_ERROR(this, TCP_DIR_OUT,
-            "keepalive_idle_time: " << keepalive_time << " set error: " << ec);
-        return ec;
+    {
+        typedef integer< IPPROTO_TCP, TCP_KEEPIDLE > keepalive_idle_time;
+        keepalive_idle_time keepalive_idle_time_option(keepalive_time);
+        socket()->set_option(keepalive_idle_time_option, ec);
+        if (ec) {
+            TCP_SESSION_LOG_ERROR(this, TCP_DIR_OUT,
+                "keepalive_idle_time: " << keepalive_time << " set error: " << ec);
+            return ec;
+        }
     }
 #endif
 #ifdef TCP_KEEPALIVE
-    typedef integer< IPPROTO_TCP, TCP_KEEPALIVE > keepalive_idle_time;
-    keepalive_idle_time keepalive_idle_time_option(keepalive_time);
-    socket()->set_option(keepalive_idle_time_option, ec);
-    if (ec) {
-        TCP_SESSION_LOG_ERROR(this, TCP_DIR_OUT,
-            "keepalive_idle_time: " << keepalive_time << " set error: " << ec);
-        return ec;
+    {
+        typedef integer< IPPROTO_TCP, TCP_KEEPALIVE > keepalive_idle_time;
+        keepalive_idle_time keepalive_idle_time_option(keepalive_time);
+        socket()->set_option(keepalive_idle_time_option, ec);
+        if (ec) {
+            TCP_SESSION_LOG_ERROR(this, TCP_DIR_OUT,
+                "keepalive_idle_time: " << keepalive_time << " set error: " << ec);
+            return ec;
+        }
     }
 #endif
 // TCP_KEEPCNT and TCP_KEEPINTVL are not supported on windows. But boost tries to set them, causing
