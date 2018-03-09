@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
  */
-
+#include "posix_time.h"
 #include "Thrift.h"
 
 #include <string>
