@@ -250,7 +250,7 @@ bool ConfigCassandraClient::ReadObjUUIDTable(set<string> *uuid_list) {
 //  referred object is not yet read.
 struct ConfigCassandraParseContext {
     ConfigCassandraParseContext() : obj_type(""), fq_name_present(false),
-        parent_or_ref_fq_name_unknown(false) {
+        draft_object(false), parent_or_ref_fq_name_unknown(false) {
     }
     std::multimap<string, JsonAdapterDataType> list_map_properties;
     set<string> updated_list_map_properties;
@@ -258,6 +258,7 @@ struct ConfigCassandraParseContext {
     string obj_type;
     string fq_name;
     bool fq_name_present;
+    bool draft_object;
     bool parent_or_ref_fq_name_unknown;
 
 private:
@@ -276,12 +277,15 @@ bool ConfigCassandraClient::ProcessObjUUIDTableEntry(const string &uuid_key,
     ParseObjUUIDTableEntry(uuid_key, col_list, &cass_data_vec, context);
 
     // If type or fq-name is not present in the db object, ignore the object
-    // and trigger delete of the object
-    if (context.obj_type.empty() || !context.fq_name_present) {
+    // and trigger delete of the object. Also, ignore draft objects.
+    if (context.obj_type.empty() || !context.fq_name_present ||
+            context.draft_object) {
         // Handle as delete
-        CONFIG_CLIENT_WARN(ConfigClientGetRowError,
-            "Parsing row response for type/fq_name failed for table",
-            kUuidTableName, uuid_key);
+        if (context.obj_type.empty() || !context.fq_name_present) {
+            CONFIG_CLIENT_WARN(ConfigClientGetRowError,
+                "Parsing row response for type/fq_name failed for table",
+                kUuidTableName, uuid_key);
+        }
         obj->DisableCassandraReadRetry(uuid_key);
         HandleObjectDelete(uuid_key, false);
         return false;
@@ -1045,7 +1049,6 @@ bool ConfigCassandraPartition::StoreKeyIfUpdated(const string &uuid,
 
         context.list_map_properties.insert(make_pair(prop_name, *adapter));
     }
-
     if (adapter->key == "type") {
         if (context.obj_type.empty()) {
             context.obj_type = adapter->value;
@@ -1061,6 +1064,18 @@ bool ConfigCassandraPartition::StoreKeyIfUpdated(const string &uuid,
             context.fq_name.erase(remove(context.fq_name.begin(),
                         context.fq_name.end(), ' '), context.fq_name.end());
             replace(context.fq_name.begin(), context.fq_name.end(), ',', ':');
+            // Check if it is a draft object.
+            size_t pos2 = context.fq_name.find_last_of(":");
+            if (pos2 != string::npos) {
+                size_t pos1 = context.fq_name.find_last_of(":", pos2-1);
+                if (pos1 == string::npos)
+                    pos1 = 0;
+                string parent_name = context.fq_name.substr(pos1+1,pos2-pos1-1);
+                if (parent_name.find(
+                    g_vns_constants.POLICY_MANAGEMENT_NAME_FOR_SECURITY_DRAFT)
+                        != string::npos)
+                    context.draft_object = true;
+            }
         }
     }
 
