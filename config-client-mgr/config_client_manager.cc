@@ -119,6 +119,7 @@ ConfigClientManager::ConfigClientManager(EventManager *evm,
         std::string module_name,
         const ConfigClientOptions& config_options)
         : evm_(evm),
+        generation_number_(0),
         hostname_(hostname), module_name_(module_name),
         config_options_(config_options) {
     end_of_rib_computed_ = false;
