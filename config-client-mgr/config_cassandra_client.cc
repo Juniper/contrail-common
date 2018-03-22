@@ -250,7 +250,7 @@ bool ConfigCassandraClient::ReadObjUUIDTable(set<string> *uuid_list) {
 //  referred object is not yet read.
 struct ConfigCassandraParseContext {
     ConfigCassandraParseContext() : obj_type(""), fq_name_present(false),
-        parent_or_ref_fq_name_unknown(false) {
+        ignore_object(false), parent_or_ref_fq_name_unknown(false) {
     }
     std::multimap<string, JsonAdapterDataType> list_map_properties;
     set<string> updated_list_map_properties;
@@ -258,6 +258,7 @@ struct ConfigCassandraParseContext {
     string obj_type;
     string fq_name;
     bool fq_name_present;
+    bool ignore_object;
     bool parent_or_ref_fq_name_unknown;
 
 private:
@@ -274,14 +275,19 @@ bool ConfigCassandraClient::ProcessObjUUIDTableEntry(const string &uuid_key,
         GetPartition(uuid_key)->MarkCacheDirty(uuid_key);
 
     ParseObjUUIDTableEntry(uuid_key, col_list, &cass_data_vec, context);
-
+    // Ignore draft objects.
+    if (context.ignore_object) {
+        PurgeFQNameCache(uuid_key);
+        GetPartition(uuid_key)->DeleteCacheMap(uuid_key);
+        return false;
+    }
     // If type or fq-name is not present in the db object, ignore the object
-    // and trigger delete of the object
+    // and trigger delete of the object.
     if (context.obj_type.empty() || !context.fq_name_present) {
         // Handle as delete
         CONFIG_CLIENT_WARN(ConfigClientGetRowError,
-            "Parsing row response for type/fq_name failed for table",
-            kUuidTableName, uuid_key);
+             "Parsing row response for type/fq_name failed for table",
+             kUuidTableName, uuid_key);
         obj->DisableCassandraReadRetry(uuid_key);
         HandleObjectDelete(uuid_key, false);
         return false;
@@ -1062,8 +1068,9 @@ bool ConfigCassandraPartition::StoreKeyIfUpdated(const string &uuid,
                         context.fq_name.end(), ' '), context.fq_name.end());
             replace(context.fq_name.begin(), context.fq_name.end(), ',', ':');
         }
+    } else if (adapter->key == "draft-mode-state" && !adapter->value.empty()) {
+        context.ignore_object = true;
     }
-
     FieldDetailMap::iterator field_iter =
     uuid_iter->second->GetFieldDetailMap().find(*adapter);
     if (field_iter == uuid_iter->second->GetFieldDetailMap().end()) {
