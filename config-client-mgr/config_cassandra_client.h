@@ -128,6 +128,7 @@ class ConfigCassandraPartition {
     void ListMapPropReviseUpdateList(const std::string &uuid,
                                      ConfigCassandraParseContext &context);
     ObjectCacheEntry *MarkCacheDirty(const std::string &uuid);
+    void DeleteCacheMap(const string &uuid);
     void Enqueue(ObjectProcessReq *req);
 
     void HandleObjectDelete(const string &uuid, bool add_change);
