@@ -478,6 +478,10 @@ class Sandesh(object):
         return self._config
     # end config
 
+    def is_send_queue_empty(self):
+        return self._client.connection().statemachine().session().\
+            send_queue().is_queue_empty()
+
     def is_flow_logging_enabled(self):
         return self._sandesh_logger.is_flow_logging_enabled()
     # end is_flow_logging_enabled
