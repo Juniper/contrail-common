@@ -38,7 +38,7 @@ class TXMLProtocol(TProtocolBase):
   _XML_TYPENAME_IPV4 = 'ipv4'
   _XML_TYPENAME_IPADDR = 'ipaddr'
   _XML_TYPENAME_DOUBLE = 'double'
-  _XML_TYPENAME_UUID = 'uuid_t'
+  _XML_TYPENAME_UUID = 'ct_uuid_t'
   _XML_TYPENAME_STRING = 'string'
   _XML_TYPENAME_XML = 'xml'
   _XML_TYPENAME_STRUCT = 'struct'
@@ -311,7 +311,7 @@ class TXMLProtocol(TProtocolBase):
     try:
       self.writeBuffer(str(uuid))
     except TypeError:
-      self._logger.error('TXML Protocol: Invalid uuid_t value %s' % str(uuid))
+      self._logger.error('TXML Protocol: Invalid ct_uuid_t value %s' % str(uuid))
       return -1
     return 0
     
@@ -844,7 +844,7 @@ class TXMLProtocol(TProtocolBase):
     try:
       uuid_temp = uuid.UUID(uuid_str)
     except ValueError:
-      self._logger.error('TXML Protocol: Invalid uuid_t value "%s".' %(uuid_str))
+      self._logger.error('TXML Protocol: Invalid ct_uuid_t value "%s".' %(uuid_str))
       return (-1, None)
     return (length, uuid_temp)
 
