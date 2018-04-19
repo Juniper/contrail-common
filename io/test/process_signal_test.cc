@@ -30,6 +30,11 @@ class SignalMock : public Signal {
 
 class ProcessSignalTest : public ::testing::Test {
  public:
+    ProcessSignalTest() :
+            signal_handler_called_(0),
+            sigchild_handler_called_(0) {
+    }
+
     void HandleSignal(const boost::system::error_code &a_ec, int a_sig,
         int e_sig) {
         signal_handler_called_++;
