@@ -158,6 +158,27 @@ public:
     }
 };
 
+class ConfigCassandraPartitionTest3 : public ConfigCassandraPartition {
+public:
+    ConfigCassandraPartitionTest3(ConfigCassandraClient *client, size_t idx)
+        : ConfigCassandraPartition(client, idx) {
+    }
+
+private:
+    virtual void GenerateAndPushJson(
+    const string &uuid_key, const string &obj_type,
+    const CassColumnKVVec &cass_data_vec, bool add_change) {
+        if (cass_data_vec.empty())
+            return;
+        tbb::mutex::scoped_lock lock(mutex_);
+        if (add_change) {
+            updated.push_back(uuid_key);
+        } else {
+            deleted.push_back(uuid_key);
+        }
+    }
+};
+
 class ConfigCassandraClientMock : public ConfigCassandraClient {
 public:
     ConfigCassandraClientMock(ConfigClientManager *mgr, EventManager *evm,
@@ -425,6 +446,8 @@ int main(int argc, char **argv) {
     ConfigAmqpClient::set_disable(true);
     ConfigFactory::Register<ConfigCassandraClient>(
         boost::factory<ConfigCassandraClientMock *>());
+    ConfigFactory::Register<ConfigCassandraPartition>(
+        boost::factory<ConfigCassandraPartitionTest3 *>());
     ConfigFactory::Register<cass::cql::CqlIf>(boost::factory<CqlIfTest *>());
     ConfigFactory::Register<ConfigJsonParserBase>(
         boost::factory<ConfigJsonParserTest *>());

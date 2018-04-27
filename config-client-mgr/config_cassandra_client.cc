@@ -149,12 +149,13 @@ int ConfigCassandraClient::HashUUID(const string &uuid_str) const {
     return string_hash(uuid_str) % num_workers_;
 }
 
-bool ConfigCassandraClient::ReadObjUUIDTable(set<string> *uuid_list) {
+bool ConfigCassandraPartition::ReadObjUUIDTable(const set<string> &req_list) {
     GenDb::ColListVec col_list_vec;
 
+    set<string> uuid_list = req_list;
     vector<GenDb::DbDataValueVec> keys;
-    for (set<string>::const_iterator it = uuid_list->begin();
-         it != uuid_list->end(); it++) {
+    for (set<string>::const_iterator it = uuid_list.begin();
+         it != uuid_list.end(); it++) {
         GenDb::DbDataValueVec key;
         key.push_back(GenDb::Blob(reinterpret_cast<const uint8_t *>
                                   (it->c_str()), it->size()));
@@ -170,10 +171,11 @@ bool ConfigCassandraClient::ReadObjUUIDTable(set<string> *uuid_list) {
     field_vec.push_back(boost::make_tuple("column1", false, true, false));
     field_vec.push_back(boost::make_tuple("value", false, false, true));
 
-    if (dbif_->Db_GetMultiRow(&col_list_vec, kUuidTableName, keys,
+    if (client()->dbif_->Db_GetMultiRow(&col_list_vec,
+                              ConfigCassandraClient::kUuidTableName, keys,
                               crange, field_vec,
                               GenDb::DbConsistency::QUORUM)) {
-        HandleCassandraConnectionStatus(true);
+        client()->HandleCassandraConnectionStatus(true);
         BOOST_FOREACH(const GenDb::ColList &col_list, col_list_vec) {
             assert(col_list.rowkey_.size() == 1);
             assert(col_list.rowkey_[0].which() == GenDb::DB_VALUE_BLOB);
@@ -182,15 +184,16 @@ bool ConfigCassandraClient::ReadObjUUIDTable(set<string> *uuid_list) {
                 string uuid_str(reinterpret_cast<const char *>(uuid.data()),
                                 uuid.size());
                 ProcessObjUUIDTableEntry(uuid_str, col_list);
-                uuid_list->erase(uuid_str);
+                uuid_list.erase(uuid_str);
             }
         }
     } else {
         // Failure is returned due to connectivity issue or consistency
         // issues in reading from cassandra
-        HandleCassandraConnectionStatus(false);
+        client()->HandleCassandraConnectionStatus(false);
         CONFIG_CLIENT_WARN(ConfigClientGetRowError,
-                     "GetMultiRow failed for table", kUuidTableName, "");
+                     "GetMultiRow failed for table",
+                     ConfigCassandraClient::kUuidTableName, "");
         //
         // Task is rescheduled to read the request queue
         // Due to a bug CQL driver from datastax, connection status is
@@ -204,14 +207,14 @@ bool ConfigCassandraClient::ReadObjUUIDTable(set<string> *uuid_list) {
     }
 
     // Delete all stale entries from the data base.
-    BOOST_FOREACH(string uuid_key, *uuid_list) {
+    BOOST_FOREACH(string uuid_key, uuid_list) {
         CONFIG_CLIENT_WARN(ConfigClientGetRowError, "Missing row in the table",
-                            kUuidTableName, uuid_key);
+                            ConfigCassandraClient::kUuidTableName, uuid_key);
         HandleObjectDelete(uuid_key, false);
     }
 
     // Clear the uuid list.
-    uuid_list->clear();
+    uuid_list.clear();
     return true;
 }
 
@@ -265,20 +268,19 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ConfigCassandraParseContext);
 };
 
-bool ConfigCassandraClient::ProcessObjUUIDTableEntry(const string &uuid_key,
+bool ConfigCassandraPartition::ProcessObjUUIDTableEntry(const string &uuid_key,
                                            const GenDb::ColList &col_list) {
     CassColumnKVVec cass_data_vec;
 
     ConfigCassandraParseContext context;
 
-    ConfigCassandraPartition::ObjectCacheEntry *obj =
-        GetPartition(uuid_key)->MarkCacheDirty(uuid_key);
+    ConfigCassandraPartition::ObjectCacheEntry *obj = MarkCacheDirty(uuid_key);
 
     ParseObjUUIDTableEntry(uuid_key, col_list, &cass_data_vec, context);
     // Ignore draft objects.
     if (context.ignore_object) {
-        PurgeFQNameCache(uuid_key);
-        GetPartition(uuid_key)->DeleteCacheMap(uuid_key);
+        client()->PurgeFQNameCache(uuid_key);
+        DeleteCacheMap(uuid_key);
         return false;
     }
     // If type or fq-name is not present in the db object, ignore the object
@@ -287,7 +289,7 @@ bool ConfigCassandraClient::ProcessObjUUIDTableEntry(const string &uuid_key,
         // Handle as delete
         CONFIG_CLIENT_WARN(ConfigClientGetRowError,
              "Parsing row response for type/fq_name failed for table",
-             kUuidTableName, uuid_key);
+             ConfigCassandraClient::kUuidTableName, uuid_key);
         obj->DisableCassandraReadRetry(uuid_key);
         HandleObjectDelete(uuid_key, false);
         return false;
@@ -302,7 +304,7 @@ bool ConfigCassandraClient::ProcessObjUUIDTableEntry(const string &uuid_key,
         obj->DisableCassandraReadRetry(uuid_key);
     }
 
-    GetPartition(uuid_key)->ListMapPropReviseUpdateList(uuid_key, context);
+    ListMapPropReviseUpdateList(uuid_key, context);
 
     // Read the context for map and list properties
     if (context.updated_list_map_properties.size()) {
@@ -323,7 +325,7 @@ bool ConfigCassandraClient::ProcessObjUUIDTableEntry(const string &uuid_key,
     return true;
 }
 
-void ConfigCassandraClient::ParseObjUUIDTableEntry(const string &uuid,
+void ConfigCassandraPartition::ParseObjUUIDTableEntry(const string &uuid,
         const GenDb::ColList &col_list, CassColumnKVVec *cass_data_vec,
         ConfigCassandraParseContext &context) {
     BOOST_FOREACH(const GenDb::NewCol &ncol, col_list.columns_) {
@@ -349,47 +351,27 @@ void ConfigCassandraClient::ParseObjUUIDTableEntry(const string &uuid,
     }
 }
 
-void ConfigCassandraClient::ParseObjUUIDTableEachColumnBuildContext(
+void ConfigCassandraPartition::ParseObjUUIDTableEachColumnBuildContext(
                      const string &uuid, const string &key, const string &value,
                      uint64_t timestamp, CassColumnKVVec *cass_data_vec,
                      ConfigCassandraParseContext &context) {
     // Check whether there was an update to property of ref
     JsonAdapterDataType adapter(key, value);
-    if (GetPartition(uuid)->StoreKeyIfUpdated(uuid, &adapter, timestamp, context)) {
+    if (StoreKeyIfUpdated(uuid, &adapter, timestamp, context)) {
         // Field is updated.. enqueue to parsing
         cass_data_vec->push_back(adapter);
     }
 }
 
-void ConfigCassandraClient::GenerateAndPushJson(
+void ConfigCassandraPartition::GenerateAndPushJson(
     const string &uuid_key, const string &obj_type,
     const CassColumnKVVec &cass_data_vec, bool add_change) {
 
-    ConfigCass2JsonAdapter ccja(uuid_key, this, obj_type,
+    ConfigCass2JsonAdapter ccja(uuid_key, client(), obj_type,
                                 cass_data_vec);
-    mgr()->config_json_parser()->Receive(ccja, add_change);
+    client()->mgr()->config_json_parser()->Receive(ccja, add_change);
 }
 
-void ConfigCassandraClient::HandleObjectDelete(
-                          const string &uuid, bool add_change) {
-    if (!add_change) {
-        ObjTypeFQNPair obj_type_fq_name_pair = UUIDToFQName(uuid, true);
-        if (obj_type_fq_name_pair.second == "ERROR") {
-            return;
-        }
-    }
-
-    GetPartition(uuid)->HandleObjectDelete(uuid, add_change);
-
-    if (!add_change) {
-        PurgeFQNameCache(uuid);
-    }
-}
-
-bool ConfigCassandraClient::IsListOrMapPropEmpty(const string &uuid_key,
-      const string &lookup_key) {
-    return GetPartition(uuid_key)->IsListOrMapPropEmpty(uuid_key, lookup_key);
-}
 // Post shutdown during reinit, cleanup all previous states and connections
 // 1. Disconnect from cassandra cluster
 // 2. Clean FQ Name cache
@@ -683,6 +665,11 @@ string ConfigCassandraClient::uuid_str(const string &uuid) {
     return uuid;
 }
 
+bool ConfigCassandraClient::IsListOrMapPropEmpty(const string &uuid_key,
+      const string &lookup_key) {
+    return GetPartition(uuid_key)->IsListOrMapPropEmpty(uuid_key, lookup_key);
+}
+
 ConfigCassandraPartition::ConfigCassandraPartition(
                    ConfigCassandraClient *client, size_t idx)
     : config_client_(client), worker_id_(idx) {
@@ -732,6 +719,14 @@ void ConfigCassandraPartition::AddUUIDToRequestList(const string &oper,
 
 void ConfigCassandraPartition::HandleObjectDelete(
                         const string &uuid, bool add_change) {
+    if (!add_change) {
+        ConfigCassandraClient::ObjTypeFQNPair obj_type_fq_name_pair =
+            client()->UUIDToFQName(uuid, true);
+        if (obj_type_fq_name_pair.second == "ERROR") {
+            return;
+        }
+    }
+
     bool needNotify = false;
     std::string obj_type("");
     ObjectCacheMap::iterator uuid_iter = object_cache_map_.find(uuid);
@@ -741,9 +736,9 @@ void ConfigCassandraPartition::HandleObjectDelete(
     }
 
     CassColumnKVVec cass_data_vec;
-    for (FieldDetailMap::iterator it = 
+    for (FieldDetailMap::iterator it =
          uuid_iter->second->GetFieldDetailMap().begin(), itnext;
-         it != uuid_iter->second->GetFieldDetailMap().end(); 
+         it != uuid_iter->second->GetFieldDetailMap().end();
          it = itnext) {
         itnext = it;
         ++itnext;
@@ -775,7 +770,10 @@ void ConfigCassandraPartition::HandleObjectDelete(
         object_cache_map_.erase(uuid_iter);
     }
     if (needNotify) {
-        client()->GenerateAndPushJson(uuid, obj_type, cass_data_vec, false);
+        GenerateAndPushJson(uuid, obj_type, cass_data_vec, false);
+    }
+    if (!add_change) {
+        client()->PurgeFQNameCache(uuid);
     }
 }
 
@@ -825,7 +823,7 @@ bool ConfigCassandraPartition::ConfigReader() {
             bool is_last = (itnext == uuid_read_set_.end());
             if (is_last ||
                 bunch_req_list.size() == client()->GetNumReadRequestToBunch()) {
-                if (!BunchReadReq(bunch_req_list)) {
+                if (!ReadObjUUIDTable(bunch_req_list)) {
                     return false;
                 }
                 num_req_handled += bunch_req_list.size();
@@ -836,7 +834,7 @@ bool ConfigCassandraPartition::ConfigReader() {
             }
             continue;
         } else if (obj_req->oper == "DELETE") {
-            client()->HandleObjectDelete(obj_req->uuid, false);
+            HandleObjectDelete(obj_req->uuid, false);
         } else if (obj_req->oper == "EndOfConfig") {
             client()->BulkSyncDone();
         }
@@ -848,7 +846,7 @@ bool ConfigCassandraPartition::ConfigReader() {
 
     // No need to read the object uuid table if reinit is triggered
     if (!bunch_req_list.empty() && !client()->mgr()->is_reinit_triggered()) {
-        if (!BunchReadReq(bunch_req_list))
+        if (!ReadObjUUIDTable(bunch_req_list))
             return false;
         RemoveObjReqEntries(bunch_req_list);
     }
@@ -859,14 +857,6 @@ bool ConfigCassandraPartition::ConfigReader() {
         uuid_read_set_.clear();
     }
     assert(uuid_read_set_.empty());
-    return true;
-}
-
-bool ConfigCassandraPartition::BunchReadReq(const set<string> &req_list) {
-    set<string> uuid_list = req_list;
-    if (!client()->ReadObjUUIDTable(&uuid_list)) {
-        return false;
-    }
     return true;
 }
 
