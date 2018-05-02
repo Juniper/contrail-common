@@ -151,6 +151,8 @@ class t_cpp_generator : public t_oop_generator {
   void generate_sandesh_async_create_fn(ofstream &out, t_sandesh *tsandesh);
   void generate_sandesh_async_create_macro(ofstream &out, t_sandesh *tsandesh);
   void generate_sandesh_session_log_unrolled_fn(ofstream &out, t_sandesh *tsandesh);
+  void generate_sandesh_session_adjust_sep_objects_fn(ofstream &out,
+                                                      t_sandesh *tsandesh);
   void generate_sandesh_flow_send_fn(ofstream &out, t_sandesh *tsandesh);
   void generate_sandesh_systemlog_creators(ofstream &out, t_sandesh *tsandesh);
   void generate_sandesh_objectlog_creators(ofstream &out, t_sandesh *tsandesh);
@@ -1569,10 +1571,17 @@ void t_cpp_generator::generate_sandesh_objectlog_creators(ofstream &out,
 
 void t_cpp_generator::generate_sandesh_session_log_unrolled_fn(ofstream &out,
     t_sandesh *tsandesh) {
-    out << indent() << "static void LogUnrolled";
-    out << generate_sandesh_async_creator(tsandesh, true, false, false, "", "",
-        true, false, false, false);
-    out << ";";
+    out << indent() << "static void LogUnrolled(std::string, " <<
+        "SandeshLevel::type, const std::vector<SessionEndpoint> &, " <<
+        "log4cplus::Logger &, log4cplus::Logger &, bool, bool);" << endl;
+}
+
+void t_cpp_generator::generate_sandesh_session_adjust_sep_objects_fn(ofstream &out,
+    t_sandesh *tsandesh) {
+    out << "static void adjust_sep_objects(bool is_send_sample_2_collector, bool " <<
+         "is_send_slo_2_collector, std::vector<SessionEndpoint> & " <<
+           "session_data);" << endl;
+    out << endl;
 }
 
 void t_cpp_generator::generate_sandesh_flow_send_fn(ofstream &out,
@@ -1590,19 +1599,17 @@ void t_cpp_generator::generate_sandesh_flow_send_fn(ofstream &out,
     out << indent() << "return;" << endl;
     scope_down(out);
     out << indent() <<
-        "if (IsFlowLoggingEnabled() && LoggingUseSyslog()) { " << endl;
+        "if (is_send_slo_2_logger_enabled() || is_send_sampled_2_logger_enabled()) { " <<
+ endl;
     indent_up();
     out << indent() << "UpdateTxMsgFailStats(\"" << tsandesh->get_name() <<
         "\", 0, SandeshTxDropReason::SendingToSyslog);" << endl;
     const t_type *t = tsandesh->get_type();
     if (((t_base_type *)t)->is_sandesh_session()) {
-        out << indent() << "LogUnrolled" <<
-            generate_sandesh_async_creator(tsandesh, false,
-                false, false, "", "", false, false, false) << ";" << endl;
-        out << indent() << "if (!IsSloSyslogEnabled()) {" << endl;
-        indent_up();
-        out << indent() << "return;" << endl;
-        scope_down(out);
+        out << indent() << "LogUnrolled(category, level, session_data, " <<
+            "Sandesh::sample_logger(), Sandesh::slo_logger(), " <<
+            "Sandesh::is_send_sampled_2_logger_enabled(), " <<
+            "Sandesh::is_send_slo_2_logger_enabled()); " << endl;
     } else {
         out << indent() << "Log" <<
             generate_sandesh_async_creator(tsandesh, false,
@@ -1643,6 +1650,14 @@ void t_cpp_generator::generate_sandesh_flow_send_fn(ofstream &out,
             " * snh = new " << tsandesh->get_name() <<
             generate_sandesh_no_static_const_string_function(tsandesh,
                         false, false, false, false) << ";" << endl;
+    if (((t_base_type *)t)->is_sandesh_session()) {
+        out << indent() << "if (!is_send_sampled_2_collector_enabled() && !is_send_slo_collector_enabled()) {" << endl;
+        indent_up();
+        out << indent() << "return;" << endl;
+        scope_down(out);
+        //out << indent() << "adjust_sep_objects(is_send_sampled_2_collector_enabled(), is_send_slo_collector_enabled(), snh->session_data);";
+        out << endl;
+    }
     out << indent() << "snh->set_level(level);" << endl;
     out << indent() << "snh->set_category(category);" << endl;
     out << indent() << "snh->Dispatch();" << endl;
@@ -1657,6 +1672,7 @@ void t_cpp_generator::generate_sandesh_flow_creators(ofstream &out,
     // Generate LogUnrolled declaration only for Session message
     if (((t_base_type *)t)->is_sandesh_session()) {
         generate_sandesh_session_log_unrolled_fn(out, tsandesh);
+        generate_sandesh_session_adjust_sep_objects_fn(out, tsandesh);
     }
     // Generate send function and macros
     generate_sandesh_flow_send_fn(out, tsandesh);
