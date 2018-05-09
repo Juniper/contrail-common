@@ -1857,8 +1857,9 @@ string generate_sandesh_base_name(t_sandesh* tsandesh, bool type) {
                 return "SandeshFlow";
             }
         }
+    } else {
+        return "";
     }
-
 }
 
 /**

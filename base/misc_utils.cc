@@ -202,6 +202,7 @@ bool MiscUtils::GetPlatformInfo(std::string &distro, std::string &code_name) {
     } else {
         return false;
     }
+    fclose(fp);
 #endif
     return true;
 }
