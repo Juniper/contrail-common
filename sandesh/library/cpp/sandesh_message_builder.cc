@@ -151,6 +151,7 @@ bool SandeshSyslogMessage::Parse(const uint8_t *xml_msg, size_t size) {
     message_node_ = xdoc_.first_child();
     message_type_ = message_node_.name();
     size_ = size;
+    return true;
 }
 
 // SandeshMessageBuilder
