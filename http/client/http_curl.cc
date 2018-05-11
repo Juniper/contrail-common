@@ -389,6 +389,7 @@ ConnInfo *new_conn(HttpConnection *connection, GlobalInfo *g,
   conn->easy = curl_easy_init();
 
   if ( !conn->easy ) {
+    free(conn);
     return NULL;
   }
   conn->global = g;
