@@ -1058,7 +1058,7 @@ bool ConfigCassandraPartition::StoreKeyIfUpdated(const string &uuid,
                         context.fq_name.end(), ' '), context.fq_name.end());
             replace(context.fq_name.begin(), context.fq_name.end(), ',', ':');
         }
-    } else if (adapter->key == "draft-mode-state" && !adapter->value.empty()) {
+    } else if (adapter->key == "draft_mode_state" && !adapter->value.empty()) {
         context.ignore_object = true;
     }
     FieldDetailMap::iterator field_iter =
