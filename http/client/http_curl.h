@@ -15,6 +15,11 @@
 
 #include <curl/curl.h>
 
+#define set_curl_option(handle, option, parameter) \
+do { \
+    curl_easy_setopt(handle, option, parameter); \
+} while (0)
+
 /* Global information, common to all connections */
 typedef struct _GlobalInfo
 {

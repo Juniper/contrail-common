@@ -10,6 +10,7 @@
 #include <boost/ptr_container/ptr_map.hpp>
 #include <boost/system/error_code.hpp>
 #include <string>
+#include <curl/curl.h>
 #include "base/queue_task.h"
 #include "base/timer.h"
 #include "io/tcp_server.h"
@@ -92,6 +93,7 @@ public:
     void ClearCallback();
 
     struct _ConnInfo *curl_handle() { return curl_handle_; }
+    std::map<CURLoption, int> *curl_options() { return &curl_options_; }
     HttpClient *client() { return client_; }
     HttpClientSession *session() { return session_; }
     tbb::mutex &mutex() { return mutex_; }
@@ -150,6 +152,7 @@ private:
     size_t offset_;
     std::string buf_;
     struct _ConnInfo *curl_handle_;
+    std::map<CURLoption, int> curl_options_;
     HttpClientSession *session_;
     HttpClient *client_;
     mutable tbb::mutex mutex_;
