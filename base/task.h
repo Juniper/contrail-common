@@ -214,6 +214,7 @@ public:
     int HardwareThreadCount() { return hw_thread_count_; }
 
     // Get number of tbb worker threads.
+    static const int kMaxNumTbbThreads = 64;
     static int GetThreadCount(int thread_count = 0);
     static bool ShouldUseSpawn();
 
