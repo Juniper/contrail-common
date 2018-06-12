@@ -337,13 +337,12 @@ int TaskScheduler::GetThreadCount(int thread_count) {
     }
 
     char *num_cores_str = getenv("TBB_THREAD_COUNT");
-    if (!num_cores_str) {
+    if (!num_cores_str || ((num_cores_ = strtol(num_cores_str, NULL, 0)) <= 0) 
+                       || (num_cores_ > kMaxNumTbbThreads)) {
         if (thread_count == 0)
             num_cores_ = tbb::task_scheduler_init::default_num_threads();
         else
             num_cores_ = thread_count;
-    } else {
-        num_cores_ = strtol(num_cores_str, NULL, 0);
     }
 
     init_ = true;
