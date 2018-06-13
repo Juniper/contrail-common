@@ -1018,6 +1018,10 @@ bool ConfigCassandraPartition::StoreKeyIfUpdated(const string &uuid,
         //
         if (ConfigClientManager::skip_properties.find(prop_name) !=
             ConfigClientManager::skip_properties.end()) {
+            if ((prop_name.compare("draft_mode_state") == 0) &&
+               !adapter->value.empty()) {
+                context.ignore_object = true;
+            }
             return false;
         }
     }
@@ -1042,13 +1046,13 @@ bool ConfigCassandraPartition::StoreKeyIfUpdated(const string &uuid,
         context.list_map_properties.insert(make_pair(prop_name, *adapter));
     }
 
-    if (adapter->key == "type") {
+    if (adapter->key.compare("type") == 0) {
         if (context.obj_type.empty()) {
             context.obj_type = adapter->value;
             context.obj_type.erase(remove(context.obj_type.begin(),
                       context.obj_type.end(), '\"'), context.obj_type.end());
         }
-    } else if (adapter->key == "fq_name") {
+    } else if (adapter->key.compare("fq_name") == 0) {
         context.fq_name_present = true;
         if (context.fq_name.empty()) {
             context.fq_name = adapter->value.substr(1, adapter->value.size()-2);
@@ -1058,9 +1062,6 @@ bool ConfigCassandraPartition::StoreKeyIfUpdated(const string &uuid,
                         context.fq_name.end(), ' '), context.fq_name.end());
             replace(context.fq_name.begin(), context.fq_name.end(), ',', ':');
         }
-    } else if (adapter->key == "prop:draft_mode_state" &&
-               !adapter->value.empty()) {
-        context.ignore_object = true;
     }
     FieldDetailMap::iterator field_iter =
     uuid_iter->second->GetFieldDetailMap().find(*adapter);
@@ -1074,7 +1075,8 @@ bool ConfigCassandraPartition::StoreKeyIfUpdated(const string &uuid,
     } else {
         field_iter->second.refreshed = true;
         if (client()->SkipTimeStampCheckForTypeAndFQName() &&
-                (adapter->key == "type" || adapter->key == "fq_name")) {
+                ((adapter->key.compare("type") == 0) ||
+                 (adapter->key.compare("fq_name") == 0))) {
             return true;
         }
         if (timestamp && field_iter->second.time_stamp == timestamp) {
