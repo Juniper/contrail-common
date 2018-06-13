@@ -25,7 +25,8 @@
 using namespace boost::assign;
 using namespace std;
 
-const set<string> ConfigClientManager::skip_properties = list_of("perms2");
+const set<string> ConfigClientManager::skip_properties =
+    list_of("perms2")("draft_mode_state");
 bool ConfigClientManager::end_of_rib_computed_;
 
 int ConfigClientManager::GetNumConfigReader() {
