@@ -93,7 +93,7 @@ public:
     void ClearCallback();
 
     struct _ConnInfo *curl_handle() { return curl_handle_; }
-    std::map<CURLoption, int> *curl_options() { return &curl_options_; }
+    std::map<CURLoption, int> &curl_options() { return curl_options_; }
     HttpClient *client() { return client_; }
     HttpClientSession *session() { return session_; }
     tbb::mutex &mutex() { return mutex_; }
