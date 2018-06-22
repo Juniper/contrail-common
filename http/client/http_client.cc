@@ -237,6 +237,7 @@ void HttpConnection::HttpProcessInternal(const std::string body,
     std::map<CURLoption, int>::iterator iter = curl_options->begin();
     while (iter != curl_options->end()) {
         set_curl_option(curl_handle_->easy, iter->first, iter->second);
+        iter++;
     }
 
     // set SSL curl options
