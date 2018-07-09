@@ -22,15 +22,15 @@ class EqlIfTest : public ::testing::Test {
         }
         virtual ~EqlIfTest(){
         }
-        
+
         virtual void SetUp() {
         }
-        
+
         virtual void TearDown() {
         }
 };
 
- 
+
 TEST_F(EqlIfTest, CreateKeys) {
     EtcdIf etcd("127.0.0.1", 2379);
     etcd.Delete("/", "\\0");
@@ -44,7 +44,7 @@ TEST_F(EqlIfTest, CreateKeys) {
 
     etcd::etcdql::EtcdResponse resp;
     etcd::etcdql::EtcdResponse::kv_map kvs;
-   
+
     resp = etcd.Get("/", "\\0", 7);
     kvs = resp.KvMap();
 
@@ -56,10 +56,10 @@ TEST_F(EqlIfTest, UpdateKey)
 {
     etcd::etcdql::EtcdIf etcd("127.0.0.1", 2379);
     etcd.Set("/contrail/vn1", "updated vn1");
-    
+
     etcd::etcdql::EtcdResponse resp;
     etcd::etcdql::EtcdResponse::kv_map kvs;
-   
+
     resp = etcd.Get("/contrail/vn1", "", 4);
     kvs = resp.KvMap();
 
@@ -84,14 +84,14 @@ TEST_F(EqlIfTest, ReadKeys)
     etcd::etcdql::EtcdResponse resp;
     etcd::etcdql::EtcdResponse::kv_map kvs;
     string str;
-   
-    // Find keys with prefix "/" 4 at a time  
+
+    // Find keys with prefix "/" 4 at a time
     resp = etcd.Get("/", "\\0", 4);
     kvs = resp.KvMap();
-   
+
     EXPECT_EQ(kvs.size(), 4);
     EXPECT_EQ(resp.ErrCode(), 0);
-    
+
     int i = 1;
     while (kvs.size() == 4) {
         for (multimap<string, string>::const_iterator iter = kvs.begin();
@@ -119,22 +119,22 @@ TEST_F(EqlIfTest, ReadLimit)
     etcd::etcdql::EtcdResponse resp;
     etcd::etcdql::EtcdResponse::kv_map kvs;
 
-    // Find keys with prefix "/" 4 at a time  
+    // Find keys with prefix "/" 4 at a time
     resp = etcd.Get("/", "\\0", 4);
     kvs = resp.KvMap();
-   
+
     EXPECT_EQ(kvs.size(), 4);
     EXPECT_EQ(resp.ErrCode(), 0);
 
     resp = etcd.Get("/", "\\0", 3);
     kvs = resp.KvMap();
-   
+
     EXPECT_EQ(kvs.size(), 3);
     EXPECT_EQ(resp.ErrCode(), 0);
 
     resp = etcd.Get("/", "\\0", 0);
     kvs = resp.KvMap();
-   
+
     EXPECT_EQ(kvs.size(), 5);
     EXPECT_EQ(resp.ErrCode(), 0);
 }
@@ -145,10 +145,10 @@ TEST_F(EqlIfTest, ReadUnknownKey)
     etcd.Delete("/", "\\0");
     etcd.Set("/contrail/vn1", "1");
     etcd.Set("/contrail/vn2", "2");
-    
+
     etcd::etcdql::EtcdResponse resp;
-    
-    // Key not found 
+
+    // Key not found
     resp = etcd.Get("abc", "\\0", 4);
 
     string str = "Prefix/Key not found";
@@ -163,13 +163,13 @@ TEST_F(EqlIfTest, ReadOneKey)
     etcd.Delete("/", "\\0");
     etcd.Set("/contrail/vn1", "1");
     etcd.Set("/contrail/vn2", "2");
-    
+
     etcd::etcdql::EtcdResponse resp;
     etcd::etcdql::EtcdResponse::kv_map kvs;
-    
+
     // Read a single key
     resp = etcd.Get("/contrail/vn2", "", 1);
-   
+
     kvs = resp.KvMap();
 
     EXPECT_EQ(resp.ErrCode(), 0);
@@ -183,11 +183,11 @@ TEST_F(EqlIfTest, DeleteOneKey)
     etcd::etcdql::EtcdIf etcd("127.0.0.1", 2379);
     etcd.Set("/contrail/vn1", "1");
     etcd.Delete("/contrail/vn1", "");
-    
+
     etcd::etcdql::EtcdResponse resp;
-    
+
     resp = etcd.Get("/contrail/vn1", "", 4);
-    
+
     string str = "Prefix/Key not found";
 
     EXPECT_EQ(100, resp.ErrCode());
@@ -198,10 +198,10 @@ TEST_F(EqlIfTest, DeleteAllKeys)
 {
     etcd::etcdql::EtcdIf etcd("127.0.0.1", 2379);
     etcd.Delete("/", "\\0");
-    
+
     etcd::etcdql::EtcdResponse resp;
     etcd::etcdql::EtcdResponse::kv_map kvs;
-   
+
     resp = etcd.Get("/", "\\0", 10);
 
     string str = "Prefix/Key not found";
@@ -239,10 +239,10 @@ TEST_F(EqlIfTest, WatchSetKey)
 
 void WatchForDelChanges(EtcdResponse resp) {
     EXPECT_EQ("2", to_string(resp.Action()));
-    
+
     EtcdIf etcd("127.0.0.1", 2379);
     EtcdResponse resp1;
-    
+
     resp1 = etcd.Get("/contrail/vn1/", "\\0", 4);
 
     string str = "Prefix/Key not found";

@@ -1,6 +1,6 @@
 #ifndef DATABASE_ETCD_ETCDQL_IF_H_
 #define DATABASE_ETCD_ETCDQL_IF_H_
- 
+
 #include <string>
 #include <grpc++/grpc++.h>
 #include <boost/function.hpp>
@@ -29,7 +29,7 @@ namespace etcdql {
 class EtcdResponse;
 
 /**
- * EtcdIf is the etcd client that is used to create and maintain connection 
+ * EtcdIf is the etcd client that is used to create and maintain connection
  * to the etcd server.
  * The methods of the client can be used to perform etcd operations.
  * Control node is only interested in the reading data from or watching
@@ -42,12 +42,12 @@ public:
      * Types
      */
     typedef boost::function<void (const EtcdResponse& Resp)> WatchCb;
- 
+
     /**
      * Constructor that creates an etcd client object.
      * @param host The IP address of the etcd server
      * @param port The port to connect to
-     */ 
+     */
     EtcdIf(const string host, const int port);
 
     virtual ~EtcdIf();
@@ -65,7 +65,7 @@ public:
 
     /**
      * ONLY FOR TEST PURPOSES.
-     * Sends a SET request to the etcd server to create or update 
+     * Sends a SET request to the etcd server to create or update
      * a key-value pair.
      * @param key The key to be created/updated
      * @param value The value corresponding to the key.
@@ -74,7 +74,7 @@ public:
 
     /**
      * ONLY FOR TEST PURPOSES.
-     * Sends a DELETE request to the etcd server to delete a 
+     * Sends a DELETE request to the etcd server to delete a
      * key or set of keys
      * @param key The key or directory to be deleted
      * @param range_end The key range to fetch
@@ -91,9 +91,9 @@ public:
 
     /**
      * Stop the watch request if scheduled
-     */ 
+     */
     void StopWatch();
-    
+
     string host() const { return host_; }
     int port() const { return port_; }
 
@@ -105,7 +105,7 @@ private:
     int port_;
     std::unique_ptr<KV::Stub> kv_stub_;
     std::unique_ptr<Watch::Stub> watch_stub_;
- 
+
     /**
      * For ETCD get/watch request
      */
@@ -125,7 +125,7 @@ private:
         EtcdResponse ParseGetResponse();
     };
     unique_ptr<EtcdAsyncGetCall> get_call_;
-   
+
     /**
      * TEST ONLY
      * For set operation
@@ -135,7 +135,7 @@ private:
         PutResponse set_resp_;
     };
     unique_ptr<EtcdAsyncSetCall> set_call_;
- 
+
     /**
      * TEST ONLY
      * For delete operation
@@ -145,7 +145,7 @@ private:
         DeleteRangeResponse delete_resp_;
     };
     unique_ptr<EtcdAsyncDeleteCall> delete_call_;
- 
+
     /**
      * For watch operation
      */
@@ -167,14 +167,14 @@ typedef enum {
 } WatchAction;
 
 /**
- * Wrapper to store the response received from ETCD 
- * get or watch operations. 
+ * Wrapper to store the response received from ETCD
+ * get or watch operations.
  */
 class EtcdResponse {
 public:
     typedef std::multimap<std::string, string> kv_map;
 
-    EtcdResponse() 
+    EtcdResponse()
         : ec_(0) {};
 
     int ErrCode() { return ec_; }
@@ -221,7 +221,7 @@ public:
     void set_kv_map(kv_map kvs) {
        kv_map_ = kvs;
     }
-  
+
 private:
     int ec_;
     string msg_;

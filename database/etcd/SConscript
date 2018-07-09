@@ -11,9 +11,9 @@ EqlIfEnv.Append(CPPPATH = [EqlIfEnv['TOP'] + '/database/etcd'])
 
 #EqlIfEnv.Append(LIBPATH=['#build/lib'])
 
-local_srcs = ['eql_if.cc', 
+local_srcs = ['eql_if.cc',
               'proto/kv.pb.cc',
-              'proto/auth.pb.cc', 
+              'proto/auth.pb.cc',
               'proto/rpc.pb.cc',
               'proto/rpc.grpc.pb.cc']
 

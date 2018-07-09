@@ -24,24 +24,24 @@ SandeshTraceBufferPtr EqlTraceBuf(SandeshTraceBufferCreate(
 
 EtcdIf::EtcdIf (const string host, const int port)
     : host_(host),
-      port_(port) 
+      port_(port)
 {
     ostringstream url;
     url << host << ":" << port;
-    
+
     shared_ptr<Channel> chan = grpc::CreateChannel(
-                                 url.str(), 
+                                 url.str(),
                                  grpc::InsecureChannelCredentials());
     kv_stub_ = KV::NewStub(chan);
     watch_stub_ = Watch::NewStub(chan);
     watch_call_.reset(new EtcdAsyncWatchCall);
 }
 
-EtcdIf::~EtcdIf () 
+EtcdIf::~EtcdIf ()
 {
 }
 
-EtcdResponse EtcdIf::Get(string const& key, 
+EtcdResponse EtcdIf::Get(string const& key,
                          string const& range_end,
                          int limit)
 {
@@ -57,7 +57,7 @@ EtcdResponse EtcdIf::Get(string const& key,
      * Set up GET request.
      */
     RangeRequest req;
-    req.set_key(key); 
+    req.set_key(key);
     req.set_range_end(range_end);
     req.set_sort_target(RangeRequest::SortTarget::RangeRequest_SortTarget_KEY);
     req.set_sort_order(RangeRequest::SortOrder::RangeRequest_SortOrder_ASCEND);
@@ -67,22 +67,22 @@ EtcdResponse EtcdIf::Get(string const& key,
      * Create a GET stream reader and invoke async read.
      */
     get_call_.reset(new EtcdAsyncGetCall);
-    get_call_->get_reader_ = kv_stub_->AsyncRange(&get_call_->ctx_, 
-                                                  req, 
+    get_call_->get_reader_ = kv_stub_->AsyncRange(&get_call_->ctx_,
+                                                  req,
                                                   &get_call_->cq_);
-    get_call_->get_reader_->Finish(&get_call_->get_resp_, 
-                                   &get_call_->status_, 
+    get_call_->get_reader_->Finish(&get_call_->get_resp_,
+                                   &get_call_->status_,
                                    (void*)(&get_call_->gtag_));
-    
+
     /**
      * Parse the GET response.
      */
     EtcdResponse resp = get_call_->ParseGetResponse();
-    
+
     return resp;
 }
 
-EtcdResponse EtcdIf::EtcdAsyncGetCall::ParseGetResponse() 
+EtcdResponse EtcdIf::EtcdAsyncGetCall::ParseGetResponse()
 {
     EtcdResponse resp;
     void* got_tag;
@@ -91,23 +91,23 @@ EtcdResponse EtcdIf::EtcdAsyncGetCall::ParseGetResponse()
 
     // Block until the next result is available in the completion queue "cq".
     while (cq_.Next(&got_tag, &ok)) {
-    
-        /* 
+
+        /*
          * The tag is the memory location of the call's tag object
          */
         /**
          * Verify that the request was completed successfully. Note that "ok"
          * corresponds solely to the request for updates introduced by Finish().
-         */ 
+         */
         if (!status_.ok()) {
             resp.set_err_code(status_.error_code());
             resp.set_err_msg(status_.error_message());
             EQL_TRACE(EtcdClientErrorTrace, "Get Response: Error",
-                      resp.ErrCode(), resp.Msg());  
+                      resp.ErrCode(), resp.Msg());
             break;
-        } 
+        }
 
-  
+
         if (got_tag == (void *)&gtag_) {
             /*
              * Read the Get response.
@@ -116,56 +116,56 @@ EtcdResponse EtcdIf::EtcdAsyncGetCall::ParseGetResponse()
             if(get_resp_.kvs_size() == 0) {
                 resp.set_err_code(100);
                 resp.set_err_msg("Prefix/Key not found");
-                EQL_TRACE(EtcdClientErrorTrace, 
+                EQL_TRACE(EtcdClientErrorTrace,
                           "Get Response: Prefix Not Found",
                           resp.ErrCode(),
-                          resp.Msg());  
+                          resp.Msg());
                 break;
             } else {
                 multimap<string, string> kvs;
                 for(int i = 0; i < get_resp_.kvs_size(); i++) {
                     kvs.insert(pair<string, string>
-                               (get_resp_.kvs(i).key(), 
+                               (get_resp_.kvs(i).key(),
                                 get_resp_.kvs(i).value()));
                 }
                 resp.set_kv_map(kvs);
            }
         }
-        
+
         os.str("");
         os << "Get Response: Success"
-           << " Revision: " 
+           << " Revision: "
            << resp.Revision()
-           << " KEY-VALUE LIST: "; 
+           << " KEY-VALUE LIST: ";
 
         EQL_DEBUG(EtcdClientDebug, os.str());
-        
+
         for(int i = 0; i < get_resp_.kvs_size(); i++) {
-        
+
             os.str("");
             os << " Index: "
                << i
-               << " Key: " 
+               << " Key: "
                << get_resp_.kvs(i).key()
                << " Value: "
                << get_resp_.kvs(i).value();
-            
+
             EQL_DEBUG(EtcdClientDebug, os.str());
         }
-    
+
         break;
     }
 
     return (resp);
 }
 
-void EtcdIf::Set (const string& key, const string& value) 
+void EtcdIf::Set (const string& key, const string& value)
 {
     void *got_tag;
     bool ok = false;
     ostringstream os;
 
-    os << "Set Request - Key: " 
+    os << "Set Request - Key: "
        << key
        << " Value: "
        << value;
@@ -175,7 +175,7 @@ void EtcdIf::Set (const string& key, const string& value)
     /**
      * Set up SET request.
      */
-    PutRequest req; 
+    PutRequest req;
     req.set_key(key);
     req.set_value(value);
     req.set_prev_kv(true);
@@ -184,20 +184,20 @@ void EtcdIf::Set (const string& key, const string& value)
      * Create a SET stream reader and invoke async set.
      */
     set_call_.reset(new EtcdAsyncSetCall);
-    set_call_->set_reader_ = kv_stub_->AsyncPut(&set_call_->ctx_, 
-                                                req, 
+    set_call_->set_reader_ = kv_stub_->AsyncPut(&set_call_->ctx_,
+                                                req,
                                                 &set_call_->cq_);
-    set_call_->set_reader_->Finish(&set_call_->set_resp_, 
-                                   &set_call_->status_, 
+    set_call_->set_reader_->Finish(&set_call_->set_resp_,
+                                   &set_call_->status_,
                                    (void*)this);
-    
+
     /**
      * Parse the SET response.
      */
     while (set_call_->cq_.Next(&got_tag, &ok)) {
 
         if (!set_call_->status_.ok()) {
-            EQL_TRACE(EtcdClientErrorTrace, 
+            EQL_TRACE(EtcdClientErrorTrace,
                       "Set Response: Error",
                       set_call_->status_.error_code(),
                       set_call_->status_.error_message());
@@ -205,7 +205,7 @@ void EtcdIf::Set (const string& key, const string& value)
 
         if (got_tag == (void *)this) {
             os.str("");
-            os << "Set Response: Success" 
+            os << "Set Response: Success"
                << " PrevKey: "
                << (set_call_->set_resp_.prev_kv()).key()
                << " PrevValue: "
@@ -217,7 +217,7 @@ void EtcdIf::Set (const string& key, const string& value)
     }
 }
 
-void EtcdIf::Delete (const string& key, string const& range_end) 
+void EtcdIf::Delete (const string& key, string const& range_end)
 {
     void *got_tag;
     bool ok = false;
@@ -225,14 +225,14 @@ void EtcdIf::Delete (const string& key, string const& range_end)
 
     os << "Delete Request - Key: " + key +
                  " Range End: " + range_end;
-    
+
     EQL_DEBUG(EtcdClientDebug, os.str());
 
     /**
      * Set up DELETE request.
      */
     DeleteRangeRequest req;
-    req.set_key(key); 
+    req.set_key(key);
     req.set_range_end(range_end);
     req.set_prev_kv(true);
 
@@ -240,41 +240,41 @@ void EtcdIf::Delete (const string& key, string const& range_end)
      * Create a SET stream reader and invoke async set.
      */
     delete_call_.reset(new EtcdAsyncDeleteCall);
-    delete_call_ ->delete_reader_ = kv_stub_->AsyncDeleteRange(&delete_call_->ctx_, 
-                                                              req, 
+    delete_call_->delete_reader_ = kv_stub_->AsyncDeleteRange(&delete_call_->ctx_,
+                                                              req,
                                                               &delete_call_->cq_);
-    delete_call_->delete_reader_->Finish(&delete_call_->delete_resp_, 
-                                         &delete_call_->status_, 
+    delete_call_->delete_reader_->Finish(&delete_call_->delete_resp_,
+                                         &delete_call_->status_,
                                          (void*)this);
-    
+
     /**
      * Parse the DELETE response.
      */
     while (delete_call_->cq_.Next(&got_tag, &ok)) {
         if (!delete_call_->status_.ok()) {
-            EQL_TRACE(EtcdClientErrorTrace, 
+            EQL_TRACE(EtcdClientErrorTrace,
                       "Delete Response: Error",
                       delete_call_->status_.error_code(),
                       delete_call_->status_.error_message());
         }
         if (got_tag == (void *)this) {
-            
+
             os.str("");
             os << "Delete Response: Success"
                << " # Keys Deleted: "
-               << delete_call_->delete_resp_.deleted(); 
-            
+               << delete_call_->delete_resp_.deleted();
+
             EQL_DEBUG(EtcdClientDebug, os.str());
-            
+
             for (int i = 0; i < delete_call_->delete_resp_.deleted(); i++) {
-            
+
                 os.str("");
                 os << " Index: " << i
                    << " PrevKey: "
                    << (delete_call_->delete_resp_.prev_kvs(i)).key()
                    << " PrevVal: "
                    << (delete_call_->delete_resp_.prev_kvs(i)).value();
-            
+
                 EQL_DEBUG(EtcdClientDebug, os.str());
             }
         }
@@ -297,23 +297,23 @@ void EtcdIf::Watch (const string& key, WatchCb cb)
     /**
      * Create and start the Async reader-writer stream.
      */
-    watch_call_->watch_reader_ = watch_stub_->AsyncWatch(&watch_call_->ctx_, 
-                                                  &watch_call_->cq_, 
+    watch_call_->watch_reader_ = watch_stub_->AsyncWatch(&watch_call_->ctx_,
+                                                  &watch_call_->cq_,
                                                   (void *)this);
 
     create_req.set_key(key);
     create_req.set_prev_kv(true);
-    
+
     string range_end(key);
     range_end.back() = ((int)range_end[range_end.length()-1])+1;
 
     create_req.set_range_end(range_end);
 
     req.mutable_create_request()->CopyFrom(create_req);
-    
+
     /**
-     * When we start a stream, that is creating the reader/writer 
-     * object with a tag. We need to use CompletionQueue::Next to 
+     * When we start a stream, that is creating the reader/writer
+     * object with a tag. We need to use CompletionQueue::Next to
      * wait for the tag to come back before calling Write.
      * Write the watch request to the stream and set up the first
      * read with the tag as the call object.
@@ -321,7 +321,7 @@ void EtcdIf::Watch (const string& key, WatchCb cb)
     while (watch_call_->cq_.Next(&got_tag, &ok)) {
         if (got_tag == (void *)this) {
             watch_call_->watch_reader_->Write(req, (void *)"write");
-            watch_call_->watch_reader_->Read(&watch_call_->watch_resp_, 
+            watch_call_->watch_reader_->Read(&watch_call_->watch_resp_,
                                              (void *)(&watch_call_->wtag));
             break;
         }
@@ -346,19 +346,19 @@ void EtcdIf::EtcdAsyncWatchCall::WaitForWatchResponse(WatchCb cb)
      */
     while(cq_.Next(&got_tag, &ok)) {
 
-        /** 
+        /**
          * The tag is the memory location of the call object
          */
- 
+
         /**
          * Verify that the request was completed successfully. Note that "ok"
          * corresponds solely to the request for updates introduced by Finish().
          * Also, stop watching if watch has been cancelled.
          */
-        if (!ok || !watch_active_) { 
+        if (!ok || !watch_active_) {
             break;
         }
- 
+
 
         if (got_tag == (void*)&wtag) {
             /**
@@ -366,8 +366,8 @@ void EtcdIf::EtcdAsyncWatchCall::WaitForWatchResponse(WatchCb cb)
              * anything to read.
              */
             if (watch_resp_.events_size()) {
-            
-                /** 
+
+                /**
                  * Got a change. Process it, populate the EtcdResponse
                  * and invoke the callback.
                  */
@@ -375,7 +375,7 @@ void EtcdIf::EtcdAsyncWatchCall::WaitForWatchResponse(WatchCb cb)
                     resp.set_err_code(status_.error_code());
                     resp.set_err_msg(status_.error_message());
 
-                    EQL_TRACE(EtcdClientErrorTrace, 
+                    EQL_TRACE(EtcdClientErrorTrace,
                               "Watch Response: Error",
                               status_.error_code(),
                               status_.error_message());
@@ -383,7 +383,7 @@ void EtcdIf::EtcdAsyncWatchCall::WaitForWatchResponse(WatchCb cb)
                     resp.set_revision(watch_resp_.header().revision());
                     for (int i = 0; i < watch_resp_.events_size(); i++) {
                         auto event = watch_resp_.events(i);
-                        
+
                         switch (event.type()) {
                         case mvccpb::Event::EventType::Event_EventType_PUT: {
                             if (event.kv().version() == 0) {
@@ -402,16 +402,16 @@ void EtcdIf::EtcdAsyncWatchCall::WaitForWatchResponse(WatchCb cb)
                         }
                         resp.set_key(event.kv().key());
                         resp.set_val(event.kv().value());
-              
+
                         if (event.has_prev_kv()) {
                             resp.set_prev_key(event.prev_kv().key());
                             resp.set_prev_val(event.prev_kv().value());
-                        } 
+                        }
                     }
-                } 
-                
+                }
+
                 os << "Watch Response: Success"
-                   << " Revision: " 
+                   << " Revision: "
                    << resp.Revision()
                    << " Action: "
                    << resp.Action()
@@ -423,15 +423,15 @@ void EtcdIf::EtcdAsyncWatchCall::WaitForWatchResponse(WatchCb cb)
                    << resp.prev_key()
                    << " PrevValue: "
                    << resp.prev_value();
-                
+
                 EQL_DEBUG(EtcdClientDebug, os.str());
-                 
+
                 /**
                  * Invoke config client cb with watch response.
                  */
                 cb(resp);
             }
-            
+
             /**
              * Continue watching for subsequent changes.
              */
@@ -440,10 +440,10 @@ void EtcdIf::EtcdAsyncWatchCall::WaitForWatchResponse(WatchCb cb)
     } // while
 }
 
-void EtcdIf::StopWatch() 
+void EtcdIf::StopWatch()
 {
     if (watch_call_->watch_active_) {
-        watch_call_->watch_active_ = false;    
+        watch_call_->watch_active_ = false;
         watch_call_->watch_reader_->WritesDone((void *)"Stop Watch");
     }
 }
