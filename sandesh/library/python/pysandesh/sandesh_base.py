@@ -24,6 +24,8 @@ except ImportError:
 import sandesh_logger as sand_logger
 import trace
 import util
+import platform
+
 from gen_py.sandesh.ttypes import SandeshType, SandeshLevel, \
      SandeshTxDropReason
 from gen_py.sandesh.constants import *
@@ -260,17 +262,18 @@ class Sandesh(object):
                 self._logger.debug(str(e))
 
     def record_port(self, name, port):
-        pipe_name = '/tmp/%s.%d.%s_port' % (self._module, os.getppid(), name)
-        try:
-            pipeout = os.open(pipe_name, os.O_WRONLY)
-        except Exception:
-            self._logger.error('Cannot write %s_port %d to %s'
-                               % (name, port, pipe_name))
-        else:
-            self._logger.error('Writing %s_port %d to %s'
-                               % (name, port, pipe_name))
-            os.write(pipeout, '%d\n' % port)
-            os.close(pipeout)
+        if platform.system() != 'Windows':
+            pipe_name = '/tmp/%s.%d.%s_port' % (self._module, os.getppid(), name)
+            try:
+                pipeout = os.open(pipe_name, os.O_WRONLY)
+            except Exception:
+                self._logger.error('Cannot write %s_port %d to %s'
+                                   % (name, port, pipe_name))
+            else:
+                self._logger.error('Writing %s_port %d to %s'
+                                   % (name, port, pipe_name))
+                os.write(pipeout, '%d\n' % port)
+                os.close(pipeout)
 
     def logger(self):
         return self._logger
