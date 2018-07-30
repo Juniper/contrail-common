@@ -132,6 +132,7 @@ bool SandeshServer::Initialize(short port) {
         SANDESH_LOG(ERROR, "Process EXITING: TCP Server initialization failed for port " << port);
         exit(1);
     }
+    return true;
 }
 
 int SandeshServer::AllocConnectionIndex() {
