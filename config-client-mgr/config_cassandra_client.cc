@@ -394,6 +394,22 @@ bool ConfigCassandraClient::BulkDataSync() {
     return true;
 }
 
+bool ConfigCassandraClient::IsTaskTriggered() {
+    /**
+      * If FQNameReader task has been triggered return true.
+      */
+    if (fq_name_reader_->IsSet()) return true;
+
+    /**
+      * Walk the partitions and check if ConfigReader task has
+      * been triggered in any of them. If so, return true.
+      */
+    BOOST_FOREACH(ConfigCassandraPartition *partition, partitions_) {
+        if (partition->IsTaskTriggered()) return true;
+    }
+    return false;
+}
+
 bool ConfigCassandraClient::FQNameReader() {
     for (ConfigClientManager::ObjectTypeList::const_iterator it =
          mgr()->config_json_parser()->ObjectTypeListToRead().begin();
@@ -802,6 +818,10 @@ bool ConfigCassandraPartition::IsListOrMapPropEmpty(const string &uuid_key,
         return false;
     }
     return true;
+}
+
+bool ConfigCassandraPartition::IsTaskTriggered() {
+    return (config_reader_->IsSet());
 }
 
 bool ConfigCassandraPartition::ConfigReader() {
