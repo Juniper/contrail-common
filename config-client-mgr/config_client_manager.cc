@@ -240,6 +240,16 @@ bool ConfigClientManager::InitConfigClient() {
         // Due to this task policy, if the reinit task is running, it ensured
         // that above mutually exclusive tasks have finished/aborted
         // Perform PostShutdown to prepare for new connection
+        // However, it is possible that these tasks have been scheduled
+        // but yet to begin execution. For Task and WorkQueue events, their
+        // destructor takes core of this but for TaskTrigger events, the
+        // destructor will crash (See Bug #1786154) as it expects the task
+        // to not be scheduled. Taking care of that case here by checking
+        // if TaskTrigger events are scheduled (but not executing) and
+        // return if they are so that this will be retried.
+        if (config_db_client_->IsTaskTriggered()) {
+            return false;
+        }
         PostShutdown();
     }
     CONFIG_CLIENT_DEBUG(ConfigClientMgrDebug,

@@ -145,7 +145,7 @@ class ConfigCassandraPartition {
     boost::asio::io_service *ioservice();
 
     bool IsListOrMapPropEmpty(const string &uuid_key, const string &lookup_key);
-
+    bool IsTaskTriggered() const;
 protected:
     virtual bool ReadObjUUIDTable(const std::set<std::string> &uuid_list);
     bool ProcessObjUUIDTableEntry(const std::string &uuid_key,
@@ -268,7 +268,7 @@ class ConfigCassandraClient : public ConfigDbClient {
     virtual std::string uuid_str(const std::string &uuid);
     virtual bool IsListOrMapPropEmpty(const string &uuid_key,
                                       const string &lookup_key);
-
+    virtual bool IsTaskTriggered() const;
 protected:
     typedef std::pair<std::string, std::string> ObjTypeUUIDType;
     typedef std::list<ObjTypeUUIDType> ObjTypeUUIDList;
