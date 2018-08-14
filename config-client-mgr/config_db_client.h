@@ -48,8 +48,9 @@ public:
         const std::string &last_uuid, uint32_t num_entries,
         std::vector<ConfigDBUUIDCacheEntry> *entries) const = 0;
 
-    virtual bool IsListOrMapPropEmpty(const std::string &uuid_key, 
+    virtual bool IsListOrMapPropEmpty(const std::string &uuid_key,
                                    const std::string &lookup_key) = 0;
+    virtual bool IsTaskTriggered();
 private:
     std::string config_db_user_;
     std::string config_db_password_;
