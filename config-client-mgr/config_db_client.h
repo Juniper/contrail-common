@@ -50,6 +50,7 @@ public:
 
     virtual bool IsListOrMapPropEmpty(const std::string &uuid_key, 
                                    const std::string &lookup_key) = 0;
+    virtual bool IsTaskTriggered();
 private:
     std::string config_db_user_;
     std::string config_db_password_;
