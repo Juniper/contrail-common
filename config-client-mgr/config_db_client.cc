@@ -52,3 +52,6 @@ int ConfigDbClient::GetFirstConfigDbPort() const {
     return !config_db_ports_.empty() ? config_db_ports_[0] : 0;
 }
 
+bool ConfigDbClient::IsTaskTriggered() const {
+    return false;
+}
