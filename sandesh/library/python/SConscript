@@ -147,6 +147,7 @@ env.Depends(sdist_gen, sdist_depends)
 env.Default(sdist_gen)
 env.Alias('sandesh/library/python:pysandesh', sdist_gen)
 env.Alias('sandesh/library/python:sdist', sdist_gen)
+env.Alias('nodemgr-full', sdist_gen)
 
 if 'install' in BUILD_TARGETS:
     cmd = 'cd ' + Dir('.').path + ' && python setup.py install %s'
