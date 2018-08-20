@@ -80,6 +80,8 @@ BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/net',
 
 BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/database',
     '#src/contrail-common/database/gendb_if.h')
+BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/database/etcd',
+    '#src/contrail-common/database/etcd/eql_if.h')
 BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/database/cassandra/cql',
     '#src/contrail-common/database/cassandra/cql/cql_if.h')
 BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/database/cassandra/cql',
