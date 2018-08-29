@@ -17,8 +17,19 @@ FACTORY_STATIC_REGISTER(ConfigFactory, ConfigCassandraPartition,
 FACTORY_STATIC_REGISTER(ConfigFactory, ConfigCassandraClient,
                         ConfigCassandraClient);
 
+#include "config_amqp_client.h"
+FACTORY_STATIC_REGISTER(ConfigFactory, ConfigAmqpChannel, ConfigAmqpChannel);
+
+#include "config_etcd_client.h"
+FACTORY_STATIC_REGISTER(ConfigFactory, ConfigEtcdPartition,
+                        ConfigEtcdPartition);
+
+#include "config_etcd_client.h"
+FACTORY_STATIC_REGISTER(ConfigFactory, ConfigEtcdClient,
+                        ConfigEtcdClient);
+
 #include "database/cassandra/cql/cql_if.h"
 FACTORY_STATIC_REGISTER(ConfigFactory, CqlIf, CqlIf);
 
-#include "config_amqp_client.h"
-FACTORY_STATIC_REGISTER(ConfigFactory, ConfigAmqpChannel, ConfigAmqpChannel);
+#include "database/etcd/eql_if.h"
+FACTORY_STATIC_REGISTER(ConfigFactory, EtcdIf, EtcdIf);
