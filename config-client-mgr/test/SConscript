@@ -21,11 +21,11 @@ env.Append(LIBPATH = env['TOP'] + '/xmpp')
 env.Append(LIBPATH = env['TOP'] + '/schema')
 
 env.Prepend(LIBS = [ 'config_client_mgr', 'peer_sandesh', 'sandesh', 'http', 'http_parser', 'httpc',
-                    'curl', 'sandeshvns', 'process_info', 'io', 
+                    'curl', 'sandeshvns', 'process_info', 'io',
                     'bgp_schema', 'pugixml', 'xml', 'task_test', 'db', 'curl',
                     'base', 'gunit', 'crypto', 'ssl', 'boost_regex',
                     'libbgp_schema', 'cassandra_cql', 'cassandra', 'gendb', 'httpc',
-                    'SimpleAmqpClient', 'rabbitmq'
+                    'SimpleAmqpClient', 'rabbitmq', 'etcdql', 'protobuf', 'grpc++', 'grpc', 'z'
                    ])
 
 if sys.platform != 'darwin':
