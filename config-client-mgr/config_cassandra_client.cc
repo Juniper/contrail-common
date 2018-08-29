@@ -164,7 +164,8 @@ bool ConfigCassandraPartition::ReadObjUUIDTable(const set<string> &req_list) {
 
     GenDb::Blob col_filter(reinterpret_cast<const uint8_t *>("d"), 1);
     GenDb::ColumnNameRange crange;
-    crange.start_ = boost::assign::list_of(GenDb::DbDataValue(col_filter));
+    crange.start_ =
+      boost::assign::list_of(GenDb::DbDataValue(col_filter)).convert_to_container<GenDb::DbDataValueVec>();
 
     GenDb::FieldNamesToReadVec field_vec;
     field_vec.push_back(boost::make_tuple("key", true, false, false));
@@ -437,7 +438,9 @@ bool ConfigCassandraClient::FQNameReader() {
                 // Start reading the next set of entries from where we ended in
                 // last read
                 crange.start_ =
-                    boost::assign::list_of(GenDb::DbDataValue(col_filter));
+                    boost::assign::list_of(
+                       GenDb::DbDataValue(col_filter)).convert_to_container
+                             <GenDb::DbDataValueVec>();
                 crange.start_op_ = GenDb::Op::GT;
             }
 
