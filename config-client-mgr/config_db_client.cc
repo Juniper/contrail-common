@@ -55,3 +55,6 @@ int ConfigDbClient::GetFirstConfigDbPort() const {
 bool ConfigDbClient::IsTaskTriggered() const {
     return false;
 }
+
+void ConfigDbClient::StartWatcher() {
+}
