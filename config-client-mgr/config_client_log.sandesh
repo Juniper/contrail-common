@@ -335,6 +335,16 @@ systemlog sandesh ConfigCassInitErrorMessage {
 /**
  * @description: System log for config client module
  * @severity: ERROR
+ * @cause: Connection to etcd for config has initialization problems.
+ * @action: Contact your technical support representative
+ */
+systemlog sandesh ConfigEtcdInitErrorMessage {
+    1: string message
+}
+
+/**
+ * @description: System log for config client module
+ * @severity: ERROR
  * @cause: Error detected while reading a row from the database
  * @action: Contact your technical support representative
  */
@@ -349,6 +359,14 @@ systemlog sandesh ConfigClientGetRowError {
  * @severity: DEBUG
  */
 trace sandesh ConfigCassInitErrorMessageTrace {
+    1: string message
+}
+
+/**
+ * @description: Trace message for config client module
+ * @severity: DEBUG
+ */
+trace sandesh ConfigEtcdInitErrorMessageTrace {
     1: string message
 }
 

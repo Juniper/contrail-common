@@ -14,6 +14,7 @@
 #include "config_amqp_client.h"
 #include "config_db_client.h"
 #include "config_cassandra_client.h"
+#include "config_etcd_client.h"
 #include "config_client_log.h"
 #include "config_client_log_types.h"
 #include "config_client_show_types.h"
@@ -95,6 +96,50 @@ void ConfigClientManager::SetDefaultSchedulingPolicy() {
         (TaskExclusion(scheduler->GetTaskId("cassandra::Init")));
     scheduler->SetPolicy(scheduler->GetTaskId("amqp::RabbitMQReader"),
         rabbitmq_reader_policy);
+
+    // Policy for etcd::Reader Task.
+    TaskPolicy etcd_reader_policy = boost::assign::list_of
+        (TaskExclusion(scheduler->GetTaskId("etcd::Init")))
+        (TaskExclusion(scheduler->GetTaskId("etcd::UUIDReader")));
+    for (int idx = 0; idx < ConfigClientManager::GetNumConfigReader(); ++idx) {
+        etcd_reader_policy.push_back(
+        TaskExclusion(scheduler->GetTaskId("etcd::ObjectProcessor"), idx));
+    }
+    scheduler->SetPolicy(scheduler->GetTaskId("etcd::Reader"),
+        etcd_reader_policy);
+
+    // Policy for etcd::ObjectProcessor Task.
+    TaskPolicy etcd_obj_process_policy = boost::assign::list_of
+        (TaskExclusion(scheduler->GetTaskId("etcd::Init")));
+    for (int idx = 0; idx < ConfigClientManager::GetNumConfigReader(); ++idx) {
+        etcd_obj_process_policy.push_back(
+                 TaskExclusion(scheduler->GetTaskId("etcd::Reader"), idx));
+    }
+    scheduler->SetPolicy(scheduler->GetTaskId("etcd::ObjectProcessor"),
+        etcd_obj_process_policy);
+
+    // Policy for etcd::UUIDReader Task.
+    TaskPolicy uuid_reader_policy = boost::assign::list_of
+        (TaskExclusion(scheduler->GetTaskId("etcd::Init")))
+        (TaskExclusion(scheduler->GetTaskId("etcd::Reader")));
+    scheduler->SetPolicy(scheduler->GetTaskId("etcd::UUIDReader"),
+        uuid_reader_policy);
+
+    // Policy for etcd::Init process
+    TaskPolicy etcd_init_policy = boost::assign::list_of
+        (TaskExclusion(scheduler->GetTaskId("etcd::EtcdWatcher")))
+        (TaskExclusion(scheduler->GetTaskId("etcd::ObjectProcessor")))
+        (TaskExclusion(scheduler->GetTaskId("etcd::UUIDReader")))
+        (TaskExclusion(scheduler->GetTaskId("etcd::Reader")));
+    scheduler->SetPolicy(scheduler->GetTaskId("etcd::Init"),
+        etcd_init_policy);
+
+    // Policy for etcd::EtcdWatcher process
+    TaskPolicy etcd_watcher_policy = boost::assign::list_of
+        (TaskExclusion(scheduler->GetTaskId("etcd::Init")));
+    scheduler->SetPolicy(scheduler->GetTaskId("etcd::EtcdWatcher"),
+        etcd_watcher_policy);
+
 }
 
 void ConfigClientManager::SetUp() {
@@ -102,15 +147,28 @@ void ConfigClientManager::SetUp() {
     config_json_parser_->Init(this);
     thread_count_ = GetNumConfigReader();
     end_of_rib_computed_at_ = UTCTimestampUsec();
-    config_db_client_.reset(
-            ConfigFactory::Create<ConfigCassandraClient>(this, evm_,
-                config_options_, thread_count_));
-    config_amqp_client_.reset(new ConfigAmqpClient(this, hostname_,
+    if (config_options_.use_etcd) {
+        config_db_client_.reset(ConfigFactory::Create<ConfigEtcdClient>
+                                (this, evm_, config_options_,
+                                 thread_count_));
+    } else {
+        config_db_client_.reset(
+                ConfigFactory::Create<ConfigCassandraClient>(this, evm_,
+                    config_options_, thread_count_));
+        config_amqp_client_.reset(new ConfigAmqpClient(this, hostname_,
                                                module_name_, config_options_));
+    }
     SetDefaultSchedulingPolicy();
+
+    int task_id;
+    if (config_options_.use_etcd) {
+        task_id = TaskScheduler::GetInstance()->GetTaskId("etcd::Init");
+    } else {
+        task_id = TaskScheduler::GetInstance()->GetTaskId("cassandra::Init");
+    }
     init_trigger_.reset(new
          TaskTrigger(boost::bind(&ConfigClientManager::InitConfigClient, this),
-         TaskScheduler::GetInstance()->GetTaskId("cassandra::Init"), 0));
+         task_id, 0));
 
     reinit_triggered_ = false;
 }
@@ -218,11 +276,17 @@ void ConfigClientManager::PostShutdown() {
     // Create new config db client and amqp client
     // Delete of config db client object guarantees the flusing of
     // object uuid cache and uuid read request list.
-    config_db_client_.reset(ConfigFactory::Create<ConfigCassandraClient>
-                            (this, evm_, config_options_,
-                             thread_count_));
-    config_amqp_client_.reset(new ConfigAmqpClient(this, hostname_,
+    if (config_options_.use_etcd) {
+        config_db_client_.reset(ConfigFactory::Create<ConfigEtcdClient>
+                                (this, evm_, config_options_,
+                                 thread_count_));
+    } else {
+        config_db_client_.reset(ConfigFactory::Create<ConfigCassandraClient>
+                                (this, evm_, config_options_,
+                                thread_count_));
+        config_amqp_client_.reset(new ConfigAmqpClient(this, hostname_,
                                                module_name_, config_options_));
+    }
     stringstream ss;
     ss << GetGenerationNumber();
     CONFIG_CLIENT_DEBUG(ConfigClientMgrDebug,
@@ -252,10 +316,21 @@ bool ConfigClientManager::InitConfigClient() {
         }
         PostShutdown();
     }
-    CONFIG_CLIENT_DEBUG(ConfigClientMgrDebug,
-            "Config Client Mgr SM: Start RabbitMqReader and init Database");
+
     // Common code path for both init/reinit
-    config_amqp_client_->StartRabbitMQReader();
+    if (config_options_.use_etcd) {
+        CONFIG_CLIENT_DEBUG(ConfigClientMgrDebug,
+            "Config Client Mgr SM: Start ETCD Watcher");
+        config_db_client_->StartWatcher();
+    } else {
+        CONFIG_CLIENT_DEBUG(ConfigClientMgrDebug,
+            "Config Client Mgr SM: Start RabbitMqReader and init Database");
+        config_amqp_client_->StartRabbitMQReader();
+    }
+
+    CONFIG_CLIENT_DEBUG(ConfigClientMgrDebug,
+            "Config Client Mgr SM: Init Database");
+
     config_db_client_->InitDatabase();
     if (is_reinit_triggered()) return false;
     return true;
