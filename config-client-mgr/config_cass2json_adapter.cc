@@ -65,6 +65,20 @@ ConfigCass2JsonAdapter::ConfigCass2JsonAdapter(const string &uuid,
     CreateJsonString(obj_type, cdvec);
 }
 
+ConfigCass2JsonAdapter::ConfigCass2JsonAdapter(const string &uuid,
+       const string &type, const Document &doc) : uuid_(uuid) {
+    /**
+      * Construct the final Json Document.
+      */
+    Document::AllocatorType &a = json_document_.GetAllocator();
+    Value v;
+    v.CopyFrom(doc, a);
+
+    Value vk;
+    json_document_.SetObject().AddMember(vk.SetString(type.c_str(), a),
+                                         v, a);
+}
+
 string ConfigCass2JsonAdapter::GetJsonString(const Value &attr_value) {
     StringBuffer buffer;
     Writer<StringBuffer> writer(buffer);
@@ -219,7 +233,7 @@ void ConfigCass2JsonAdapter::CreateJsonString(const string &obj_type,
     jsonObject.SetObject();
 
     // First look for and part "type" field. We usually expect it to be at the
-    // end as column names are suppose to be allways sorted lexicographically.
+    // end as column keys are suppose to be allways sorted lexicographically.
     size_t type_index = -1;
     size_t i = cdvec.size();
     while (i--) {

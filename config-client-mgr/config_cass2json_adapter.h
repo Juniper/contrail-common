@@ -34,6 +34,10 @@ public:
                            ConfigCassandraClient *cassandra_client,
                            const std::string &obj_type,
                            const CassColumnKVVec &cdvec);
+    ConfigCass2JsonAdapter(const std::string &uuid,
+                           const std::string &type,
+                           const contrail_rapidjson::Document &doc);
+
     const contrail_rapidjson::Document &document() const {
         return json_document_;
     }
@@ -47,6 +51,7 @@ public:
 private:
     void CreateJsonString(const std::string &obj_type,
                           const CassColumnKVVec &cdvec);
+    void CreateJsonString(const std::string &value_str);
     void AddOneEntry(contrail_rapidjson::Value *jsonObject,
                      const std::string &obj_type,
                      const JsonAdapterDataType &c,
