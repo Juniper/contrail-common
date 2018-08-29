@@ -13,7 +13,8 @@ struct ConfigClientOptions {
         stale_entries_cleanup_timeout(0),
         end_of_rib_timeout(0),
         peer_response_wait_time(0),
-        rabbitmq_use_ssl(false) {
+        rabbitmq_use_ssl(false),
+        use_etcd(false) {
     }
 
     ConfigClientOptions(const std::string &in_server,
@@ -26,7 +27,8 @@ struct ConfigClientOptions {
           stale_entries_cleanup_timeout(in_sect_time),
           end_of_rib_timeout(in_eort_time),
           peer_response_wait_time(in_prwt_time),
-          rabbitmq_use_ssl(false) {
+          rabbitmq_use_ssl(false),
+          use_etcd(false) {
     }
 
     ConfigClientOptions(const std::string &in_server,
@@ -45,7 +47,8 @@ struct ConfigClientOptions {
           config_db_username(cfg_db_user),
           config_db_password(cfg_db_password),
           config_db_server_list(cfg_db_server_list),
-          rabbitmq_use_ssl(false) {
+          rabbitmq_use_ssl(false),
+          use_etcd(false) {
     }
 
     std::string server_url;
@@ -67,6 +70,7 @@ struct ConfigClientOptions {
     std::string rabbitmq_ssl_keyfile;
     std::string rabbitmq_ssl_certfile;
     std::string rabbitmq_ssl_ca_certs;
+    bool use_etcd;
 };
 
 #endif /* defined(__CONFIG_CLIENT_OPTIONS_H__) */

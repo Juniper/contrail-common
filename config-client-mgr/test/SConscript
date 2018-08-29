@@ -25,7 +25,7 @@ env.Prepend(LIBS = [ 'config_client_mgr', 'peer_sandesh', 'sandesh', 'http', 'ht
                     'bgp_schema', 'pugixml', 'xml', 'task_test', 'db', 'curl',
                     'base', 'gunit', 'crypto', 'ssl', 'boost_regex',
                     'libbgp_schema', 'cassandra_cql', 'cassandra', 'gendb', 'httpc',
-                    'SimpleAmqpClient', 'rabbitmq'
+                    'SimpleAmqpClient', 'rabbitmq', 'etcdql', 'protobuf', 'grpc++', 'grpc', 'z'
                    ])
 
 if sys.platform != 'darwin':

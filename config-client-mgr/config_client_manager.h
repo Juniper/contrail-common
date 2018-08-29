@@ -135,6 +135,7 @@ private:
     tbb::atomic<bool> reinit_triggered_;
     boost::shared_ptr<TaskTrigger> init_trigger_;
     static bool end_of_rib_computed_;
+
 };
 
 #endif  // config_client_manager_h
