@@ -158,7 +158,7 @@ sandesh_request_test = env.UnitTest('sandesh_request_test',
                                     )
 env.Alias('src/sandesh:sandesh_request_test', sandesh_request_test)
 
-test_suite = [sandesh_message_test,
+test_suite = [#sandesh_message_test,
               sandesh_rw_test,
               sandesh_session_test,
               sandesh_trace_test,
