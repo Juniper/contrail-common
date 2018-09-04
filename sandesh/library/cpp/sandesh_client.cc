@@ -189,6 +189,10 @@ bool SandeshClient::ReceiveCtrlMsg(const std::string &msg,
     }
     SandeshUVETypeMaps::SyncAllMaps(sMap);
 
+    const vector<UVEStatsInfo> &stats_info = snh->get_stats_info();
+    for (uint32_t i = 0; i < stats_info.size(); i++) {
+        SANDESH_LOG(ERROR, "Received Ctrl stats Message with type" << stats_info[i].type_name);
+    }
     sandesh->Release();
     return true;
 }

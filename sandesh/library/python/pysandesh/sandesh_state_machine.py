@@ -215,7 +215,11 @@ class SandeshStateMachine(object):
                                       {'name' : Event._EV_COLLECTOR_CHANGE,
                                        'src'  : State._ESTABLISHED,
                                        'dst'  : State._CONNECT
-                                      }
+                                      },
+                                      {'name' : Event._EV_SANDESH_CTRL_MESSAGE_RECV,
+                                       'src'  : State._ESTABLISHED,
+                                       'dst'  : State._ESTABLISHED
+                                      },
                                      ],
                            'callbacks': {
                                          'on' + State._IDLE : _on_idle,
