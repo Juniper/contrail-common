@@ -148,6 +148,8 @@ class SandeshClient(object):
         for type_info in sandesh_ctrl_msg.type_info:
             uve_type_map[type_info.type_name] = type_info.seq_num
         self._sandesh_instance._uve_type_maps.sync_all_uve_types(uve_type_map, self._sandesh_instance)
+        for stats_info in sandesh_ctrl_msg.stats_info:
+           self._logger.error('Receive stats ctr message %s' % sandesh_ctrl_msg.stats_info.type_name)
     #end handle_sandesh_ctrl_msg
 
 #end class SandeshClient

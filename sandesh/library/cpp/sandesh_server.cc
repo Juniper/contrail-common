@@ -268,7 +268,8 @@ bool SandeshServer::ReceiveSandeshCtrlMsg(SandeshStateMachine *sm,
     }
     SANDESH_LOG(DEBUG, "Received Ctrl Message from " << snh->get_module_name());
     std::vector<UVETypeInfo> vu;
-    SandeshCtrlServerToClient::Request(vu, true, "ctrl", session->connection());
+    std::vector<UVEStatsInfo> statsList;
+    SandeshCtrlServerToClient::Request(vu, true, statsList, "ctrl", session->connection());
     return true;
 }
 
