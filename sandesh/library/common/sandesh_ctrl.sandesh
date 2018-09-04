@@ -24,8 +24,13 @@ struct UVETypeInfo {
     2: u32 seq_num;
 }
 
+struct UVEStatsInfo {
+    1: string type_name;
+}
+
 request sandesh SandeshCtrlServerToClient {
     1: list<UVETypeInfo> type_info;
     2: bool success;
+    3: list<UVEStatsInfo> stats_info;
 }
 
