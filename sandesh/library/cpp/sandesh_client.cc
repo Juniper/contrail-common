@@ -189,10 +189,33 @@ bool SandeshClient::ReceiveCtrlMsg(const std::string &msg,
     }
     SandeshUVETypeMaps::SyncAllMaps(sMap);
 
+    const vector<UVEStatsInfo> &stats_info = snh->get_stats_info();
+    for (uint32_t i = 0; i < stats_info.size(); i++) {
+        if (stats_info[i].deleted) {
+            if (enable_stats_list_.find(stats_info[i].type_name) 
+                    == enable_stats_list_.end()) {
+                SANDESH_LOG(ERROR, "Delete nonexistent stats name:" << stats_info[i].type_name);
+            } else {
+                enable_stats_list_.erase(stats_info[i].type_name);
+            }
+        } else {
+            enable_stats_list_.insert(stats_info[i].type_name);
+        }
+        SANDESH_LOG(DEBUG, "Received Ctrl stats Message with type" 
+                              << stats_info[i].type_name << "delete:"
+                              << stats_info[i].deleted?"yes":"no");
+    }
     sandesh->Release();
     return true;
 }
 
+bool SandeshClient::StatsEnable(std::string type) {
+    if (enable_stats_list_.find(type)
+           == enable_stats_list_.end()) {
+        return false;
+    }
+    return true;
+}
 
 bool SandeshClient::ReceiveMsg(const std::string& msg,
         const SandeshHeader &header, const std::string &sandesh_name,

@@ -108,6 +108,7 @@ public:
         return session_close_time_usec_;
     }
 
+    bool StatsEnable(std::string type);
     friend class CollectorInfoRequest;
 protected:
     virtual SslSession *AllocSession(SslSocket *socket);
@@ -133,6 +134,7 @@ private:
     static bool task_policy_set_;
     int session_close_interval_msec_;
     uint64_t session_close_time_usec_;
+    std::set<std::string> enable_stats_list_;
 
     bool ReceiveCtrlMsg(const std::string &msg,
         const SandeshHeader &header, const std::string &sandesh_name,
