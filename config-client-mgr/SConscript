@@ -11,15 +11,14 @@ env.Append(CPPPATH = env['TOP'])
 env.Append(CPPPATH = [env['TOP'] + '/config-client-mgr'])
 env.Append(CPPPATH = [env['TOP'] + '/base/sandesh'])
 env.Append(CPPPATH = [env['TOP'] + '/database'])
-env.Append(CPPPATH = [env['TOP'] + '/grpc'])
 env.Append(CXXFLAGS = '-Wall -std=c++11')
-
-env.Prepend(LIBS=['io', 'base', 'cassandra_cql', 'cassandra', 'gendb', 'SimpleAmqpClient'])
 
 etcd_incl = os.environ.get('CONTRAIL_ETCD_INCL');
 
 if etcd_incl:
    env.Prepend(LIBS=['etcdql'])
+
+env.Prepend(LIBS=['io', 'base', 'cassandra_cql', 'cassandra', 'gendb', 'SimpleAmqpClient'])
 
 SandeshGenFiles = env.SandeshGenCpp('config_client_log.sandesh')
 SandeshGenFiles += env.SandeshGenCpp('config_client_show.sandesh')

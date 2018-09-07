@@ -10,6 +10,8 @@
 #include <boost/function.hpp>
 #include "base/factory.h"
 
+//#define ETCD_INCL
+
 namespace cass { namespace cql { class CqlIf; } }
 using cass::cql::CqlIf;
 
