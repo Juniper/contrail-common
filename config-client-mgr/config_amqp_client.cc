@@ -292,28 +292,47 @@ bool ConfigAmqpClient::ProcessMessage(const string &json_message) {
                 uuid_str = itr->value.GetString();
             }
         }
+
         if ((oper == "") || (uuid_str == "") || (obj_type == "")) {
             CONFIG_CLIENT_WARN(ConfigClientFQNameCache,
                 "Empty object name or empty type or empty uuid", obj_type,
                 obj_name, uuid_str);
             return false;
         }
-        if (oper == "CREATE") {
+
+        if ((oper == "CREATE") || (oper == "UPDATE")) {
             if (obj_name.empty()) {
                 CONFIG_CLIENT_WARN(ConfigClientFQNameCache,
-                    "Empty object name during CREATE", obj_type, obj_name,
-                    uuid_str);
+                    "Empty object name during CREATE/UPDATE",
+                    obj_type, obj_name, uuid_str);
                 return false;
             }
-            config_manager()->config_db_client()->AddFQNameCache(uuid_str,
-                                                            obj_type, obj_name);
-        } else if (oper == "UPDATE") {
+
+            // It is possible in some cases that RabbitMQ might club the 
+            // CREATE and UPDATE for an object if they happen in quick 
+            // succession (for instance control node failover). In such 
+            // cases, we could only get an UPDATE of the object without 
+            // a preceding CREATE. Handle the UPDATE as a CREATE and add
+            //  object to FQNameCache.
+            // In the unlikely event that we do receive a CREATE for the
+            // same object after the UPDATE, we check if the FQNameCache
+            // is already present before adding to it.
+            // Also, it is ok to process the CREATE/UPDATE irrespective
+            // of the order in which they are received since we always
+            // read the uuid table from Cassandra.
+
             string stored_fq_name =
                 config_manager()->config_db_client()->FindFQName(uuid_str);
             if (stored_fq_name == "ERROR") {
-                CONFIG_CLIENT_WARN(ConfigClientFQNameCache,
-                        "FQ Name Cache entry not found on UPDATE for:",
-                        obj_type, obj_name, uuid_str);
+                // FQName Cache entry not present. Create one.
+                // Log the event if the operation is an UPDATE.
+                if (oper == "UPDATE") {
+                    CONFIG_CLIENT_WARN(ConfigClientFQNameCache,
+                            "FQ Name Cache entry not found on UPDATE:",
+                            obj_type, obj_name, uuid_str);
+                }
+                config_manager()->config_db_client()->
+                            AddFQNameCache(uuid_str, obj_type, obj_name);
             }
         } else if (oper == "DELETE") {
             config_manager()->config_db_client()->
