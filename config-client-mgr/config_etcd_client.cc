@@ -665,12 +665,13 @@ void ConfigEtcdPartition::AddUUIDToProcessList(const string &oper,
         }
     } else {
         /**
-          * UUID already present in uuid_process_set_.
-          * If new oper is DELETE, remove UUID from uuid_process_set_.
-          * For other cases (CREATE/UPDATE), replace the entry with
-          * the new value and oper.
+          * UUID already present in uuid_process_set_. If operation is 
+          * DELETE preceeded by CREATE, remove from uuid_process_set_.
+          * For other cases (CREATE/UPDATE) replace the entry with the
+          * new value and oper.
           */
-        if (oper == "DELETE") {
+        if ((oper == "DELETE") &&
+            (ret.first->second->oper == "CREATE")) {
             uuid_process_set_.erase(ret.first);
         } else if (oper == "CREATE" || oper == "UPDATE") {
             delete req;
