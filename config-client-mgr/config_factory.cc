@@ -20,7 +20,7 @@ FACTORY_STATIC_REGISTER(ConfigFactory, ConfigCassandraClient,
 #include "config_amqp_client.h"
 FACTORY_STATIC_REGISTER(ConfigFactory, ConfigAmqpChannel, ConfigAmqpChannel);
 
-#ifdef ETCD_INCL
+#ifdef CONTRAIL_ETCD_INCL
 #include "config_etcd_client.h"
 FACTORY_STATIC_REGISTER(ConfigFactory, ConfigEtcdPartition,
                         ConfigEtcdPartition);

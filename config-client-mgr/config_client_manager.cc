@@ -14,7 +14,7 @@
 #include "config_amqp_client.h"
 #include "config_db_client.h"
 #include "config_cassandra_client.h"
-#ifdef ETCD_INCL
+#ifdef CONTRAIL_ETCD_INCL
 #include "config_etcd_client.h"
 #endif
 #include "config_client_log.h"
@@ -150,7 +150,7 @@ void ConfigClientManager::SetUp() {
     thread_count_ = GetNumConfigReader();
     end_of_rib_computed_at_ = UTCTimestampUsec();
     if (config_options_.config_db_use_etcd) {
-#ifdef ETCD_INCL
+#ifdef CONTRAIL_ETCD_INCL
         config_db_client_.reset(ConfigFactory::Create<ConfigEtcdClient>
                                 (this, evm_, config_options_,
                                  thread_count_));
@@ -281,7 +281,7 @@ void ConfigClientManager::PostShutdown() {
     // Delete of config db client object guarantees the flusing of
     // object uuid cache and uuid read request list.
     if (config_options_.config_db_use_etcd) {
-#ifdef ETCD_INCL
+#ifdef CONTRAIL_ETCD_INCL
         config_db_client_.reset(ConfigFactory::Create<ConfigEtcdClient>
                                 (this, evm_, config_options_,
                                  thread_count_));
@@ -325,7 +325,7 @@ bool ConfigClientManager::InitConfigClient() {
 
     // Common code path for both init/reinit
     if (config_options_.config_db_use_etcd) {
-#ifdef ETCD_INCL
+#ifdef CONTRAIL_ETCD_INCL
         CONFIG_CLIENT_DEBUG(ConfigClientMgrDebug,
             "Config Client Mgr SM: Start ETCD Watcher");
         config_db_client_->StartWatcher();
