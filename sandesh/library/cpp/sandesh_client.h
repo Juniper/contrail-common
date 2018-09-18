@@ -11,6 +11,8 @@
 #ifndef __SANDESH_CLIENT_H__
 #define __SANDESH_CLIENT_H__
 
+#include <tbb/mutex.h>
+
 #include <boost/asio.hpp>
 #include <boost/statechart/state_machine.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -28,7 +30,7 @@
 #include <base/timer.h>
 #include <sandesh/sandesh_session.h>
 #include "sandesh_client_sm.h"
-
+#include "sandesh.h"
 
 class SandeshClient;
 class Sandesh;
@@ -71,9 +73,9 @@ public:
 
     bool SendSandesh(Sandesh *snh);
 
-    bool SendSandeshUVE(Sandesh *snh_uve) {
-        return sm_->SendSandeshUVE(snh_uve);
-    }
+    bool SendSandeshUVE(Sandesh *snh_uve);
+
+    bool SendStats(SandeshElement snh);
     
     SandeshClientSM::State state() {
         return sm_->state();
@@ -90,6 +92,10 @@ public:
 
     SandeshClientSM* state_machine() const {
         return sm_.get();
+    }
+
+    StatsClient* stats_client() const {
+        return stats_client_.get();
     }
 
     void SetDscpValue(uint8_t value);
@@ -114,11 +120,14 @@ protected:
     bool CloseSMSessionInternal();
 
 private:
+    static const int kEncodeBufferSize = 2048;
     static const int kSMTaskInstance = 0;
+    static const int kQueueSize = 200 * 1024;
     static const std::string kSMTask;
     static const int kSessionTaskInstance = Task::kTaskInstanceAny;
     static const std::string kSessionWriterTask;
     static const std::string kSessionReaderTask;
+    static const std::string kStatsWriterTask;
     static const std::vector<Sandesh::QueueWaterMarkInfo> kSessionWaterMarkInfo;
 
     int sm_task_instance_;
@@ -126,9 +135,12 @@ private:
     int session_task_instance_;
     int session_writer_task_id_;
     int session_reader_task_id_;
+    int stats_client_id_;
     uint8_t dscp_value_;
     std::vector<Endpoint> collectors_;
+    std::string stats_collector_;
     boost::scoped_ptr<SandeshClientSM> sm_;
+    boost::scoped_ptr<StatsClient> stats_client_;
     std::vector<Sandesh::QueueWaterMarkInfo> session_wm_info_;
     static bool task_policy_set_;
     int session_close_interval_msec_;

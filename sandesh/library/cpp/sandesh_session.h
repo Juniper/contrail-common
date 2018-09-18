@@ -28,6 +28,25 @@ using contrail::sandesh::transport::TMemoryBuffer;
 class SandeshSession;
 class Sandesh;
 
+class StatsClient {
+public:
+    static const uint32_t kEncodeBufferSize = 2048;
+    StatsClient(boost::asio::io_service& io_service, const std::string& stats_collector):
+        stats_server_ep_(boost::asio::local::datagram_protocol::endpoint(stats_collector)),
+        is_connected_(false) {
+        stats_socket_.reset(new boost::asio::local::datagram_protocol::socket(io_service));
+    }
+    void Initialize();
+    bool IsConnected() {return is_connected_;}
+    bool SendMsg(Sandesh *sandesh);
+    size_t Send(uint8_t *data, size_t size);
+private:
+    boost::asio::local::datagram_protocol::endpoint stats_server_ep_;
+    boost::scoped_ptr<boost::asio::local::datagram_protocol::socket> stats_socket_;
+    tbb::mutex send_mutex_;
+    bool is_connected_;
+};
+
 class SandeshWriter {
 public:
     static const uint32_t kEncodeBufferSize = 2048;
@@ -174,6 +193,7 @@ public:
     virtual void EnqueueClose();
     virtual boost::system::error_code SetSocketOptions();
     virtual std::string ToString() const;
+    void set_stats_client(StatsClient *stats_client) { stats_client_ = stats_client;}
     static Sandesh * DecodeCtrlSandesh(const std::string& msg, const SandeshHeader& header,
         const std::string& sandesh_name, const uint32_t& header_offset);
     // Session statistics
@@ -236,6 +256,7 @@ private:
     boost::scoped_ptr<SandeshReader> reader_;
     boost::scoped_ptr<Sandesh::SandeshQueue> send_queue_;
     boost::scoped_ptr<Sandesh::SandeshBufferQueue> send_buffer_queue_;
+    StatsClient *stats_client_;
     SandeshConnection *connection_;
     tbb::mutex conn_mutex_;
     tbb::mutex send_mutex_;
