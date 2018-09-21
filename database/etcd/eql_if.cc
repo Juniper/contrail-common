@@ -31,17 +31,19 @@ EtcdIf::EtcdIf(const std::vector<std::string> &etcd_hosts,
                const int port, bool useSsl)
     : port_(port),
       useSsl_(useSsl) {
+
     BOOST_FOREACH(const std::string &etcd_host, etcd_hosts) {
         hosts_.push_back(etcd_host);
         boost::system::error_code ec;
         boost::asio::ip::address etcd_addr(
             boost::asio::ip::address::from_string(etcd_host, ec));
-        if (!ec) {
+        if (ec) {
             EQL_DEBUG(EtcdClientDebug, "Invalid IP address");
         }
         Endpoint endpoint(etcd_addr, port);
         endpoints_.push_back(endpoint);
     }
+
     watch_call_.reset(new EtcdAsyncWatchCall);
 }
 
