@@ -156,7 +156,7 @@ bool ConfigEtcdClient::EtcdWatcher::Run() {
     /**
       * Invoke etcd client library to watch for changes.
       */
-    client()->eqlif_->Watch("/",
+    client()->eqlif_->Watch("/contrail/",
             boost::bind(&ConfigEtcdClient::EtcdWatcher::ProcessResponse,
                         this, _1));
 
@@ -320,18 +320,42 @@ void ConfigEtcdClient::EnqueueUUIDRequest(string oper,
       * Partitions later.
       */
 
-    // Request has the uuid with entire path
-    UUIDProcessReq *req = new UUIDProcessReq(oper, uuid, value);
-
     // Get the trimmed uuid
     size_t front_pos = uuid.rfind('/');
     string uuid_key = uuid.substr(front_pos + 1);
 
     // Cache uses the trimmed uuid
     if (oper == "CREATE" || oper == "UPDATE") {
-        // Add to FQName cache if not present
+
         Document d;
         d.Parse<0>(value.c_str());
+        Document::AllocatorType &a = d.GetAllocator();
+
+        // If non-object JSON is received, log a warning and return.
+        if (!d.IsObject()) {
+            CONFIG_CLIENT_WARN(ConfigClientMgrWarning, "ETCD SM: Received "
+                  "non-object json. uuid: "
+                  + uuid_key + " value: "
+                  + value + " .Skipping");
+            return;
+        }
+
+        // ETCD does not provide obj-type since it is encoded in the
+        // UUID key. Since config_json_parser and IFMap need type to be
+        // present in the document, fix up by adding obj-type.
+        if (!d.HasMember("type")) {
+            string type = uuid.substr(10, front_pos - 10);
+            Value v;
+            Value va;
+            d.AddMember(v.SetString("type", a),
+                        va.SetString(type.c_str(), a), a);
+            StringBuffer sb;
+            Writer<StringBuffer> writer(sb);
+            d.Accept(writer);
+            value = sb.GetString();
+        }
+
+        // Add to FQName cache if not present
         if (d.HasMember("type") &&
             d.HasMember("fq_name")) {
             string obj_type = d["type"].GetString();
@@ -351,6 +375,9 @@ void ConfigEtcdClient::EnqueueUUIDRequest(string oper,
         // Invalidate cache
         InvalidateFQNameCache(uuid_key);
     }
+
+    // Request has the uuid with entire path
+    UUIDProcessReq *req = new UUIDProcessReq(oper, uuid, value);
 
     // GetPartition uses the trimmed uuid so that the same
     // partition is returned for different requests on the
@@ -388,6 +415,7 @@ bool ConfigEtcdClient::UUIDReader() {
     string next_key;
     string prefix = "/contrail/";
     bool read_done = false;
+    ostringstream os;
 
     for (ConfigClientManager::ObjectTypeList::const_iterator it =
              mgr()->config_json_parser()->ObjectTypeListToRead().begin();
@@ -396,6 +424,8 @@ bool ConfigEtcdClient::UUIDReader() {
 
         /* Form the key for the object type to lookup */
         next_key = prefix + it->c_str();
+        os.str("");
+        os << next_key << 1;
 
         while (true) {
             unsigned int num_entries;
@@ -418,7 +448,7 @@ bool ConfigEtcdClient::UUIDReader() {
               * Read num_entries UUIDs at a time
               */
             EtcdResponse resp = eqlif_->Get(next_key,
-                                            "\\0",
+                                            os.str(),
                                             num_entries);
             EtcdResponse::kv_map kvs = resp.kvmap();
 
@@ -438,7 +468,13 @@ bool ConfigEtcdClient::UUIDReader() {
                        * Parse the json string to get uuid and value
                        */
                      next_key = iter->first;
-                     uuid_list.push_back(make_pair(iter->first, iter->second));
+                     if (!boost::starts_with(next_key, "/contrail/")) {
+                         CONFIG_CLIENT_WARN(ConfigClientMgrWarning,
+                              "ETCD SM: Non-contrail uuid: "
+                              + next_key + " received");
+                     } else {
+                         uuid_list.push_back(make_pair(iter->first, iter->second));
+                     }
                 }
 
                 /**
@@ -451,6 +487,15 @@ bool ConfigEtcdClient::UUIDReader() {
                   * Get the next key to read for the current ObjType
                   */
                 next_key += "00";
+
+                /**
+                  * If we read less than what we sought, it means there are
+                  * no more entries for current obj-type. We move to next
+                  * obj-type.
+                  */
+                if (kvs.size() < num_entries) {
+                    break;
+                }
             } else if (resp.err_code() == 100)  {
                 /**
                   * ObjType not found. Continue reading next ObjType
@@ -459,22 +504,15 @@ bool ConfigEtcdClient::UUIDReader() {
             } else if (resp.err_code() == -1) {
                 /* Test ONLY */
                 read_done = true;
+                break;
             } else {
                 /**
                   * RPC failure. Connection down.
                   * Retry after a while
                   */
                 HandleEtcdConnectionStatus(false);
-
                 usleep(GetInitRetryTimeUSec());
             }
-
-            /**
-              * If we read less than what we sought, it means there are
-              * no more entries for current obj-type. We move to next
-              * obj-type.
-              */
-            if (kvs.size() < num_entries) break;
         } //while
         if (read_done) {
             break;
@@ -665,7 +703,7 @@ void ConfigEtcdPartition::AddUUIDToProcessList(const string &oper,
         }
     } else {
         /**
-          * UUID already present in uuid_process_set_. If operation is 
+          * UUID already present in uuid_process_set_. If operation is
           * DELETE preceeded by CREATE, remove from uuid_process_set_.
           * For other cases (CREATE/UPDATE) replace the entry with the
           * new value and oper.
@@ -673,7 +711,7 @@ void ConfigEtcdPartition::AddUUIDToProcessList(const string &oper,
         if ((oper == "DELETE") &&
             (ret.first->second->oper == "CREATE")) {
             uuid_process_set_.erase(ret.first);
-        } else if (oper == "CREATE" || oper == "UPDATE") {
+        } else {
             delete req;
             ret.first->second->oper = oper;
             ret.first->second->uuid = uuid;
@@ -834,7 +872,7 @@ void ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
               * Construct prop_map and prop_list objects.
               * To find if obj is prop_list or prop_map, we
               * use the WrapperFieldNames defined in schema.
-              * Today they are used present only for prop_list
+              * Today they are present only for prop_list
               * and prop_map. If that changes, logic here has
               * to change to accommodate it.
               *
@@ -956,6 +994,7 @@ void ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
 
             assert(v->IsArray());
             for (SizeType i = 0; i < v->Size(); i++) {
+
                 // Process NULL attr
                 Value &va = (*v)[i];
                 if (link_with_attr) {
@@ -965,10 +1004,36 @@ void ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
                         (*v)[i].AddMember("attr", vm.SetObject(), a);
                     }
                 }
-                // Add ref_fq_name to the _ref
+
+                /**
+                  * Add ref_fq_name to the _ref
+                  * ETCD gives ref_fq_name as well but needs to be
+                  * formatted as a string.
+                  * Get ref_fq_name from FQNameCache if present.
+                  * If not formate the ref_fq_name present in the
+                  * document as a string.
+                  */
                 Value &uuidVal = va["uuid"];
                 const string ref_uuid = uuidVal.GetString();
                 const string ref_fq_name = client()->FindFQName(ref_uuid);
+                if (ref_fq_name == "ERROR") {
+                    // ref_fq_name not in FQNameCache
+                    ref_fq_name.clear();
+                    string ref_fq_name;
+                    const Value &name = va["to"];
+                    if (!va.IsArray()) {
+                        string vv;
+                    }
+                    for (Value::ConstValueIterator itr = name.Begin();
+                         itr != name.End(); ++itr) {
+                        ref_fq_name += itr->GetString();
+                        ref_fq_name += ":";
+                    }
+                    ref_fq_name.erase(ref_fq_name.end()-1);
+                }
+                // Remove ref_fq_name from doc and re-add the
+                // string formatted fq_name.
+                (*v)[i].RemoveMember("to");
                 Value vs1(ref_fq_name.c_str(), a);
                 (*v)[i].AddMember("to", vs1, a);
             }
