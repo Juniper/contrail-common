@@ -36,7 +36,7 @@ EtcdIf::EtcdIf(const std::vector<std::string> &etcd_hosts,
         boost::system::error_code ec;
         boost::asio::ip::address etcd_addr(
             boost::asio::ip::address::from_string(etcd_host, ec));
-        if (!ec) {
+        if (ec) {
             EQL_DEBUG(EtcdClientDebug, "Invalid IP address");
         }
         Endpoint endpoint(etcd_addr, port);

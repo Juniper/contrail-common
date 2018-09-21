@@ -156,7 +156,7 @@ bool ConfigEtcdClient::EtcdWatcher::Run() {
     /**
       * Invoke etcd client library to watch for changes.
       */
-    client()->eqlif_->Watch("/",
+    client()->eqlif_->Watch("/contrail/",
             boost::bind(&ConfigEtcdClient::EtcdWatcher::ProcessResponse,
                         this, _1));
 
@@ -332,6 +332,13 @@ void ConfigEtcdClient::EnqueueUUIDRequest(string oper,
         // Add to FQName cache if not present
         Document d;
         d.Parse<0>(value.c_str());
+        if (!d.IsObject()) {
+            string message = "ETCD SM: Received non-object json. uuid: "
+                  + uuid_key + " value: " + value + " .Skipping";
+            cout << message << endl;
+            CONFIG_CLIENT_WARN(ConfigClientMgrWarning, message);
+            return;
+        }
         if (d.HasMember("type") &&
             d.HasMember("fq_name")) {
             string obj_type = d["type"].GetString();
@@ -388,6 +395,7 @@ bool ConfigEtcdClient::UUIDReader() {
     string next_key;
     string prefix = "/contrail/";
     bool read_done = false;
+    ostringstream os;
 
     for (ConfigClientManager::ObjectTypeList::const_iterator it =
              mgr()->config_json_parser()->ObjectTypeListToRead().begin();
@@ -396,6 +404,8 @@ bool ConfigEtcdClient::UUIDReader() {
 
         /* Form the key for the object type to lookup */
         next_key = prefix + it->c_str();
+        os.str("");
+        os << next_key << 1;
 
         while (true) {
             unsigned int num_entries;
@@ -418,7 +428,7 @@ bool ConfigEtcdClient::UUIDReader() {
               * Read num_entries UUIDs at a time
               */
             EtcdResponse resp = eqlif_->Get(next_key,
-                                            "\\0",
+                                            os.str(),
                                             num_entries);
             EtcdResponse::kv_map kvs = resp.kvmap();
 
@@ -438,7 +448,14 @@ bool ConfigEtcdClient::UUIDReader() {
                        * Parse the json string to get uuid and value
                        */
                      next_key = iter->first;
-                     uuid_list.push_back(make_pair(iter->first, iter->second));
+                     if (next_key.compare(0, 9, "/contrail/") == 0) {
+                         string message = "ETCD SM: Non-contrail uuid: "
+                              + next_key + " received";
+                         cout << message << endl;
+                         CONFIG_CLIENT_WARN(ConfigClientMgrWarning, message);
+                     } else {
+                         uuid_list.push_back(make_pair(iter->first, iter->second));
+                     }
                 }
 
                 /**
@@ -451,6 +468,13 @@ bool ConfigEtcdClient::UUIDReader() {
                   * Get the next key to read for the current ObjType
                   */
                 next_key += "00";
+
+                /**
+                  * If we read less than what we sought, it means there are
+                  * no more entries for current obj-type. We move to next
+                  * obj-type.
+                  */
+                if (kvs.size() < num_entries) break;
             } else if (resp.err_code() == 100)  {
                 /**
                   * ObjType not found. Continue reading next ObjType
@@ -459,22 +483,15 @@ bool ConfigEtcdClient::UUIDReader() {
             } else if (resp.err_code() == -1) {
                 /* Test ONLY */
                 read_done = true;
+                break;
             } else {
                 /**
                   * RPC failure. Connection down.
                   * Retry after a while
                   */
                 HandleEtcdConnectionStatus(false);
-
                 usleep(GetInitRetryTimeUSec());
             }
-
-            /**
-              * If we read less than what we sought, it means there are
-              * no more entries for current obj-type. We move to next
-              * obj-type.
-              */
-            if (kvs.size() < num_entries) break;
         } //while
         if (read_done) {
             break;
@@ -673,7 +690,7 @@ void ConfigEtcdPartition::AddUUIDToProcessList(const string &oper,
         if ((oper == "DELETE") &&
             (ret.first->second->oper == "CREATE")) {
             uuid_process_set_.erase(ret.first);
-        } else if (oper == "CREATE" || oper == "UPDATE") {
+        } else {
             delete req;
             ret.first->second->oper = oper;
             ret.first->second->uuid = uuid;
