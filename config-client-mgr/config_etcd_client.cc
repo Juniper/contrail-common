@@ -1010,12 +1010,12 @@ void ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
                   * ETCD gives ref_fq_name as well but needs to be
                   * formatted as a string.
                   * Get ref_fq_name from FQNameCache if present.
-                  * If not formate the ref_fq_name present in the
-                  * document as a string.
+                  * If not re-format the ref_fq_name present in the
+                  * document as a string and insert it back.
                   */
                 Value &uuidVal = va["uuid"];
                 const string ref_uuid = uuidVal.GetString();
-                const string ref_fq_name = client()->FindFQName(ref_uuid);
+                string ref_fq_name = client()->FindFQName(ref_uuid);
                 if (ref_fq_name == "ERROR") {
                     // ref_fq_name not in FQNameCache
                     ref_fq_name.clear();
