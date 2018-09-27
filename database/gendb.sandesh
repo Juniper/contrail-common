@@ -31,19 +31,19 @@ const u32 DEFAULT_REQUEST_TIMEOUT = 12000;
 
 struct DbTableInfo {
     1: string                              table_name
-    2: u64                                 reads
-    3: u64                                 read_fails
-    4: u64                                 writes
-    5: u64                                 write_fails
-    6: u64                                 write_back_pressure_fails
+    2: u64                                 reads (metric_type="agg")
+    3: u64                                 read_fails (metric_type="agg")
+    4: u64                                 writes (metric_type="agg")
+    5: u64                                 write_fails (metric_type="agg")
+    6: u64                                 write_back_pressure_fails (metric_type="agg")
 }
 
 struct DbTableStat {
-    2: u64                                 reads
-    3: u64                                 read_fails
-    4: u64                                 writes
-    5: u64                                 write_fails
-    6: u64                                 write_back_pressure_fails
+    2: u64                                 reads (metric_type="agg")
+    3: u64                                 read_fails (metric_type="agg")
+    4: u64                                 writes (metric_type="agg")
+    5: u64                                 write_fails (metric_type="agg")
+    6: u64                                 write_back_pressure_fails (metric_type="agg") 
 }
 
 struct DbTableStat_P_ {
@@ -52,13 +52,13 @@ struct DbTableStat_P_ {
 }
 
 struct DbErrors {
-    1: u64                                write_tablespace_fails
-    2: u64                                read_tablespace_fails
-    3: u64                                write_table_fails
-    4: u64                                read_table_fails
-    5: u64                                write_column_fails
-    6: u64                                write_batch_column_fails
-    7: u64                                read_column_fails
+    1: u64                                write_tablespace_fails (metric_type="agg")
+    2: u64                                read_tablespace_fails (metric_type="agg")
+    3: u64                                write_table_fails (metric_type="agg")
+    4: u64                                read_table_fails (metric_type="agg")
+    5: u64                                write_column_fails (metric_type="agg")
+    6: u64                                write_batch_column_fails (metric_type="agg")
+    7: u64                                read_column_fails (metric_type="agg")
 }
 
 // Secondary/SASI Index

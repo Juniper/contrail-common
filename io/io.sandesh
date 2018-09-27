@@ -118,13 +118,13 @@ systemlog sandesh TcpSessionMessageLog {
  * Statistics representing IO activity related to a socket
  */
 struct SocketIOStats {
-    1: u64 bytes;
-    2: u64 calls;
-    3: double average_bytes;
+    1: u64 bytes (metric_type="diff")
+    2: u64 calls (metric_type="diff")
+    3: double average_bytes (metric_type="agg")
     4: string blocked_duration;
-    5: u64 blocked_count;
+    5: u64 blocked_count (metric_type="diff")
     6: string average_blocked_duration;
-    7: u64 errors;
+    7: u64 errors (metric_type="diff")
 }
 
 /**
@@ -132,12 +132,12 @@ struct SocketIOStats {
  * message on an endpoint
  */
 struct SocketEndpointMessageStats {
-    1: string endpoint_name;
-    2: string message_name;
-    3: u64 messages;
-    4: u64 bytes;
-    5: u64 errors;
-    6: u64 last_timestamp;
+    1: string endpoint_name
+    2: string message_name
+    3: u64 messages (metric_type="diff")
+    4: u64 bytes (metric_type="diff")
+    5: u64 errors (metric_type="diff")
+    6: u64 last_timestamp (metric_type="diff")
 }
 
 /**
