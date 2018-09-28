@@ -395,6 +395,24 @@ trace sandesh ConfigCassandraReadRetryTrace {
 }
 
 /**
+ * @description: System log for config client module
+ * @severity: DEBUG
+ */
+systemlog sandesh ConfigEtcdReadRetry {
+    1: string message
+    3: string uuid
+}
+
+/**
+ * @description: Trace message for config client module
+ * @severity: DEBUG
+ */
+trace sandesh ConfigEtcdReadRetryTrace {
+    1: string message
+    2: string uuid
+}
+
+/**
  * @description: Trace message for config client module
  * @severity: DEBUG
  */

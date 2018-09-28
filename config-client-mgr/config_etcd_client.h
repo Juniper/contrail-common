@@ -68,12 +68,18 @@ class ConfigEtcdPartition {
         UUIDCacheEntry(ConfigEtcdPartition *parent,
                        const string &value_str,
                        uint64_t last_read_tstamp)
-                : last_read_tstamp_(last_read_tstamp),
+                : retry_count_(0),
+                  retry_timer_(NULL),
+                  last_read_tstamp_(last_read_tstamp),
                   json_str_(value_str),
                   parent_(parent) {
         }
 
         ~UUIDCacheEntry();
+
+        void EnableEtcdReadRetry(const string uuid,
+                                 const string value);
+        void DisableEtcdReadRetry(const string uuid);
 
         const string &GetJsonString() const { return json_str_; }
         void SetJsonString(const string &value_str) {
@@ -84,6 +90,10 @@ class ConfigEtcdPartition {
             list_map_set_.insert(make_pair(prop.c_str(), empty));
         }
         bool ListOrMapPropEmpty(const string &prop) const;
+
+        uint32_t GetRetryCount() const {
+            return retry_count_;
+        }
 
         void SetLastReadTimeStamp(uint64_t ts) {
             last_read_tstamp_ = ts;
@@ -98,15 +108,29 @@ class ConfigEtcdPartition {
         void SetObjType(string obj_type) { obj_type_ = obj_type; }
         const string &GetObjType() const { return obj_type_; }
 
+        bool IsRetryTimerCreated() const {
+            return (retry_timer_ != NULL);
+        }
+        bool IsRetryTimerRunning() const;
+        Timer *GetRetryTimer() { return retry_timer_; }
+
      private:
+        bool EtcdReadRetryTimerExpired(const string uuid,
+                                       const string value);
+        void EtcdReadRetryTimerErrorHandler();
         typedef map<string, bool> ListMapSet;
         string obj_type_;
         string fq_name_;
         ListMapSet list_map_set_;
+        uint32_t retry_count_;
+        Timer *retry_timer_;
         uint64_t last_read_tstamp_;
         string json_str_;
         ConfigEtcdPartition *parent_;
     };
+
+    static const uint32_t kMaxUUIDRetryTimePowOfTwo = 20;
+    static const uint32_t kMinUUIDRetryTimeMSec = 100;
 
     typedef boost::ptr_map<string, UUIDCacheEntry> UUIDCacheMap;
 
@@ -119,6 +143,7 @@ class ConfigEtcdPartition {
     void DeleteCacheMap(const string &uuid) {
         uuid_cache_map_.erase(uuid);
     }
+    virtual int UUIDRetryTimeInMSec(const UUIDCacheEntry *obj) const;
 
     void FillUUIDToObjCacheInfo(const string &uuid,
                                 UUIDCacheMap::const_iterator uuid_iter,
@@ -168,7 +193,7 @@ private:
     void ProcessUUIDUpdate(const string &uuid_key,
                            const string &value_str);
     void ProcessUUIDDelete(const string &uuid_key);
-    virtual void GenerateAndPushJson(
+    virtual bool GenerateAndPushJson(
             const string &uuid_key,
             Document &doc,
             bool add_change,
