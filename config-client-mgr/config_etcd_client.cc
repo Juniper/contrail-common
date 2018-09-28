@@ -756,13 +756,13 @@ bool ConfigEtcdPartition::UUIDToObjCacheShow(
     return true;
 }
 
-bool ConfigEtcdPartition::UUIDCacheEntry::ListOrMapPropEmpty(
-         const string &prop) const {
-    ListMapSet::const_iterator it = list_map_set_.find(prop);
-    if (it == list_map_set_.end()) {
-        return true;
+ConfigEtcdPartition::UUIDCacheEntry *
+ConfigEtcdPartition::GetUUIDCacheEntry(const string &uuid) {
+    UUIDCacheMap::iterator uuid_iter = uuid_cache_map_.find(uuid);
+    if (uuid_iter == uuid_cache_map_.end()) {
+        return NULL;
     }
-    return (it->second == false);
+    return uuid_iter->second;
 }
 
 ConfigEtcdPartition::UUIDCacheEntry *
@@ -805,7 +805,87 @@ ConfigEtcdPartition::GetUUIDCacheEntry(const string &uuid,
     return uuid_iter->second;
 }
 
-void ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
+int ConfigEtcdPartition::UUIDRetryTimeInMSec(
+        const UUIDCacheEntry *obj) const {
+    uint32_t retry_time_pow_of_two =
+        obj->GetRetryCount() > kMaxUUIDRetryTimePowOfTwo ?
+        kMaxUUIDRetryTimePowOfTwo : obj->GetRetryCount();
+    return ((1 << retry_time_pow_of_two) * kMinUUIDRetryTimeMSec);
+}
+
+void ConfigEtcdPartition::UUIDCacheEntry::EnableEtcdReadRetry(
+        const string uuid,
+        const string value) {
+    if (!retry_timer_) {
+        retry_timer_ = TimerManager::CreateTimer(
+                *parent_->client()->event_manager()->io_service(),
+                "UUID retry timer for " + uuid,
+                TaskScheduler::GetInstance()->GetTaskId(
+                                "etcd::Reader"),
+                parent_->worker_id_);
+        CONFIG_CLIENT_DEBUG(ConfigEtcdReadRetry,
+                "Created UUID read retry timer ", uuid);
+    }
+    retry_timer_->Cancel();
+    retry_timer_->Start(parent_->UUIDRetryTimeInMSec(this),
+            boost::bind(
+                &ConfigEtcdPartition::UUIDCacheEntry::EtcdReadRetryTimerExpired,
+                this, uuid, value),
+            boost::bind(
+                &ConfigEtcdPartition::UUIDCacheEntry::EtcdReadRetryTimerErrorHandler,
+                this));
+    CONFIG_CLIENT_DEBUG(ConfigEtcdReadRetry,
+            "Start/restart UUID Read Retry timer due to configuration", uuid);
+}
+
+void ConfigEtcdPartition::UUIDCacheEntry::DisableEtcdReadRetry(
+        const string uuid) {
+    CHECK_CONCURRENCY("etcd::Reader");
+    if (retry_timer_) {
+        retry_timer_->Cancel();
+        TimerManager::DeleteTimer(retry_timer_);
+        retry_timer_ = NULL;
+        retry_count_ = 0;
+        CONFIG_CLIENT_DEBUG(ConfigEtcdReadRetry,
+                "UUID Read retry timer - deleted timer due to configuration",
+                uuid);
+    }
+}
+
+bool ConfigEtcdPartition::UUIDCacheEntry::IsRetryTimerRunning() const {
+    if (retry_timer_)
+        return (retry_timer_->running());
+    return false;
+}
+
+bool ConfigEtcdPartition::UUIDCacheEntry::EtcdReadRetryTimerExpired(
+        const string uuid,
+        const string value) {
+    CHECK_CONCURRENCY("etcd::Reader");
+    parent_->client()->EnqueueUUIDRequest(
+            "UPDATE", parent_->client()->uuid_str(uuid), value);
+    retry_count_++;
+    CONFIG_CLIENT_DEBUG(ConfigEtcdReadRetry, "timer expired ", uuid);
+    return false;
+}
+
+void
+ConfigEtcdPartition::UUIDCacheEntry::EtcdReadRetryTimerErrorHandler() {
+     std::string message = "Timer";
+     CONFIG_CLIENT_WARN(ConfigClientGetRowError,
+            "UUID Read Retry Timer error ", message, message);
+}
+
+bool ConfigEtcdPartition::UUIDCacheEntry::ListOrMapPropEmpty(
+         const string &prop) const {
+    ListMapSet::const_iterator it = list_map_set_.find(prop);
+    if (it == list_map_set_.end()) {
+        return true;
+    }
+    return (it->second == false);
+}
+
+bool ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
                                               Document &doc,
                                               bool add_change,
                                               UUIDCacheEntry *cache) {
@@ -840,7 +920,8 @@ void ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
          * at least one field other than fq_name or
          * obj_type to be updated.
          */
-        if (key.compare("type") != 0 &&
+        if (!notify_update &&
+            key.compare("type") != 0 &&
             key.compare("fq_name") != 0) {
             notify_update = true;
         }
@@ -1016,8 +1097,17 @@ void ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
                 Value &uuidVal = va["uuid"];
                 const string ref_uuid = uuidVal.GetString();
                 string ref_fq_name = client()->FindFQName(ref_uuid);
+
                 if (ref_fq_name == "ERROR") {
                     // ref_fq_name not in FQNameCache
+                    // If we cannot find ref_fq_name in the doc
+                    // as well, return false to enable retry.
+                    if (!va.HasMember("to")) {
+                        CONFIG_CLIENT_DEBUG(ConfigEtcdReadRetry,
+                                   "Ref fq_name not available for ", uuid);
+                        return false;
+                    }
+
                     ref_fq_name.clear();
                     const Value &name = va["to"];
                     for (Value::ConstValueIterator itr = name.Begin();
@@ -1027,6 +1117,7 @@ void ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
                     }
                     ref_fq_name.erase(ref_fq_name.end()-1);
                 }
+
                 // Remove ref_fq_name from doc and re-add the
                 // string formatted fq_name.
                 (*v)[i].RemoveMember("to");
@@ -1041,7 +1132,7 @@ void ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
     if (!notify_update) {
         CONFIG_CLIENT_DEBUG(ConfigClientMgrDebug,
              "ETCD SM: Nothing to update");
-        return;
+        return true;
     }
 
     StringBuffer sb1;
@@ -1055,6 +1146,8 @@ void ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
 
     ConfigCass2JsonAdapter ccja(uuid, type_str, doc);
     client()->mgr()->config_json_parser()->Receive(ccja, add_change);
+
+    return true;
 }
 
 void ConfigEtcdPartition::ProcessUUIDDelete(
@@ -1158,6 +1251,7 @@ void ConfigEtcdPartition::ProcessUUIDUpdate(const string &uuid_key,
         CONFIG_CLIENT_WARN(ConfigClientGetRowError,
              "fq_name or type not present for ",
              "obj_uuid_table with uuid: ", uuid_key);
+        cache->DisableEtcdReadRetry(uuid_key);
         ProcessUUIDDelete(uuid_key);
         return;
     }
@@ -1253,11 +1347,18 @@ void ConfigEtcdPartition::ProcessUUIDUpdate(const string &uuid_key,
       * update.
       * For CREATES, there is nothing to delete
       * as they are just newly added to cache.
+      * When adding/updating properties, if there is
+      * an error, retry after a while.
       */
-    GenerateAndPushJson(uuid_key,
+    if (!GenerateAndPushJson(uuid_key,
                         updDoc,
                         true,
-                        cache);
+                        cache)) {
+        cache->EnableEtcdReadRetry(uuid_key, value_str);
+        cache->SetJsonString(string());
+    } else {
+        cache->DisableEtcdReadRetry(uuid_key);
+    }
     if (!is_new) {
         GenerateAndPushJson(uuid_key,
                             cacheDoc,
