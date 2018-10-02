@@ -795,8 +795,7 @@ error_code TcpSession::SetSocketKeepaliveOptions(int keepalive_time,
             "keepalive_idle_time: " << keepalive_time << " set error: " << ec);
         return ec;
     }
-#endif
-#ifdef TCP_KEEPALIVE
+#elif TCP_KEEPALIVE
     typedef integer< IPPROTO_TCP, TCP_KEEPALIVE > keepalive_idle_time;
     keepalive_idle_time keepalive_idle_time_option(keepalive_time);
     socket()->set_option(keepalive_idle_time_option, ec);
@@ -805,6 +804,8 @@ error_code TcpSession::SetSocketKeepaliveOptions(int keepalive_time,
             "keepalive_idle_time: " << keepalive_time << " set error: " << ec);
         return ec;
     }
+#else
+#error No TCP keepalive option defined.
 #endif
 // TCP_KEEPCNT and TCP_KEEPINTVL are not supported on windows. But boost tries to set them, causing
 // an exception. See:
