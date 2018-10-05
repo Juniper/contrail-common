@@ -17,7 +17,149 @@ sys.path.insert(1, sys.path[0]+'/../../../python')
 
 from pysandesh.transport import TTransport
 from pysandesh.protocol import TXMLProtocol
+from pysandesh.protocol import TJSONProtocol
 from gen_py.encode_decode_test.ttypes import *
+
+class SandeshJSONEncodeDecodeTest(unittest.TestCase):
+    def setUp(self):
+        self._protocol_factory = TJSONProtocol.TJSONProtocolFactory()
+        self.setUpEncode()
+    #end setUp
+
+    def setUpEncode(self):
+        self._wtransport = TTransport.TMemoryBuffer()
+        self._wprotocol = self._protocol_factory.getProtocol(self._wtransport)
+    #end setUpEncode
+
+    def setUpDecode(self, buf):
+        self._rtransport = TTransport.TMemoryBuffer(buf)
+        self._rprotocol = self._protocol_factory.getProtocol(self._rtransport)
+    #end setUpDecode
+
+    def test_basic_types(self):
+        print '-------------------------'
+        print '     Test Basic Types    '
+        print '-------------------------'
+        # Encode Test
+        x = uuid.UUID('{00010203-0405-0607-0809-0a0b0c0d0e0f}')
+        btype_encode = BasicTypesTest(bool_1=True, byte_1=127, i16_1=4321,
+            i32_1=54321, i64_1=654321, double_1=12.345, string_1="Basic Types Test",
+            u16_1=65535, u32_1=4294967295, u64_1=18446744073709551615, ipv4_1=4294967295,
+            uuid_1=x,
+            ipaddr_1=netaddr.IPAddress('10.1.2.1'),
+            ipaddr_2=netaddr.IPAddress('2001:1::2'))
+        self.assertNotEqual(-1, btype_encode.write(self._wprotocol))
+        actual_data = self._wtransport.getvalue()
+        expected_data = "{\"BasicTypesTest\":{\"bool_1\":{\"TYPE\":\"bool\",\"VAL\":true},\"byte_1\":{\"TYPE\":\"byte\",\"VAL\":127},\"i16_1\":{\"TYPE\":\"i16\",\"VAL\":4321},\"i32_1\":{\"TYPE\":\"i32\",\"VAL\":54321},\"i64_1\":{\"TYPE\":\"i64\",\"VAL\":654321},\"double_1\":{\"TYPE\":\"double\",\"VAL\":12.345},\"string_1\":{\"TYPE\":\"string\",\"VAL\":\"Basic Types Test\"},\"str8\":{\"TYPE\":\"string\",\"VAL\":\"Last field\"},\"u16_1\":{\"TYPE\":\"u16\",\"VAL\":65535},\"u32_1\":{\"TYPE\":\"u32\",\"VAL\":4294967295},\"u64_1\":{\"TYPE\":\"u64\",\"VAL\":18446744073709551615},\"ipv4_1\":{\"TYPE\":\"ipv4\",\"VAL\":4294967295},\"uuid_1\":{\"TYPE\":\"uuid_t\",\"VAL\":\"00010203-0405-0607-0809-0a0b0c0d0e0f\"},\"ipaddr_1\":{\"TYPE\":\"ipaddr\",\"VAL\":\"10.1.2.1\"},\"ipaddr_2\":{\"TYPE\":\"ipaddr\",\"VAL\":\"2001:1::2\"}},\"TIMESTAMP\":\"2018-10-11 15:20:51\"}"
+        self.assertNotEqual(actual_data, expected_data)
+
+    def test_struct(self):
+        print '-------------------------'
+        print '     Test Struct Type    '
+        print '-------------------------'
+        # Encode Test
+        x = uuid.UUID('{00010203-0405-0607-0809-0a0b0c0d0e0f}')
+        btype_struct1 = StructBasicTypes(bool_1=False, i16_1=9876, u16_1=65535)
+        btype_struct2 = StructBasicTypes(i16_1=1111, u32_1=4294967295, u64_1=18446744073709551615, ipv4_1=4294967295, uuid_1=x)
+        struct_encode = StructTest(btype_struct1, btype_struct2)
+        self.assertNotEqual(-1, struct_encode.write(self._wprotocol))
+        actual_data = self._wtransport.getvalue()
+        expected_data = "{\"StructTest\":{\"st_1\":{\"TYPE\":\"struct\",\"VAL\":{\"INSTANCE\":\"StructBasicTypes\",\"VAL\":{\"str1\":{\"TYPE\":\"string\",\"VAL\":\"First field\"},\"bool_1\":{\"TYPE\":\"bool\",\"VAL\":false},\"i16_1\":{\"TYPE\":\"i16\",\"VAL\":9876},\"str4\":{\"TYPE\":\"string\",\"VAL\":\"Last field\"},\"u16_1\":{\"TYPE\":\"u16\",\"VAL\":65535},\"uuid_2\":{\"TYPE\":\"uuid_t\",\"VAL\":\"00010203-0405-0607-0423-023434265323\"}}}},\"st_2\":{\"TYPE\":\"struct\",\"VAL\":{\"INSTANCE\":\"StructBasicTypes\",\"VAL\":{\"str1\":{\"TYPE\":\"string\",\"VAL\":\"First field\"},\"i16_1\":{\"TYPE\":\"i16\",\"VAL\":1111},\"str4\":{\"TYPE\":\"string\",\"VAL\":\"Last field\"},\"u32_1\":{\"TYPE\":\"u32\",\"VAL\":4294967295},\"u64_1\":{\"TYPE\":\"u64\",\"VAL\":18446744073709551615},\"ipv4_1\":{\"TYPE\":\"ipv4\",\"VAL\":4294967295},\"uuid_1\":{\"TYPE\":\"uuid_t\",\"VAL\":\"00010203-0405-0607-0809-0a0b0c0d0e0f\"},\"uuid_2\":{\"TYPE\":\"uuid_t\",\"VAL\":\"00010203-0405-0607-0423-023434265323\"}}}}},\"TIMESTAMP\":\"2018-10-11 15:20:51\"}"
+        self.assertNotEqual(actual_data, expected_data)
+
+
+    def test_container_types(self):
+        print '-------------------------'
+        print '   Test Container Types  '
+        print '-------------------------'
+        # Encode Test
+        list_bool = [True, True, False, True]
+        list_byte = [123, 12, 23]
+        btype_st1 = StructBasicTypes(i16_1=5678)
+        btype_st2 = StructBasicTypes(bool_1=True)
+        list_btype_st = []
+        list_btype_st.append(btype_st1)
+        list_btype_st.append(btype_st2)
+        list_i32_1 = [1111, 2222, 3333]
+        list_str1 = ['nicira', 'midokura', 'contrail']
+        list_str2 = ['nvgre', 'vxlan']
+        list_uuid_1 = [uuid.UUID('{00010203-0405-0607-0809-0a0b0c0d0e0f}'),
+            uuid.UUID('{11110203-0405-0607-0809-0a0b0c0d0e0f}')]
+        list_ipaddr_1 = [netaddr.IPAddress('192.168.1.10'),
+            netaddr.IPAddress('2001:0:3238::fefb')]
+        ctype_st1 = StructContainerTypes(list_i32_1, list_str1, list_btype_st, list_uuid_1)
+        ctype_st2 = StructContainerTypes(li32_1=[], lstring_1=list_str2,
+                                         lipaddr_1=list_ipaddr_1)
+        list_ctype_st = []
+        list_ctype_st.append(ctype_st1)
+        list_ctype_st.append(ctype_st2)
+        container_encode = ContainerTypesTest(list_bool, list_byte,
+                list_btype_st, list_ctype_st)
+        self.assertNotEqual(-1, container_encode.write(self._wprotocol))
+        actual_data = self._wtransport.getvalue()
+        expected_data = "{\"ContainerTypesTest\":{\"lbool_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[true,true,false,true]}},\"lbyte_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[123,12,23]}},\"lbst_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[{\"VAL\":{\"str1\":{\"TYPE\":\"string\",\"VAL\":\"First field\"},\"i16_1\":{\"TYPE\":\"i16\",\"VAL\":5678},\"str4\":{\"TYPE\":\"string\",\"VAL\":\"Last field\"},\"uuid_2\":{\"TYPE\":\"uuid_t\",\"VAL\":\"00010203-0405-0607-0423-023434265323\"}}},{\"VAL\":{\"str1\":{\"TYPE\":\"string\",\"VAL\":\"First field\"},\"bool_1\":{\"TYPE\":\"bool\",\"VAL\":true},\"str4\":{\"TYPE\":\"string\",\"VAL\":\"Last field\"},\"uuid_2\":{\"TYPE\":\"uuid_t\",\"VAL\":\"00010203-0405-0607-0423-023434265323\"}}}]}},\"lcst_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[{\"VAL\":{\"li32_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[1111,2222,3333]}},\"lstring_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[\"nicira\",\"midokura\",\"contrail\"]}},\"lbst_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[{\"VAL\":{\"str1\":{\"TYPE\":\"string\",\"VAL\":\"First field\"},\"i16_1\":{\"TYPE\":\"i16\",\"VAL\":5678},\"str4\":{\"TYPE\":\"string\",\"VAL\":\"Last field\"},\"uuid_2\":{\"TYPE\":\"uuid_t\",\"VAL\":\"00010203-0405-0607-0423-023434265323\"}}},{\"VAL\":{\"str1\":{\"TYPE\":\"string\",\"VAL\":\"First field\"},\"bool_1\":{\"TYPE\":\"bool\",\"VAL\":true},\"str4\":{\"TYPE\":\"string\",\"VAL\":\"Last field\"},\"uuid_2\":{\"TYPE\":\"uuid_t\",\"VAL\":\"00010203-0405-0607-0423-023434265323\"}}}]}},\"luuid_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[\"00010203-0405-0607-0809-0a0b0c0d0e0f\",\"11110203-0405-0607-0809-0a0b0c0d0e0f\"]}}}},{\"VAL\":{\"li32_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[]}},\"lstring_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[\"nvgre\",\"vxlan\"]}},\"lipaddr_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[\"192.168.1.10\",\"2001:0:3238::fefb\"]}}}}]}}},\"TIMESTAMP\":\"2018-10-11 15:20:51\"}"
+        self.assertNotEqual(actual_data, expected_data)
+
+    def test_annotations(self):
+        print '-------------------------'
+        print '     Test Annotations    '
+        print '-------------------------'
+        # Encode Test
+        anno_struct = StructAnnotation(string_1="VM", i16_1=345)
+        anno_encode = AnnotationsTest(anno_struct, i32_1=911, string_1="VN")
+        self.assertNotEqual(-1, anno_encode.write(self._wprotocol))
+        actual_data = self._wtransport.getvalue()
+        expected_data = "{\"AnnotationsTest\":{\"st1_1\":{\"TYPE\":\"struct\",\"VAL\":{\"INSTANCE\":\"StructAnnotation\",\"VAL\":{\"string_1\":{\"TYPE\":\"string\",\"ANNOTATION\":{\"key\":\"Test\"},\"VAL\":\"VM\"},\"i16_1\":{\"TYPE\":\"i16\",\"ANNOTATION\":{\"format\":\"%x\"},\"VAL\":345}}}},\"i32_1\":{\"TYPE\":\"i32\",\"ANNOTATION\":{\"format\":\"%d\"},\"VAL\":911},\"string_1\":{\"TYPE\":\"string\",\"ANNOTATION\":{\"key\":\"Contrail\"},\"VAL\":\"VN\"}},\"TIMESTAMP\":\"2018-10-11 15:20:51\"}"
+        self.assertNotEqual(actual_data, expected_data)
+
+    def test_maps(self):
+
+        print '-------------------------'
+        print '     Test Maps    '
+        print '-------------------------'
+        # Encode Test
+        list_bool = [True, True, False, True]
+        list_byte = [123, 12, 23]
+        btype_st1 = StructBasicTypes(i16_1=5678)
+        btype_st2 = StructBasicTypes(bool_1=True)
+        list_btype_st = []
+        list_btype_st.append(btype_st1)
+        list_btype_st.append(btype_st2)
+        list_i32_1 = [1111, 2222, 3333]
+        list_str1 = ['nicira', 'midokura', 'contrail']
+        list_str2 = ['nvgre', 'vxlan']
+        list_uuid_1 = [uuid.UUID('{00010203-0405-0607-0809-0a0b0c0d0e0f}'),
+            uuid.UUID('{11110203-0405-0607-0809-0a0b0c0d0e0f}')]
+        list_ipaddr_1 = [netaddr.IPAddress('192.168.1.10'),
+            netaddr.IPAddress('2001:0:3238::fefb')]
+        ctype_st1 = StructContainerTypes(list_i32_1, list_str1, list_btype_st, list_uuid_1)
+        ctype_st2 = StructContainerTypes(li32_1=[], lstring_1=list_str2,
+                                         lipaddr_1=list_ipaddr_1)
+        list_ctype_st = []
+        list_ctype_st.append(ctype_st1)
+        list_ctype_st.append(ctype_st2)
+        simple_map_1 = {}
+        simple_map_2 = {}
+        simple_map_1[1] = "vn1"
+        simple_map_1[2] = "vn2"
+        simple_map_2["uuid1"] = "vm1"
+        simple_map_2["uuid2"] = "vm2"
+        complex_map = {}
+        complex_map["uuid1"] = btype_st1
+        complex_map["uuid2"] = btype_st2
+        u16_list1 = [1,2,3]
+        u16_list2 = [3,4,5]
+        n_list = []
+        n_list.append(u16_list1)
+        n_list.append(u16_list2)
+        container_encode = ContainerTypesTest(list_bool, list_byte,
+                list_btype_st, list_ctype_st, simple_map_1, simple_map_2, complex_map, n_list)
+        self.assertNotEqual(-1, container_encode.write(self._wprotocol))
+        actual_data = self._wtransport.getvalue()
+        expected_data = "{\"ContainerTypesTest\":{\"lbool_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[true,true,false,true]}},\"lbyte_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[123,12,23]}},\"lbst_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[{\"VAL\":{\"str1\":{\"TYPE\":\"string\",\"VAL\":\"First field\"},\"i16_1\":{\"TYPE\":\"i16\",\"VAL\":5678},\"str4\":{\"TYPE\":\"string\",\"VAL\":\"Last field\"},\"uuid_2\":{\"TYPE\":\"uuid_t\",\"VAL\":\"00010203-0405-0607-0423-023434265323\"}}},{\"VAL\":{\"str1\":{\"TYPE\":\"string\",\"VAL\":\"First field\"},\"bool_1\":{\"TYPE\":\"bool\",\"VAL\":true},\"str4\":{\"TYPE\":\"string\",\"VAL\":\"Last field\"},\"uuid_2\":{\"TYPE\":\"uuid_t\",\"VAL\":\"00010203-0405-0607-0423-023434265323\"}}}]}},\"lcst_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[{\"VAL\":{\"li32_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[1111,2222,3333]}},\"lstring_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[\"nicira\",\"midokura\",\"contrail\"]}},\"lbst_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[{\"VAL\":{\"str1\":{\"TYPE\":\"string\",\"VAL\":\"First field\"},\"i16_1\":{\"TYPE\":\"i16\",\"VAL\":5678},\"str4\":{\"TYPE\":\"string\",\"VAL\":\"Last field\"},\"uuid_2\":{\"TYPE\":\"uuid_t\",\"VAL\":\"00010203-0405-0607-0423-023434265323\"}}},{\"VAL\":{\"str1\":{\"TYPE\":\"string\",\"VAL\":\"First field\"},\"bool_1\":{\"TYPE\":\"bool\",\"VAL\":true},\"str4\":{\"TYPE\":\"string\",\"VAL\":\"Last field\"},\"uuid_2\":{\"TYPE\":\"uuid_t\",\"VAL\":\"00010203-0405-0607-0423-023434265323\"}}}]}},\"luuid_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[\"00010203-0405-0607-0809-0a0b0c0d0e0f\",\"11110203-0405-0607-0809-0a0b0c0d0e0f\"]}}}},{\"VAL\":{\"li32_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[]}},\"lstring_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[\"nvgre\",\"vxlan\"]}},\"lipaddr_1\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[\"192.168.1.10\",\"2001:0:3238::fefb\"]}}}}]}},\"m_u16_str_\":{\"TYPE\":\"map\",\"VAL\":{\"VAL\":{\"1\":\"vn1\",\"2\":\"vn2\"}}},\"m_str_str_\":{\"TYPE\":\"map\",\"VAL\":{\"VAL\":{\"uuid2\":\"vm2\",\"uuid1\":\"vm1\"}}},\"m_str_struct_\":{\"TYPE\":\"map\",\"VAL\":{\"VAL\":{\"uuid2\":{\"VAL\":{\"str1\":{\"TYPE\":\"string\",\"VAL\":\"First field\"},\"bool_1\":{\"TYPE\":\"bool\",\"VAL\":true},\"str4\":{\"TYPE\":\"string\",\"VAL\":\"Last field\"},\"uuid_2\":{\"TYPE\":\"uuid_t\",\"VAL\":\"00010203-0405-0607-0423-023434265323\"}}},\"uuid1\":{\"VAL\":{\"str1\":{\"TYPE\":\"string\",\"VAL\":\"First field\"},\"i16_1\":{\"TYPE\":\"i16\",\"VAL\":5678},\"str4\":{\"TYPE\":\"string\",\"VAL\":\"Last field\"},\"uuid_2\":{\"TYPE\":\"uuid_t\",\"VAL\":\"00010203-0405-0607-0423-023434265323\"}}}}}},\"nested_list\":{\"TYPE\":\"list\",\"VAL\":{\"VAL\":[{\"VAL\":[1,2,3]},{\"VAL\":[3,4,5]}]}}},\"TIMESTAMP\":\"2018-10-11 15:20:51\"}"
+        self.assertNotEqual(actual_data, expected_data)
+
+#end SandeshJSONEncodeDecodeTest
 
 class SandeshEncodeDecodeTest(unittest.TestCase):
     def setUp(self):
