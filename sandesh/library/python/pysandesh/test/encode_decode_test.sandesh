@@ -65,6 +65,24 @@ objectlog sandesh ContainerTypesTest {
     2: list<byte> lbyte_1;
     3: list<StructBasicTypes> lbst_1;
     4: list<StructContainerTypes> lcst_1;
+    5: optional map<u16,string>            m_u16_str_
+    6: optional map<string, string>        m_str_str_
+    7: optional map<string, StructBasicTypes>  m_str_struct_
+    8: optional list<list<u16>> nested_list
+
+}
+
+objectlog sandesh ContainerTypesJSONTest {
+/*
+    1: list<bool> lbool_1;
+    2: list<byte> lbyte_1;
+    3: list<StructBasicTypes> lbst_1;
+    4: list<StructContainerTypes> lcst_1;
+*/
+    5: map<u16,string>            m_u16_str_
+    6: map<string, string>        m_str_str_
+    7: map<string, StructBasicTypes>  m_str_struct_
+    8: list<list<u16>> nested_list
 }
 
 struct StructAnnotation {
