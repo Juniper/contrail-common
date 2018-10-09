@@ -900,12 +900,6 @@ bool ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
     // necessary.
     bool notify_update = false;
 
-    // Some properties are removed and re-added causing them
-    // to show up again in the while loop. This vector tracks
-    // properties already processed to avoid re-processing
-    // again later.
-    vector<string> prop_set;
-
     // Walk the document, remove unwanted properties and do
     // needed fixup for the others.
     Value::ConstMemberIterator itr = doc.MemberBegin();
@@ -947,107 +941,50 @@ bool ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
             continue;
         }
 
-        if (find(prop_set.begin(), prop_set.end(), key.c_str()) == \
-                                      prop_set.end()) {
-            /**
-              * Construct prop_map and prop_list objects.
-              * To find if obj is prop_list or prop_map, we
-              * use the WrapperFieldNames defined in schema.
-              * Today they are present only for prop_list
-              * and prop_map. If that changes, logic here has
-              * to change to accommodate it.
-              *
-              * Input Json from ETCD:
-              *     "propm": {
-              *             "key1": "val1",
-              *             "key2": "val2"
-              *     },
-              *     "propl": [
-              *             {
-              *                "key11": "val11",
-              *                "key12": "val12"
-              *             },
-              *             {
-              *                "key21": "val21",
-              *                "key22": "val22"
-              *             }
-              *     ]
-              *
-              * Output Json:
-              *    "propm": {
-              *          "wrapper_str": [
-              *             "key1": "val1",
-              *             "key2": "val2"
-              *          ]
-              *    },
-              *    "propl": {
-              *          "wrapper_str": [
-              *             {
-              *                "key11": "val11",
-              *                "key12": "val12"
-              *             },
-              *             {
-              *                "key21": "val21",
-              *                "key22": "val22"
-              *             }
-              *          ]
-              *    }
-              */
+        /**
+          * Handle prop_map and prop_list objects.
+          * Need to indicate in cache if they are NULL.
+          * To find if obj is prop_list or prop_map, we
+          * use the WrapperFieldNames defined in schema.
+          * Today they are present only for prop_list
+          * and prop_map. If that changes, logic here has
+          * to change to accommodate it.
+          */
+        string wrapper = client()->mgr()->config_json_parser()-> \
+                           GetWrapperFieldName(obj_type, key.c_str());
+        if (!wrapper.empty()) {
+            // Get the propl/propm json Value
+            Value &map_value = doc[key.c_str()];
 
-            string wrapper = client()->mgr()->config_json_parser()-> \
-                               GetWrapperFieldName(obj_type, key.c_str());
-            if (!wrapper.empty()) {
-                // Get the propl/propm json Value
-                Value &map_value = doc[key.c_str()];
-
-                // Indicate in cache if propm/propl is empty
-                cache->SetListOrMapPropEmpty(key,
-                                             map_value.IsNull());
-
-                // Generate a document from the json Value
-                StringBuffer sb;
-                Writer<StringBuffer> writer(sb);
-                map_value.Accept(writer);
-                string map_string = sb.GetString();
-                Document map_document(&a);
-                map_document.Parse<0>(map_string.c_str());
-
-                // Erase the propl/propm field from the document
-                itr = doc.EraseMember(itr);
-
-                // Construct a new Value with propm/propl name as key
-                Value v;
-                Value vk(key.c_str(), a);
-                doc.AddMember(vk, v.SetObject(), a);
-
-                Value vak(wrapper.c_str(), a);
-
-                // Insert the wrapper field as an array containing
-                // the propm/propl value
-                if (map_value.IsObject()) {
-                    // propl
-                    doc[key.c_str()].AddMember(vak, map_document, a);
-                } else {
-                    // propm
-                    Value va;
-                    doc[key.c_str()].AddMember(vak, va.SetArray(), a);
-                    doc[key.c_str()][wrapper.c_str()].PushBack(map_document, a);;
-                }
-
-                // Mark the property as processed
-                prop_set.push_back(key.c_str());
-                continue;
-            }
+            // Indicate in cache if propm/propl is empty
+            cache->SetListOrMapPropEmpty(key,
+                                         map_value.IsNull());
         }
 
         /**
           * Process parent_type. Need to change - to _.
           */
-        if (key.compare("parent_type") == 0) {
+        else if (key.compare("parent_type") == 0) {
             string parent_type = doc[key.c_str()].GetString();
             replace(parent_type.begin(), parent_type.end(),
                    '-', '_');
             doc[key.c_str()].SetString(parent_type.c_str(), a);
+        }
+
+        /**
+          * Process parent_uuid. For creates/updates, check if
+          * parent fq_name is present. If not, enable retry.
+          */
+        else if (key.compare("parent_uuid") == 0) {
+            if (add_change) {
+                string parent_uuid = doc[key.c_str()].GetString();
+                string parent_fq_name = client()->FindFQName(parent_uuid);
+                if (parent_fq_name == "ERROR") {
+                    CONFIG_CLIENT_DEBUG(ConfigEtcdReadRetry,
+                        "Parent fq_name not available for ", uuid);
+                    return false;
+                }
+            }
         }
 
         /**
@@ -1062,8 +999,10 @@ bool ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
           * For _refs, if attr is NULL,
           * replace NULL with "".
           * Also add fq_name to each _ref.
+          * Deletes do not need manipulation of _refs as previous
+          * create/update would have already formatted them.
           */
-        else if (key.find("_refs") != string::npos) {
+        else if (key.find("_refs") != string::npos && add_change) {
             // Determine if NULL attr needs to be processed
             string ref_type = key.substr(0, key.length() - 5);
             bool link_with_attr =
@@ -1124,6 +1063,26 @@ bool ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
                 Value vs1(ref_fq_name.c_str(), a);
                 (*v)[i].AddMember("to", vs1, a);
             }
+
+            // For creates/updates, need to update cache json_str
+            // with the new fixed ref_fq_names for _refs.
+            // Remove existing reference in cache and create a new
+            // ref with updated ref_fq_names.
+            Document cacheDoc;
+            string cache_json_str = cache->GetJsonString();
+            cacheDoc.Parse<0>(cache_json_str.c_str());
+            cacheDoc.RemoveMember(key.c_str());
+            Value vr;
+            Value vra;
+            Value refVal;
+            refVal.CopyFrom(*v, a);
+            cacheDoc.AddMember(vr.SetString(key.c_str(), a),
+                               refVal, a);
+            StringBuffer sb;
+            Writer<StringBuffer> writer(sb);
+            cacheDoc.Accept(writer);
+            string cache_str = sb.GetString();
+            cache->SetJsonString(cache_str);
         }
 
         if (itr != doc.MemberEnd()) itr++;
@@ -1173,6 +1132,17 @@ void ConfigEtcdPartition::ProcessUUIDDelete(
         assert(false);
     }
     UUIDCacheEntry *cache = uuid_iter->second;
+
+    /**
+      * If retry timer is running, the original create/update
+      * for the UUID has not been processed. Stop the timer,
+      * and purge the FQName cache entry.
+      */
+    if (cache->IsRetryTimerRunning()) {
+        cache->DisableEtcdReadRetry(uuid_key);
+        client()->PurgeFQNameCache(uuid_key);
+        return;
+    }
 
     /**
       * For CREATES, we could get here in erroneous
@@ -1228,7 +1198,15 @@ void ConfigEtcdPartition::ProcessUUIDUpdate(const string &uuid_key,
       * Finally, it will contain the fields that are to be
       * deleted.
       */
-    const string cache_json_str = cache->GetJsonString();
+    string cache_json_str = cache->GetJsonString();
+    if (cache_json_str.compare("retry") == 0) {
+        // If we are retrying due to ref or parent
+        // fq_name not available previously, cache
+        // json_str would have been cleared and set
+        // to retry. Process now like a new create.
+        cache_json_str = value_str;
+        is_new = true;
+    }
     Document cacheDoc;
     cacheDoc.Parse<0>(cache_json_str.c_str());
 
@@ -1277,12 +1255,14 @@ void ConfigEtcdPartition::ProcessUUIDUpdate(const string &uuid_key,
           * and delete from cache.
           */
         if (key.compare("draft_mode_state") == 0) {
-            string mode = itr->name.GetString();
-            if (mode.empty()) {
+            string mode = itr->value.GetString();
+            if (!mode.empty()) {
                 client()->PurgeFQNameCache(uuid_key);
                 DeleteCacheMap(uuid_key);
+                return;
             }
-            return;
+            itr = updDoc.EraseMember(itr);
+            continue;
         }
 
         /**
@@ -1328,14 +1308,10 @@ void ConfigEtcdPartition::ProcessUUIDUpdate(const string &uuid_key,
     }
 
     /**
-      * For updates ONLY. New cache creates would have already
-      * set the json_str in the cache.
       * Now that the updates are ready, replace the json_str in
       * the cache with the updated value_str.
       */
-    if (!is_new) {
-        cache->SetJsonString(value_str);
-    }
+    cache->SetJsonString(value_str);
 
     /**
       * Fixup the JSON document and push it down
@@ -1355,7 +1331,7 @@ void ConfigEtcdPartition::ProcessUUIDUpdate(const string &uuid_key,
                         true,
                         cache)) {
         cache->EnableEtcdReadRetry(uuid_key, value_str);
-        cache->SetJsonString(string());
+        cache->SetJsonString("retry");
     } else {
         cache->DisableEtcdReadRetry(uuid_key);
     }
