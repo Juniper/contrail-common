@@ -5,10 +5,14 @@
 #ifndef PATRICIA_H
 #define PATRICIA_H
 
+#include <iostream>
 #include <string>
 #include <cstring>
 #include <boost/intrusive/detail/parent_from_member.hpp>
 #include <boost/iterator/iterator_facade.hpp>
+
+#include <boost/asio/ip/address.hpp>
+class InetUnicastRouteEntry;
 
 #define IS_INT_NODE(node)       (node->intnode_) 
 
@@ -42,7 +46,7 @@ public:
 };
 
 template <class D, Node D::* P, class K>
-class Tree : private TreeBase {
+class Tree : public TreeBase {
 public:
     Tree() : TreeBase() {
     }
@@ -120,7 +124,10 @@ public:
         return NodeToData(GetLastNode());
     }
 
-private:
+    void PrintTree() {
+        PrintTreeImpl(root_, 0);
+    }
+
     const Node *DataToNode (const D * data) {
         if (data) {
             return static_cast<const Node *>(&(data->*P));
@@ -153,8 +160,29 @@ private:
         }
     }
 
+    void PrintTreeImpl(Node *node, int level) {
+        if (node == NULL)
+            return;
+
+        for(int i = 0; i < level; ++i)
+            std::cout << " ";
+        std::cout << node << " " << *((boost::asio::ip::address*)((uint8_t*)NodeToData(node) + 0xd8ull)) << std::endl;
+
+        if (node->left_ && node->left_->bitpos_ > node->bitpos_)
+            PrintTreeImpl(node->left_, level + 1);
+        if (node->right_ && node->right_->bitpos_ > node->bitpos_)
+            PrintTreeImpl(node->right_, level + 1);
+    }
+
     bool InsertNode(Node *node) {
         Node * p, * x, *l;
+
+        if (typeid(D) == typeid(InetUnicastRouteEntry)) {
+            std::cout << "Jachal: " << this << '\n';
+            std::cout << "node: " << *((boost::asio::ip::address*)((uint8_t*)NodeToData(node) + 0xd8ull)) << '\n';
+            std::cout << "old:\n";
+            PrintTree();
+        }
 
         // Start at the root_
         p = NULL;
@@ -200,7 +228,7 @@ private:
         nodes_++;
         node->left_ = NULL;
         node->right_ = NULL;
-        node->bitpos_ = K::BitLength(NodeToData(node));;
+        node->bitpos_ = K::BitLength(NodeToData(node));
 
         if (x) {
             if (x->bitpos_ == i) {
@@ -261,6 +289,11 @@ private:
             }
         } else {
             root_ = l;
+        }
+
+        if (typeid(D) == typeid(InetUnicastRouteEntry)) {
+            std::cout << "new:\n";
+            PrintTree();
         }
 
         return true;
