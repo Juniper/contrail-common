@@ -122,6 +122,43 @@ class PatriciaBaseTest : public ::testing::Test {
     RouteTable      *itbl_;
 };
 
+TEST_F(PatriciaBaseTest, MC) {
+    std::size_t i;
+    Route *route;
+    Route *route_next;
+    bool    ret;
+
+    route = new Route(0x0a000000, 24, 1);
+    ret = itbl_->Insert(route);
+    EXPECT_EQ(ret, true);
+    ret = itbl_->Insert(route);
+    EXPECT_EQ(ret, false);
+    route = new Route(0x0a000002, 32, 2);
+    ret = itbl_->Insert(route);
+    EXPECT_EQ(ret, true);
+    ret = itbl_->Insert(route);
+    EXPECT_EQ(ret, false);
+    route = new Route(0x0a0000ff, 32, 3);
+    ret = itbl_->Insert(route);
+    EXPECT_EQ(ret, true);
+    ret = itbl_->Insert(route);
+    EXPECT_EQ(ret, false);
+
+    route_next = itbl_->GetNext(itbl_->NodeToData(itbl_->root_));
+    EXPECT_EQ(route_next->nexthop_, 2);
+    
+    route_next = itbl_->FindNext(route_next);
+    EXPECT_EQ(route_next->nexthop_, 3);
+
+    route->ip_ = 0xa9fea9fe;
+    route_next = itbl_->FindNext(route_next);
+    EXPECT_EQ(route_next->nexthop_, 3);
+    //itbl_->DataToNode(route_next)->left_ = NULL;
+    //itbl_->DataToNode(route_next)->right_ = NULL;
+    //route_next = itbl_->FindNext(route_next);
+    //EXPECT_EQ(route_next, (Route *)NULL);
+}
+
 TEST_F(PatriciaBaseTest, Core) {
     std::size_t i;
     Route *route;
@@ -159,6 +196,8 @@ TEST_F(PatriciaBaseTest, Core) {
     route = itbl_->GetNext(NULL);
     EXPECT_EQ(route, (Route *)NULL);
     EXPECT_EQ(0, itbl_->Size());
+
+    itbl_->PrintTree();
 }
 
 TEST_F(PatriciaBaseTest, iterator) {
