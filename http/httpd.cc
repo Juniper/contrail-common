@@ -3,6 +3,7 @@
  */
 
 #include "base/logging.h"
+#include "base/address_util.h"
 #include "http/http_request.h"
 #include "http/http_server.h"
 #include "http/http_session.h"
@@ -12,7 +13,6 @@
 #include "http/route_test_types.h"
 #include "config/uve/virtual_network_types.h"
 #include <boost/bind.hpp>
-#include <boost/asio/ip/host_name.hpp>
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/assign/list_of.hpp>
@@ -211,7 +211,7 @@ main(int argc, char *argv[]) {
     http.RegisterHandler("quitquitquit",
 	boost::bind(&ServerShutdown, &http, _1, _2));
     http.Initialize(8090);
-    Sandesh::InitGeneratorTest("httpd", boost::asio::ip::host_name(), "httpd", "httpd", &evm, 8080);
+    Sandesh::InitGeneratorTest("httpd", ResolveCanonicalName(), "httpd", "httpd", &evm, 8080);
     Sandesh::SetLoggingParams(true, "HttpSession", SandeshLevel::UT_INFO);
     evm.Run();
     http.Shutdown();
