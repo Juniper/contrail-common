@@ -7,6 +7,7 @@
 #include <boost/bind.hpp>
 
 #include "base/logging.h"
+#include "base/address_util.h"
 #include "io/io_log.h"
 #include "io/io_utils.h"
 
@@ -107,8 +108,7 @@ void UdpServer::Shutdown() {
 
 bool UdpServer::Initialize(const std::string &ipaddress, unsigned short port) {
     boost::system::error_code error;
-    boost::asio::ip::address ip = boost::asio::ip::address::from_string(
-                ipaddress, error);
+    boost::asio::ip::address ip = AddressFromString(ipaddress, &error);
     if (!error) {
         udp::endpoint local_endpoint = udp::endpoint(ip, port);
         return Initialize(local_endpoint);
