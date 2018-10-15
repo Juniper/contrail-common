@@ -17,6 +17,7 @@
 #include <base/task.h>
 #include <base/timer.h>
 #include <base/string_util.h>
+#include <base/address_util.h>
 #include <io/event_manager.h>
 #include <database/gendb_if.h>
 #include <database/gendb_constants.h>
@@ -1846,6 +1847,12 @@ CqlIfImpl::CqlIfImpl(EventManager *evm,
     // Set contact points and port
     if (cassandra_ips.size() > 0) {
         schema_contact_point_ = cassandra_ips[0];
+        boost::system::error_code ec;
+        boost::asio::ip::address::from_string(cassandra_ips[0], ec);
+        if(ec.value() != 0){
+            schema_contact_point_ = GetHostIp(
+                            evm->io_service(), cassandra_ips[0]);
+        }
     }
     std::string contact_points(boost::algorithm::join(cassandra_ips, ","));
     cci_->CassClusterSetContactPoints(cluster_.get(), contact_points.c_str());
@@ -2467,7 +2474,7 @@ CqlIf::CqlIf(EventManager *evm,
     BOOST_FOREACH(const std::string &cassandra_ip, cassandra_ips) {
         boost::system::error_code ec;
         boost::asio::ip::address cassandra_addr(
-            boost::asio::ip::address::from_string(cassandra_ip, ec));
+            AddressFromString(cassandra_ip, &ec));
         GenDb::Endpoint endpoint(cassandra_addr, cassandra_port);
         endpoints_.push_back(endpoint);
     }

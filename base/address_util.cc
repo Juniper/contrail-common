@@ -7,6 +7,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ip/host_name.hpp>
 #include <boost/foreach.hpp>
 
 /* Returns true if the given IPv4 address is member of the IPv4 subnet
@@ -38,6 +39,49 @@ bool IsIp6SubnetMember(
     return true;
 }
 
+/*
+ * Returns the canonical hostname (FQDN)
+*/
+
+std::string ResolveCanonicalName()
+{
+    boost::asio::io_service io_service;
+    boost::system::error_code error;
+    boost::asio::ip::tcp::resolver resolver (io_service);
+    boost::asio::ip::tcp::resolver::query query(boost::asio::ip::host_name(), "", 
+		boost::asio::ip::resolver_query_base::canonical_name);
+    boost::asio::ip::tcp::resolver::iterator iter = resolver.resolve (query,error), end;
+    if(error){
+        return boost::asio::ip::host_name();
+    }
+    while (iter != end) {
+        if(iter->host_name() != ""){
+            return iter->host_name();
+        }
+        iter++;
+    }
+    return boost::asio::ip::host_name();
+}
+
+/*
+ * Returns boost::asio::ip::address if given string is either valid
+ * IPv4, IPv6 or a resolvable FQDN
+*/
+
+IpAddress AddressFromString(
+          std::string ip_address_str,
+          boost::system::error_code *ec) {
+    IpAddress addr =
+            boost::asio::ip::address::from_string(ip_address_str, *ec);
+    boost::system::error_code error_code = *ec;
+    if(error_code.value() != 0){
+        boost::asio::io_service io_service;
+        std::string ip_string = GetHostIp(&io_service, ip_address_str);
+        addr = boost::asio::ip::address::from_string(ip_string, *ec);
+    }
+    return addr;
+}
+
 Ip4Address GetIp4SubnetBroadcastAddress(
               const Ip4Address &ip_prefix, uint16_t plen) {
     Ip4Address subnet(ip_prefix.to_ulong() | ~(0xFFFFFFFF << (32 - plen)));
@@ -48,14 +92,13 @@ Ip4Address GetIp4SubnetBroadcastAddress(
 bool ValidateIPAddressString(std::string ip_address_str,
                              std::string *error_msg) {
     boost::system::error_code error;
-    boost::asio::ip::address::from_string(ip_address_str, error);
-    if (error) {
-        std::ostringstream out;
-        out << "Invalid IP address: " << ip_address_str << std::endl;
-        *error_msg = out.str();
-        return false;
+    AddressFromString(ip_address_str, &error);
+    if (error.value() != 0) {
+       std::ostringstream out;
+       out << "Invalid IP address: " << ip_address_str << std::endl;
+       *error_msg = out.str();
+       return false;
     }
-
     return true;
 }
 
@@ -150,7 +193,7 @@ bool ValidateServerEndpoints(std::vector<std::string> list,
         }
 
         boost::system::error_code error;
-        boost::asio::ip::address::from_string(tokens[0], error);
+        AddressFromString(tokens[0], &error);
 
         if (error) {
             out << "Invalid IP address: " << tokens[0] << std::endl;
