@@ -27,6 +27,20 @@ bool IsIp4SubnetMember(const Ip4Address &ip, const Ip4Address &prefix_ip,
  */
 bool IsIp6SubnetMember(const Ip6Address &ip, const Ip6Address &subnet,
                        uint8_t plen);
+/*
+ * Returns canonical hostname
+ */
+
+std::string ResolveCanonicalName();
+
+/*
+ * Returns boost::asio::ip::address if given string is either valid
+ * IPv4, IPv6 or a resolvable FQDN
+*/
+
+boost::asio::ip::address AddressFromString(
+                         std::string ip_address_str,
+                         boost::system::error_code *ec);
 
 Ip4Address GetIp4SubnetBroadcastAddress(const Ip4Address &ip_prefix,
                                         uint16_t plen);

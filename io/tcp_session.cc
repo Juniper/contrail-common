@@ -9,11 +9,11 @@
 
 #include <boost/asio.hpp>
 #include <boost/asio/detail/socket_option.hpp>
-#include <boost/asio/ip/host_name.hpp>
 #include <boost/bind.hpp>
 #include <boost/scoped_array.hpp>
 
 #include "base/logging.h"
+#include "base/address_util.h"
 #include "io/event_manager.h"
 #include "io/io_log.h"
 #include "io/io_utils.h"
@@ -228,7 +228,7 @@ void TcpSession::SetName() {
     name_ = out.str();
 
     out.str("");
-    string hostname = boost::asio::ip::host_name(error);
+    string hostname = ResolveCanonicalName();
     out << hostname << ":" << remote_.address().to_string();
     uve_key_str_ = out.str();
 }

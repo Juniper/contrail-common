@@ -18,7 +18,7 @@ class generator(object):
     #end __init__
 
     def run_generator(self):
-        self._sandesh_instance.init_generator('PysandeshExample', socket.gethostname(),
+        self._sandesh_instance.init_generator('PysandeshExample', socket.getfqdn(),
                 'Example', '0', ['127.0.0.1:8086'], 'generator_context', 9090, 
                 ['pysandesh_example'])
         self._sandesh_instance.set_logging_params(enable_local_log = True,
