@@ -5,6 +5,7 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include "base/util.h"
+#include "base/address_util.h"
 #include "base/logging.h"
 #include "base/test/task_test_util.h"
 #include <iomanip>
@@ -249,6 +250,11 @@ VncApi::VncApi(EventManager *evm, VncApiConfig *cfg) : evm_(evm), cfg_(cfg),
     boost::system::error_code ec;
     SetApiServerAddress();
     ks_ep_.address(boost::asio::ip::address::from_string(cfg_->ks_srv_ip, ec));
+    if(ec.value() != 0){
+      boost::asio::io_service io_service;
+      std::string ks_srv_ip_string = GetHostIp(&io_service, cfg_->ks_srv_ip);
+      ks_ep_.address(boost::asio::ip::address::from_string(ks_srv_ip_string, ec));
+    }
     ks_ep_.port(cfg_->ks_srv_port);
     if (cfg_->api_use_ssl) {
         boost::property_tree::ptree pt;
@@ -271,6 +277,11 @@ VncApi::SetApiServerAddress() {
     boost::system::error_code ec;
     api_ep_.address(boost::asio::ip::address::from_string(cfg_->api_srv_ip,
                 ec));
+    if(ec.value() != 0){
+      boost::asio::io_service io_service;
+      std::string address_string = GetHostIp(&io_service, cfg_->api_srv_ip);
+      api_ep_.address(boost::asio::ip::address::from_string(address_string, ec));
+    }
     api_ep_.port(cfg_->api_srv_port);
 }
 

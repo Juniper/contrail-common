@@ -14,6 +14,7 @@
 #include "schema/vnc_cfg_types.h"
 #include "eql_if.h"
 #include "eql_log.h"
+#include "base/address_util.h"
 
 using namespace std;
 using namespace etcd::etcdql;
@@ -35,8 +36,13 @@ EtcdIf::EtcdIf(const std::vector<std::string> &etcd_hosts,
     BOOST_FOREACH(const std::string &etcd_host, etcd_hosts) {
         hosts_.push_back(etcd_host);
         boost::system::error_code ec;
-        boost::asio::ip::address etcd_addr(
-            boost::asio::ip::address::from_string(etcd_host, ec));
+        boost::asio::ip::address etcd_addr;
+        etcd_addr = boost::asio::ip::address::from_string(etcd_host, ec);
+        if(ec.value() != 0){
+          boost::asio::io_service io_service;
+          std::string address_string = GetHostIp(&io_service, etcd_host);
+          etcd_addr = boost::asio::ip::address::from_string(address_string, ec);
+        }
         if (ec) {
             EQL_DEBUG(EtcdClientDebug, "Invalid IP address");
         }

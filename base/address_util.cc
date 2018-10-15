@@ -49,11 +49,16 @@ bool ValidateIPAddressString(std::string ip_address_str,
                              std::string *error_msg) {
     boost::system::error_code error;
     boost::asio::ip::address::from_string(ip_address_str, error);
-    if (error) {
-        std::ostringstream out;
-        out << "Invalid IP address: " << ip_address_str << std::endl;
-        *error_msg = out.str();
-        return false;
+    if (error.value() != 0) {
+        boost::asio::io_service io_service;
+        std::string conv_ip_address_str = GetHostIp(&io_service, ip_address_str);
+        boost::asio::ip::address::from_string(conv_ip_address_str, error);
+        if (error.value() != 0) {
+            std::ostringstream out;
+            out << "Invalid IP address: " << conv_ip_address_str << " ec: " << error << std::endl;
+            *error_msg = out.str();
+            return false;
+        }
     }
 
     return true;
@@ -153,9 +158,14 @@ bool ValidateServerEndpoints(std::vector<std::string> list,
         boost::asio::ip::address::from_string(tokens[0], error);
 
         if (error) {
-            out << "Invalid IP address: " << tokens[0] << std::endl;
-            *error_msg = out.str();
-            return false;
+            boost::asio::io_service io_service;
+            std::string conv_ip_address_str = GetHostIp(&io_service, tokens[0]);
+            boost::asio::ip::address::from_string(conv_ip_address_str, error);
+            if(error) {
+                out << "Invalid IP address: " << tokens[0] << std::endl;
+                *error_msg = out.str();
+                return false;
+            }
         }
 
         unsigned long port = strtoul(tokens[1].c_str(), NULL, 0);

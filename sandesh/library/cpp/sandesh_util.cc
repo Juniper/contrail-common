@@ -9,6 +9,7 @@
 #include <boost/tokenizer.hpp>
 
 #include <base/string_util.h>
+#include <base/address_util.h>
 
 #include "sandesh_util.h"
 
@@ -27,6 +28,11 @@ bool MakeEndpoint(TcpServer::Endpoint* ep, const std::string& epstr) {
     stringToInteger(sport, port);
     boost::system::error_code ec;
     address addr = address::from_string(sip, ec);
+    if(ec.value() != 0){
+      boost::asio::io_service io_service;
+      std::string addr_string = GetHostIp(&io_service, sip);
+      addr = boost::asio::ip::address::from_string(addr_string, ec);
+    }
     if (ec) {
         return false;
     }

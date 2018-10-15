@@ -17,6 +17,7 @@
 #include <base/logging.h>
 #include <base/parse_object.h>
 #include <base/queue_task.h>
+#include <base/address_util.h>
 #include <http/http_session.h>
 #include <io/tcp_session.h>
 
@@ -215,6 +216,11 @@ bool Sandesh::ConnectToCollector(const std::string &collector_ip,
                                  int collector_port, bool periodicuve) {
     boost::system::error_code ec;
     address collector_addr = address::from_string(collector_ip, ec);
+    if(ec.value() != 0){
+      boost::asio::io_service io_service;
+      std::string collector_ip_string = GetHostIp(&io_service, collector_ip);
+      collector_addr = boost::asio::ip::address::from_string(collector_ip_string, ec);
+    }
     if (ec) {
         SANDESH_LOG(ERROR, __func__ << ": Invalid collector address: " <<
                 collector_ip << " Error: " << ec);
