@@ -14,6 +14,7 @@
 
 #include "base/connection_info.h"
 #include "base/task.h"
+#include "base/address_util.h"
 #include "base/string_util.h"
 #include "config_factory.h"
 #include "config_cassandra_client.h"
@@ -92,7 +93,7 @@ ConfigAmqpClient::ConfigAmqpClient(ConfigClientManager *mgr, string hostname,
         int port = 0;
         stringToInteger(port_str, port);
         boost::system::error_code ec;
-        curr_ep.address(boost::asio::ip::address::from_string(ip, ec));
+        curr_ep.address(AddressFromString(ip, &ec));
         curr_ep.port(port);
         endpoints_.push_back(curr_ep);
     }
