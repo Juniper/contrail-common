@@ -93,7 +93,6 @@ extern int vrouter_dbg;
 #define os_free(ptr)                     free(ptr)
 #define os_log(level, format, ...)       printf(level format, __VA_ARGS__)
 
-#undef uuid_t
 
 #else /* _WIN32 */
 #include <syslog.h>
@@ -125,7 +124,7 @@ typedef UINT32  uint32_t, u_int32_t;
 typedef UINT64  uint64_t, u_int64_t;
 #endif
 
-typedef unsigned char uuid_t[16];
+typedef unsigned char ct_uuid_t[16];
 
 typedef struct ipaddr_s {
     uint8_t iptype; // AF_INET or AF_INET6
