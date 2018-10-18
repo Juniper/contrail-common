@@ -836,7 +836,11 @@ bool Sandesh::IsLevelCategoryLoggingAllowed(SandeshType::type type,
 
 bool Sandesh::IsLoggingAllowed() const {
     if (type_ == SandeshType::FLOW || type_ == SandeshType::SESSION) {
-        return enable_flow_log_;
+        // For session messages, logging to file happens through
+        // [SESSION] section in agent.conf. If file logging is
+        // specified, it will be done in the generated code, so this
+        // cause duplication, hence returning false
+        return false;
     } else {
         return IsLocalLoggingEnabled() &&
                 IsLevelCategoryLoggingAllowed(type_, level_, category_);
