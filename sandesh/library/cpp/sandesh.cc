@@ -836,7 +836,7 @@ bool Sandesh::IsLevelCategoryLoggingAllowed(SandeshType::type type,
 
 bool Sandesh::IsLoggingAllowed() const {
     if (type_ == SandeshType::FLOW || type_ == SandeshType::SESSION) {
-        return enable_flow_log_;
+        return false;
     } else {
         return IsLocalLoggingEnabled() &&
                 IsLevelCategoryLoggingAllowed(type_, level_, category_);
