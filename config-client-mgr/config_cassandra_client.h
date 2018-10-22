@@ -7,7 +7,6 @@
 
 #include <boost/ptr_container/ptr_map.hpp>
 #include <boost/shared_ptr.hpp>
-#include <tbb/spin_rw_mutex.h>
 
 #include <list>
 #include <map>
@@ -212,12 +211,6 @@ class ConfigCassandraClient : public ConfigDbClient {
     static const std::string kCassClientTaskId;
     static const std::string kObjectProcessTaskId;
 
-    // wait time before retrying in seconds
-    static const uint64_t kInitRetryTimeUSec = 5000000;
-
-    // Number of UUID requests to handle in one config reader task execution
-    static const int kMaxRequestsToYield = 512;
-
     // Number of UUIDs to read in one read request
     static const int kMaxNumUUIDToRead = 64;
 
@@ -225,7 +218,6 @@ class ConfigCassandraClient : public ConfigDbClient {
     static const int kNumFQNameEntriesToRead = 4096;
 
     typedef boost::scoped_ptr<GenDb::GenDbIf> GenDbIfPtr;
-    typedef std::pair<std::string, std::string> ObjTypeFQNPair;
     typedef std::vector<ConfigCassandraPartition *> PartitionList;
 
     ConfigCassandraClient(ConfigClientManager *mgr, EventManager *evm,
@@ -236,7 +228,6 @@ class ConfigCassandraClient : public ConfigDbClient {
     virtual void InitDatabase();
     void BulkSyncDone();
     virtual void GetConnectionInfo(ConfigDBConnInfo &status) const;
-    virtual uint32_t GetNumReadRequestToBunch() const;
     ConfigClientManager *mgr() { return mgr_; }
     const ConfigClientManager *mgr() const { return mgr_; }
     ConfigCassandraPartition *GetPartition(const std::string &uuid);
@@ -246,26 +237,10 @@ class ConfigCassandraClient : public ConfigDbClient {
     void EnqueueUUIDRequest(std::string oper, std::string obj_type,
                                     std::string uuid_str);
 
-    // FQ Name Cache
-    ObjTypeFQNPair UUIDToFQName(const std::string &uuid_str,
-                             bool deleted_ok = true) const;
-    virtual void AddFQNameCache(const std::string &uuid,
-                                const std::string &fq_name,
-                                const std::string &obj_type);
-    virtual std::string FindFQName(const std::string &uuid) const;
-    virtual void InvalidateFQNameCache(const std::string &uuid);
-    void PurgeFQNameCache(const std::string &uuid);
-
-    virtual bool UUIDToFQNameShow(
-        const std::string &search_string, const std::string &last_uuid,
-        uint32_t num_entries,
-        std::vector<ConfigDBFQNameCacheEntry> *entries) const;
-
     virtual bool UUIDToObjCacheShow(
         const std::string &search_string, int inst_num,
         const std::string &last_uuid, uint32_t num_entries,
         std::vector<ConfigDBUUIDCacheEntry> *entries) const;
-    virtual std::string uuid_str(const std::string &uuid);
     virtual bool IsListOrMapPropEmpty(const string &uuid_key,
                                       const string &lookup_key);
     virtual bool IsTaskTriggered() const;
@@ -280,16 +255,9 @@ protected:
     virtual std::string FetchUUIDFromFQNameEntry(const std::string &key) const;
 
     virtual int HashUUID(const std::string &uuid_str) const;
-    virtual std::string GetUUID(const std::string &key) const { return key; }
     virtual bool SkipTimeStampCheckForTypeAndFQName() const { return true; }
     virtual uint32_t GetFQNameEntriesToRead() const {
         return kNumFQNameEntriesToRead;
-    }
-    virtual const int GetMaxRequestsToYield() const {
-        return kMaxRequestsToYield;
-    }
-    virtual const uint64_t GetInitRetryTimeUSec() const {
-        return kInitRetryTimeUSec;
     }
     int num_workers() const { return num_workers_; }
     PartitionList &partitions() { return partitions_; }
@@ -300,17 +268,6 @@ protected:
  private:
     friend class ConfigCassandraPartition;
 
-    // UUID to FQName mapping
-    struct FQNameCacheType {
-        FQNameCacheType(std::string in_obj_type, std::string in_fq_name)
-            : obj_type(in_obj_type), fq_name(in_fq_name), deleted(false) {
-        }
-        std::string obj_type;
-        std::string fq_name;
-        bool deleted;
-    };
-    typedef std::map<std::string, FQNameCacheType> FQNameCacheMap;
-
     bool InitRetry();
 
     bool FQNameReader();
@@ -320,8 +277,6 @@ protected:
 
     void HandleCassandraConnectionStatus(bool success,
                                          bool force_update = false);
-    void FillFQNameCacheInfo(const std::string &uuid,
-      FQNameCacheMap::const_iterator it, ConfigDBFQNameCacheEntry *entry) const;
 
     ConfigClientManager *mgr_;
     EventManager *evm_;
@@ -329,8 +284,6 @@ protected:
     int num_workers_;
     PartitionList partitions_;
     boost::scoped_ptr<TaskTrigger> fq_name_reader_;
-    mutable tbb::spin_rw_mutex rw_mutex_;
-    FQNameCacheMap fq_name_cache_;
     tbb::atomic<long> bulk_sync_status_;
     tbb::atomic<bool> cassandra_connection_up_;
     tbb::atomic<uint64_t> connection_status_change_at_;
