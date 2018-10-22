@@ -273,16 +273,7 @@ void ConfigEtcdClient::PostShutdown() {
     CONFIG_CLIENT_DEBUG(ConfigClientMgrDebug,
                         "ETCD SM: Post shutdown during re-init");
     STLDeleteValues(&partitions_);
-    fq_name_cache_.clear();
-}
-
-int ConfigEtcdClient::HashUUID(const string &uuid_str) const {
-    boost::hash<string> string_hash;
-    return string_hash(uuid_str) % num_workers_;
-}
-
-string ConfigEtcdClient::uuid_str(const string &uuid) {
-    return uuid;
+    ClearFQNameCache();
 }
 
 ConfigEtcdPartition *
@@ -301,6 +292,11 @@ const ConfigEtcdPartition *
 ConfigEtcdClient::GetPartition(int worker_id) const {
     assert(worker_id < num_workers_);
     return partitions_[worker_id];
+}
+
+int ConfigEtcdClient::HashUUID(const string &uuid_str) const {
+    boost::hash<string> string_hash;
+    return string_hash(uuid_str) % num_workers_;
 }
 
 void ConfigEtcdClient::EnqueueUUIDRequest(string oper,
@@ -368,7 +364,7 @@ void ConfigEtcdClient::EnqueueUUIDRequest(string oper,
             }
             fq_name.erase(fq_name.end()-1);
             if (FindFQName(uuid_key) == "ERROR") {
-                AddFQNameCache(uuid_key, fq_name, obj_type);
+                AddFQNameCache(uuid_key, obj_type, fq_name);
             }
         }
     } else if (oper == "DELETE") {
@@ -391,23 +387,6 @@ void ConfigEtcdClient::EnqueueDBSyncRequest(
         it != uuid_list.end(); it++) {
         EnqueueUUIDRequest("CREATE", it->first, it->second);
     }
-}
-
-uint32_t ConfigEtcdClient::GetNumUUIDRequestToBunch() const {
-    static bool init_ = false;
-    static uint32_t num_read_req_to_bunch = 0;
-
-    if (!init_) {
-        // XXX To be used for testing purposes only.
-        char *count_str = getenv("CONFIG_NUM_DB_READ_REQ_TO_BUNCH");
-        if (count_str) {
-            num_read_req_to_bunch = strtol(count_str, NULL, 0);
-        } else {
-            num_read_req_to_bunch = kNumUUIDEntriesToRead;
-        }
-        init_ = true;
-    }
-    return num_read_req_to_bunch;
 }
 
 bool ConfigEtcdClient::UUIDReader() {
@@ -442,7 +421,7 @@ bool ConfigEtcdClient::UUIDReader() {
             /**
               * Get number of UUIDs to read at a time
               */
-            num_entries = GetNumUUIDRequestToBunch();
+            num_entries = GetNumReadRequestToBunch();
 
             /**
               * Read num_entries UUIDs at a time
@@ -552,83 +531,6 @@ void ConfigEtcdClient::GetConnectionInfo(ConfigDBConnInfo &status) const {
     status.connection_status_change_at =
         UTCUsecToString(connection_status_change_at_);
     return;
-}
-
-void ConfigEtcdClient::AddFQNameCache(const string &uuid,
-                                      const string &fq_name,
-                                      const string &obj_type) {
-    tbb::spin_rw_mutex::scoped_lock write_lock(rw_mutex_, true);
-    FQNameCacheType cache_obj(obj_type, fq_name);
-    fq_name_cache_.insert(make_pair(uuid, cache_obj));
-    return;
-}
-
-string ConfigEtcdClient::FindFQName(const string &uuid) const {
-    string fq_name = UUIDToFQName(uuid);
-    return (fq_name);
-}
-
-string ConfigEtcdClient::UUIDToFQName(
-                              const string &uuid,
-                              bool deleted_ok) const {
-    tbb::spin_rw_mutex::scoped_lock read_lock(rw_mutex_, false);
-    FQNameCacheMap::const_iterator it = fq_name_cache_.find(uuid);
-    if (it != fq_name_cache_.end()) {
-        if (!it->second.deleted || (it->second.deleted && deleted_ok)) {
-            return it->second.fq_name;
-        }
-    }
-    return "ERROR";
-}
-
-void ConfigEtcdClient::InvalidateFQNameCache(const string &uuid) {
-    tbb::spin_rw_mutex::scoped_lock write_lock(rw_mutex_, true);
-    FQNameCacheMap::iterator it = fq_name_cache_.find(uuid);
-    if (it != fq_name_cache_.end()) {
-        it->second.deleted = true;
-    }
-    return;
-}
-
-void ConfigEtcdClient::PurgeFQNameCache(const string &uuid) {
-    tbb::spin_rw_mutex::scoped_lock write_lock(rw_mutex_, true);
-    fq_name_cache_.erase(uuid);
-}
-
-void ConfigEtcdClient::FillFQNameCacheInfo(const string &uuid,
-                                FQNameCacheMap::const_iterator it,
-                                ConfigDBFQNameCacheEntry *entry) const {
-    entry->set_uuid(it->first);
-    entry->set_obj_type(it->second.obj_type);
-    entry->set_fq_name(it->second.fq_name);
-    entry->set_deleted(it->second.deleted);
-}
-
-bool ConfigEtcdClient::UUIDToFQNameShow(
-                           const string &search_string,
-                           const string &last_uuid,
-                           uint32_t num_entries,
-                           vector<ConfigDBFQNameCacheEntry> *entries) const {
-    uint32_t count = 0;
-    bool more = false;
-    regex search_expr(search_string);
-    tbb::spin_rw_mutex::scoped_lock read_lock(rw_mutex_, false);
-    for (FQNameCacheMap::const_iterator it =
-        fq_name_cache_.upper_bound(last_uuid);
-        it != fq_name_cache_.end(); it++) {
-        if (regex_search(it->first, search_expr) ||
-            regex_search(it->second.obj_type, search_expr) ||
-            regex_search(it->second.fq_name, search_expr)) {
-            if (++count > num_entries) {
-                more = true;
-                break;
-            }
-            ConfigDBFQNameCacheEntry entry;
-            FillFQNameCacheInfo(it->first, it, &entry);
-            entries->push_back(entry);
-        }
-    }
-    return more;
 }
 
 bool ConfigEtcdClient::UUIDToObjCacheShow(
@@ -941,41 +843,45 @@ bool ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
             continue;
         }
 
-        /**
-          * Handle prop_map and prop_list objects.
-          * Need to indicate in cache if they are NULL.
-          * To find if obj is prop_list or prop_map, we
-          * use the WrapperFieldNames defined in schema.
-          * Today they are present only for prop_list
-          * and prop_map. If that changes, logic here has
-          * to change to accommodate it.
-          */
         string wrapper = client()->mgr()->config_json_parser()-> \
                            GetWrapperFieldName(obj_type, key.c_str());
         if (!wrapper.empty()) {
+
+            /**
+              * Handle prop_map and prop_list objects.
+              * Need to indicate in cache if they are NULL.
+              * To find if obj is prop_list or prop_map, we
+              * use the WrapperFieldNames defined in schema.
+              * Today they are present only for prop_list
+              * and prop_map. If that changes, logic here has
+              * to change to accommodate it.
+              */
+
             // Get the propl/propm json Value
             Value &map_value = doc[key.c_str()];
 
             // Indicate in cache if propm/propl is empty
             cache->SetListOrMapPropEmpty(key,
                                          map_value.IsNull());
-        }
 
-        /**
-          * Process parent_type. Need to change - to _.
-          */
-        else if (key.compare("parent_type") == 0) {
+        } else if (key.compare("parent_type") == 0) {
+
+            /**
+              * Process parent_type. Need to change - to _.
+              */
+
             string parent_type = doc[key.c_str()].GetString();
             replace(parent_type.begin(), parent_type.end(),
                    '-', '_');
             doc[key.c_str()].SetString(parent_type.c_str(), a);
-        }
 
-        /**
-          * Process parent_uuid. For creates/updates, check if
-          * parent fq_name is present. If not, enable retry.
-          */
-        else if (key.compare("parent_uuid") == 0) {
+        } else if (key.compare("parent_uuid") == 0) {
+
+            /**
+              * Process parent_uuid. For creates/updates, check if
+              * parent fq_name is present. If not, enable retry.
+              */
+
             if (add_change) {
                 string parent_uuid = doc[key.c_str()].GetString();
                 string parent_fq_name = client()->FindFQName(parent_uuid);
@@ -985,24 +891,26 @@ bool ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
                     return false;
                 }
             }
-        }
 
-        /**
-          * Process bgpaas_session_attributes property.
-          * Value needs to be set to "".
-          */
-        else if (key.compare("bgpaas_session_attributes") == 0) {
+        } else if (key.compare("bgpaas_session_attributes") == 0) {
+
+            /**
+              * Process bgpaas_session_attributes property.
+              * Value needs to be set to "".
+              */
+
             doc[key.c_str()].SetString("", a);
-        }
 
-        /**
-          * For _refs, if attr is NULL,
-          * replace NULL with "".
-          * Also add fq_name to each _ref.
-          * Deletes do not need manipulation of _refs as previous
-          * create/update would have already formatted them.
-          */
-        else if (key.find("_refs") != string::npos && add_change) {
+        } else if (key.find("_refs") != string::npos && add_change) {
+
+            /**
+              * For _refs, if attr is NULL,
+              * replace NULL with "".
+              * Also add fq_name to each _ref.
+              * Deletes do not need manipulation of _refs as previous
+              * create/update would have already formatted them.
+              */
+
             // Determine if NULL attr needs to be processed
             string ref_type = key.substr(0, key.length() - 5);
             bool link_with_attr =
