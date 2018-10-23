@@ -7,7 +7,6 @@
 
 #include <boost/ptr_container/ptr_map.hpp>
 #include <boost/shared_ptr.hpp>
-#include <tbb/spin_rw_mutex.h>
 
 #include "database/etcd/eql_if.h"
 
@@ -217,15 +216,6 @@ private:
  */
 class ConfigEtcdClient : public ConfigDbClient {
  public:
-    // wait time before retrying in seconds
-    static const uint64_t kInitRetryTimeUSec = 5000000;
-
-    // Number of UUID entries to read from Etcd
-    static const int kNumUUIDEntriesToRead = 4096;
-
-    // Number of UUID requests to handle in one config reader task execution
-    static const int kMaxRequestsToYield = 512;
-
     typedef vector<ConfigEtcdPartition *> PartitionList;
 
     ConfigEtcdClient(ConfigClientManager *mgr, EventManager *evm,
@@ -236,7 +226,6 @@ class ConfigEtcdClient : public ConfigDbClient {
     virtual void InitDatabase();
     void BulkSyncDone();
     virtual void GetConnectionInfo(ConfigDBConnInfo &status) const;
-    virtual uint32_t GetNumUUIDRequestToBunch() const;
     void EnqueueUUIDRequest(string oper, string obj_type,
                                     string uuid_str);
 
@@ -249,27 +238,11 @@ class ConfigEtcdClient : public ConfigDbClient {
     // Start ETCD watch for config updates
     void StartWatcher();
 
-    // FQName Cache
-    virtual void AddFQNameCache(const string &uuid,
-                                const string &fq_name,
-                                const string &obj_type);
-    virtual string FindFQName(const string &uuid) const;
-    virtual void InvalidateFQNameCache(const string &uuid);
-    void PurgeFQNameCache(const string &uuid);
-    virtual bool UUIDToFQNameShow(
-        const string &search_string,
-        const string &last_uuid,
-        uint32_t num_entries,
-        vector<ConfigDBFQNameCacheEntry> *entries) const;
-    string UUIDToFQName(const std::string &uuid_str,
-                             bool deleted_ok = true) const;
-
     // UUID Cache
     virtual bool UUIDToObjCacheShow(
         const string &search_string, int inst_num,
         const string &last_uuid, uint32_t num_entries,
         vector<ConfigDBUUIDCacheEntry> *entries) const;
-    virtual string uuid_str(const string &uuid);
 
     virtual bool IsListOrMapPropEmpty(const string &uuid_key,
                                       const string &lookup_key);
@@ -288,15 +261,7 @@ protected:
     virtual bool BulkDataSync();
     void EnqueueDBSyncRequest(const UUIDValueList &uuid_list);
 
-    virtual int HashUUID(const string &uuid_str) const;
-    virtual string GetUUID(const string &key) const { return key; }
-
-    virtual const int GetMaxRequestsToYield() const {
-        return kMaxRequestsToYield;
-    }
-    virtual const uint64_t GetInitRetryTimeUSec() const {
-        return kInitRetryTimeUSec;
-    }
+    virtual int HashUUID(const std::string &uuid_str) const;
     int num_workers() const { return num_workers_; }
     PartitionList &partitions() { return partitions_; }
     virtual void PostShutdown();
@@ -305,21 +270,6 @@ protected:
 
  private:
     friend class ConfigEtcdPartition;
-
-    // UUID to FQName mapping
-    struct FQNameCacheType {
-        FQNameCacheType(std::string in_obj_type, std::string in_fq_name)
-            : obj_type(in_obj_type), fq_name(in_fq_name), deleted(false) {
-        }
-        std::string obj_type;
-        std::string fq_name;
-        bool deleted;
-    };
-    typedef std::map<std::string, FQNameCacheType> FQNameCacheMap;
-
-    void FillFQNameCacheInfo(const std::string &uuid,
-                             FQNameCacheMap::const_iterator it,
-                             ConfigDBFQNameCacheEntry *entry) const;
 
     // A Job for watching changes to config stored in etcd
     class EtcdWatcher;
@@ -338,8 +288,6 @@ protected:
     int num_workers_;
     PartitionList partitions_;
     boost::scoped_ptr<TaskTrigger> uuid_reader_;
-    FQNameCacheMap fq_name_cache_;
-    mutable tbb::spin_rw_mutex rw_mutex_;
     tbb::atomic<long> bulk_sync_status_;
     tbb::atomic<bool> etcd_connection_up_;
     tbb::atomic<uint64_t> connection_status_change_at_;
