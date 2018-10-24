@@ -418,28 +418,27 @@ void EtcdIf::EtcdAsyncWatchCall::WaitForWatchResponse(WatchCb cb) {
                         resp.set_prev_key(event.prev_kv().key());
                         resp.set_prev_val(event.prev_kv().value());
                     }
+
+                    EQL_DEBUG(EtcdClientDebug, os << "Watch Response: "
+                                                  << "Success"
+                                                  << " revision: "
+                                                  << resp.revision()
+                                                  << " action: "
+                                                  << resp.action()
+                                                  << " Key: "
+                                                  << resp.key()
+                                                  << " Value: "
+                                                  << resp.value()
+                                                  << " PrevKey: "
+                                                  << resp.prev_key()
+                                                  << " PrevValue: "
+                                                  << resp.prev_value());
+
+                    /**
+                     * Invoke config client cb with watch response.
+                     */
+                    cb(resp);
                 }
-
-                EQL_DEBUG(EtcdClientDebug, os << "Watch Response: "
-                                              << "Success"
-                                              << " revision: "
-                                              << resp.revision()
-                                              << " action: "
-                                              << resp.action()
-                                              << " Key: "
-                                              << resp.key()
-                                              << " Value: "
-                                              << resp.value()
-                                              << " PrevKey: "
-                                              << resp.prev_key()
-                                              << " PrevValue: "
-                                              << resp.prev_value());
-
-
-                /**
-                 * Invoke config client cb with watch response.
-                 */
-                cb(resp);
             }
 
             /**
