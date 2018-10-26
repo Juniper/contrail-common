@@ -4,6 +4,7 @@
 
 #ifndef ZOOKEEPER_ZOOKEEPER_CLIENT_H_
 #define ZOOKEEPER_ZOOKEEPER_CLIENT_H_
+#include <boost/function.hpp>
 
 class ZookeeperClientTest;
 
@@ -21,6 +22,16 @@ typedef enum Z_NODE_TYPE {
     Z_NODE_TYPE_SEQUENCE,
 }Z_NODE_TYPE_E;
 
+typedef enum Z_SESSION_STATE {
+    Z_SESSION_INVALID = 0,
+    Z_SESSION_CONNECTED,
+    Z_SESSION_EXPIRED,
+    Z_SESSION_AUTH_FAILED,
+    Z_SESSION_CONNECTING,
+    Z_SESSION_ASSOCIATING,
+}Z_SESSION_STATE_E;
+
+typedef boost::function<void (void)> ZooStateCallback;
 //
 // Blocking, synchronous, non-thread safe Zookeeper client
 //
@@ -34,13 +45,14 @@ class ZookeeperClient {
     bool CheckNodeExist(const char* path);
     bool DeleteNode(const char* path);
     void Shutdown();
+    void AddListener(ZooStateCallback cb);
+    ZooStateCallback cb_;
 
  private:
     ZookeeperClient(impl::ZookeeperClientImpl *impl);
 
     friend class ZookeeperLock;
     friend class ::ZookeeperClientTest;
-
     std::auto_ptr<impl::ZookeeperClientImpl> impl_;
 };
 
