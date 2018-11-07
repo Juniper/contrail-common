@@ -84,16 +84,14 @@ ConfigEtcdClient::ConfigEtcdClient(ConfigClientManager *mgr,
                                    EventManager *evm,
                                    const ConfigClientOptions &options,
                                    int num_workers)
-                 : ConfigDbClient(options),
-                   mgr_(mgr), evm_(evm),
+                 : ConfigDbClient(mgr, evm, options),
                    num_workers_(num_workers)
 {
     eqlif_.reset(ConfigFactory::Create<EtcdIf>(config_db_ips(),
                                               GetFirstConfigDbPort(),
                                               false));
 
-    etcd_connection_up_ = false;
-    connection_status_change_at_ = UTCTimestampUsec();
+    InitConnectionInfo();
     bulk_sync_status_ = 0;
 
     for (int i = 0; i < num_workers_; i++) {
@@ -103,7 +101,7 @@ ConfigEtcdClient::ConfigEtcdClient(ConfigClientManager *mgr,
 
     uuid_reader_.reset(new
         TaskTrigger(boost::bind(&ConfigEtcdClient::UUIDReader, this),
-        TaskScheduler::GetInstance()->GetTaskId("etcd::UUIDReader"),
+        TaskScheduler::GetInstance()->GetTaskId("config_client::DBReader"),
         0));
 }
 
@@ -216,12 +214,8 @@ void ConfigEtcdClient::InitDatabase() {
 
 void ConfigEtcdClient::HandleEtcdConnectionStatus(bool success,
                                                   bool force_update) {
-    bool previous_status = etcd_connection_up_.fetch_and_store(success);
-    if ((previous_status == success) && !force_update) {
-        return;
-    }
+    UpdateConnectionInfo(success, force_update);
 
-    connection_status_change_at_ = UTCTimestampUsec();
     if (success) {
         // Update connection info
         process::ConnectionState::GetInstance()->Update(
@@ -373,7 +367,7 @@ void ConfigEtcdClient::EnqueueUUIDRequest(string oper,
     }
 
     // Request has the uuid with entire path
-    UUIDProcessReq *req = new UUIDProcessReq(oper, uuid, value);
+    ObjectProcessReq *req = new ObjectProcessReq(oper, uuid, value);
 
     // GetPartition uses the trimmed uuid so that the same
     // partition is returned for different requests on the
@@ -500,7 +494,7 @@ bool ConfigEtcdClient::UUIDReader() {
 
     // At the end of task trigger
     BOOST_FOREACH(ConfigEtcdPartition *partition, partitions_) {
-        UUIDProcessReq *req = new UUIDProcessReq("EndOfConfig", "", "");
+        ObjectProcessReq *req = new ObjectProcessReq("EndOfConfig", "", "");
         partition->Enqueue(req);
     }
 
@@ -525,14 +519,6 @@ bool ConfigEtcdClient::IsTaskTriggered() const {
     return false;
 }
 
-void ConfigEtcdClient::GetConnectionInfo(ConfigDBConnInfo &status) const {
-    status.cluster = boost::algorithm::join(config_db_ips(), ", ");
-    status.connection_status = etcd_connection_up_;
-    status.connection_status_change_at =
-        UTCUsecToString(connection_status_change_at_);
-    return;
-}
-
 bool ConfigEtcdClient::UUIDToObjCacheShow(
                            const string &search_string,
                            int inst_num,
@@ -551,27 +537,27 @@ bool ConfigEtcdClient::IsListOrMapPropEmpty(const string &uuid_key,
 ConfigEtcdPartition::ConfigEtcdPartition(
                    ConfigEtcdClient *client, size_t idx)
     : config_client_(client), worker_id_(idx) {
-    int task_id = TaskScheduler::GetInstance()->GetTaskId("etcd::Reader");
+    int task_id = TaskScheduler::GetInstance()->GetTaskId("config_client::Reader");
     config_reader_.reset(new
      TaskTrigger(boost::bind(&ConfigEtcdPartition::ConfigReader, this),
      task_id, idx));
     task_id =
-        TaskScheduler::GetInstance()->GetTaskId("etcd::ObjectProcessor");
-    obj_process_queue_.reset(new WorkQueue<UUIDProcessReq *>(
+        TaskScheduler::GetInstance()->GetTaskId("config_client::ObjectProcessor");
+    obj_process_queue_.reset(new WorkQueue<ObjectProcessReq *>(
         task_id, idx, bind(&ConfigEtcdPartition::RequestHandler, this, _1),
-        WorkQueue<UUIDProcessReq *>::kMaxSize, 512));
+        WorkQueue<ObjectProcessReq *>::kMaxSize, 512));
 }
 
 ConfigEtcdPartition::~ConfigEtcdPartition() {
     obj_process_queue_->Shutdown();
 }
 
-void ConfigEtcdPartition::Enqueue(UUIDProcessReq *req) {
+void ConfigEtcdPartition::Enqueue(ObjectProcessReq *req) {
     obj_process_queue_->Enqueue(req);
 }
 
-bool ConfigEtcdPartition::RequestHandler(UUIDProcessReq *req) {
-    AddUUIDToProcessList(req->oper_, req->uuid_, req->value_);
+bool ConfigEtcdPartition::RequestHandler(ObjectProcessReq *req) {
+    AddUUIDToProcessList(req->oper_, req->uuid_str_, req->value_);
     delete req;
     return true;
 }
@@ -712,7 +698,7 @@ int ConfigEtcdPartition::UUIDRetryTimeInMSec(
     uint32_t retry_time_pow_of_two =
         obj->GetRetryCount() > kMaxUUIDRetryTimePowOfTwo ?
         kMaxUUIDRetryTimePowOfTwo : obj->GetRetryCount();
-    return ((1 << retry_time_pow_of_two) * kMinUUIDRetryTimeMSec);
+   return ((1 << retry_time_pow_of_two) * kMinUUIDRetryTimeMSec);
 }
 
 void ConfigEtcdPartition::UUIDCacheEntry::EnableEtcdReadRetry(
@@ -723,9 +709,9 @@ void ConfigEtcdPartition::UUIDCacheEntry::EnableEtcdReadRetry(
                 *parent_->client()->event_manager()->io_service(),
                 "UUID retry timer for " + uuid,
                 TaskScheduler::GetInstance()->GetTaskId(
-                                "etcd::Reader"),
+                                "config_client::Reader"),
                 parent_->worker_id_);
-        CONFIG_CLIENT_DEBUG(ConfigEtcdReadRetry,
+        CONFIG_CLIENT_DEBUG(ConfigClientReadRetry,
                 "Created UUID read retry timer ", uuid);
     }
     retry_timer_->Cancel();
@@ -736,19 +722,19 @@ void ConfigEtcdPartition::UUIDCacheEntry::EnableEtcdReadRetry(
             boost::bind(
                 &ConfigEtcdPartition::UUIDCacheEntry::EtcdReadRetryTimerErrorHandler,
                 this));
-    CONFIG_CLIENT_DEBUG(ConfigEtcdReadRetry,
+    CONFIG_CLIENT_DEBUG(ConfigClientReadRetry,
             "Start/restart UUID Read Retry timer due to configuration", uuid);
 }
 
 void ConfigEtcdPartition::UUIDCacheEntry::DisableEtcdReadRetry(
         const string uuid) {
-    CHECK_CONCURRENCY("etcd::Reader");
+    CHECK_CONCURRENCY("config_client::Reader");
     if (retry_timer_) {
         retry_timer_->Cancel();
         TimerManager::DeleteTimer(retry_timer_);
         retry_timer_ = NULL;
         retry_count_ = 0;
-        CONFIG_CLIENT_DEBUG(ConfigEtcdReadRetry,
+        CONFIG_CLIENT_DEBUG(ConfigClientReadRetry,
                 "UUID Read retry timer - deleted timer due to configuration",
                 uuid);
     }
@@ -763,11 +749,11 @@ bool ConfigEtcdPartition::UUIDCacheEntry::IsRetryTimerRunning() const {
 bool ConfigEtcdPartition::UUIDCacheEntry::EtcdReadRetryTimerExpired(
         const string uuid,
         const string value) {
-    CHECK_CONCURRENCY("etcd::Reader");
+    CHECK_CONCURRENCY("config_client::Reader");
     parent_->client()->EnqueueUUIDRequest(
             "UPDATE", parent_->client()->uuid_str(uuid), value);
     retry_count_++;
-    CONFIG_CLIENT_DEBUG(ConfigEtcdReadRetry, "timer expired ", uuid);
+    CONFIG_CLIENT_DEBUG(ConfigClientReadRetry, "timer expired ", uuid);
     return false;
 }
 
@@ -886,7 +872,7 @@ bool ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
                 string parent_uuid = doc[key.c_str()].GetString();
                 string parent_fq_name = client()->FindFQName(parent_uuid);
                 if (parent_fq_name == "ERROR") {
-                    CONFIG_CLIENT_DEBUG(ConfigEtcdReadRetry,
+                    CONFIG_CLIENT_DEBUG(ConfigClientReadRetry,
                         "Parent fq_name not available for ", uuid);
                     return false;
                 }
@@ -950,7 +936,7 @@ bool ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
                     // If we cannot find ref_fq_name in the doc
                     // as well, return false to enable retry.
                     if (!va.HasMember("to")) {
-                        CONFIG_CLIENT_DEBUG(ConfigEtcdReadRetry,
+                        CONFIG_CLIENT_DEBUG(ConfigClientReadRetry,
                                    "Ref fq_name not available for ", uuid);
                         return false;
                     }
@@ -1267,7 +1253,7 @@ bool ConfigEtcdPartition::IsTaskTriggered() const {
 }
 
 bool ConfigEtcdPartition::ConfigReader() {
-    CHECK_CONCURRENCY("etcd::Reader");
+    CHECK_CONCURRENCY("config_client::Reader");
 
     int num_req_handled = 0;
 

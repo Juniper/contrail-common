@@ -56,89 +56,52 @@ void ConfigClientManager::SetDefaultSchedulingPolicy() {
     config_policy_set = true;
  
     TaskScheduler *scheduler = TaskScheduler::GetInstance();
-    // Policy for cassandra::Reader Task.
+    // Policy for config_client::Reader Task.
     TaskPolicy cassadra_reader_policy = boost::assign::list_of
-        (TaskExclusion(scheduler->GetTaskId("cassandra::Init")))
-        (TaskExclusion(scheduler->GetTaskId("cassandra::FQNameReader")));
+        (TaskExclusion(scheduler->GetTaskId("config_client::Init")))
+        (TaskExclusion(scheduler->GetTaskId("config_client::DBReader")));
     for (int idx = 0; idx < ConfigClientManager::GetNumConfigReader(); ++idx) {
         cassadra_reader_policy.push_back(
-        TaskExclusion(scheduler->GetTaskId("cassandra::ObjectProcessor"), idx));
+        TaskExclusion(scheduler->GetTaskId("config_client::ObjectProcessor"), idx));
     }
-    scheduler->SetPolicy(scheduler->GetTaskId("cassandra::Reader"),
+    scheduler->SetPolicy(scheduler->GetTaskId("config_client::Reader"),
         cassadra_reader_policy);
 
-    // Policy for cassandra::ObjectProcessor Task.
+    // Policy for config_client::ObjectProcessor Task.
     TaskPolicy cassadra_obj_process_policy = boost::assign::list_of
-        (TaskExclusion(scheduler->GetTaskId("cassandra::Init")));
+        (TaskExclusion(scheduler->GetTaskId("config_client::Init")));
     for (int idx = 0; idx < ConfigClientManager::GetNumConfigReader(); ++idx) {
         cassadra_obj_process_policy.push_back(
-                 TaskExclusion(scheduler->GetTaskId("cassandra::Reader"), idx));
+                 TaskExclusion(scheduler->GetTaskId("config_client::Reader"), idx));
     }
-    scheduler->SetPolicy(scheduler->GetTaskId("cassandra::ObjectProcessor"),
+    scheduler->SetPolicy(scheduler->GetTaskId("config_client::ObjectProcessor"),
         cassadra_obj_process_policy);
 
-    // Policy for cassandra::FQNameReader Task.
+    // Policy for config_client::DBReader Task.
     TaskPolicy fq_name_reader_policy = boost::assign::list_of
-        (TaskExclusion(scheduler->GetTaskId("cassandra::Init")))
-        (TaskExclusion(scheduler->GetTaskId("cassandra::Reader")));
-    scheduler->SetPolicy(scheduler->GetTaskId("cassandra::FQNameReader"),
+        (TaskExclusion(scheduler->GetTaskId("config_client::Init")))
+        (TaskExclusion(scheduler->GetTaskId("config_client::Reader")));
+    scheduler->SetPolicy(scheduler->GetTaskId("config_client::DBReader"),
         fq_name_reader_policy);
 
-    // Policy for cassandra::Init process
+    // Policy for config_client::Init process
     TaskPolicy cassandra_init_policy = boost::assign::list_of
         (TaskExclusion(scheduler->GetTaskId("amqp::RabbitMQReader")))
-        (TaskExclusion(scheduler->GetTaskId("cassandra::ObjectProcessor")))
-        (TaskExclusion(scheduler->GetTaskId("cassandra::FQNameReader")))
-        (TaskExclusion(scheduler->GetTaskId("cassandra::Reader")));
-    scheduler->SetPolicy(scheduler->GetTaskId("cassandra::Init"),
+        (TaskExclusion(scheduler->GetTaskId("config_client::ObjectProcessor")))
+        (TaskExclusion(scheduler->GetTaskId("config_client::DBReader")))
+        (TaskExclusion(scheduler->GetTaskId("config_client::Reader")));
+    scheduler->SetPolicy(scheduler->GetTaskId("config_client::Init"),
         cassandra_init_policy);
 
     // Policy for amqp::RabbitMQReader process
     TaskPolicy rabbitmq_reader_policy = boost::assign::list_of
-        (TaskExclusion(scheduler->GetTaskId("cassandra::Init")));
+        (TaskExclusion(scheduler->GetTaskId("config_client::Init")));
     scheduler->SetPolicy(scheduler->GetTaskId("amqp::RabbitMQReader"),
         rabbitmq_reader_policy);
 
-    // Policy for etcd::Reader Task.
-    TaskPolicy etcd_reader_policy = boost::assign::list_of
-        (TaskExclusion(scheduler->GetTaskId("etcd::Init")))
-        (TaskExclusion(scheduler->GetTaskId("etcd::UUIDReader")));
-    for (int idx = 0; idx < ConfigClientManager::GetNumConfigReader(); ++idx) {
-        etcd_reader_policy.push_back(
-        TaskExclusion(scheduler->GetTaskId("etcd::ObjectProcessor"), idx));
-    }
-    scheduler->SetPolicy(scheduler->GetTaskId("etcd::Reader"),
-        etcd_reader_policy);
-
-    // Policy for etcd::ObjectProcessor Task.
-    TaskPolicy etcd_obj_process_policy = boost::assign::list_of
-        (TaskExclusion(scheduler->GetTaskId("etcd::Init")));
-    for (int idx = 0; idx < ConfigClientManager::GetNumConfigReader(); ++idx) {
-        etcd_obj_process_policy.push_back(
-                 TaskExclusion(scheduler->GetTaskId("etcd::Reader"), idx));
-    }
-    scheduler->SetPolicy(scheduler->GetTaskId("etcd::ObjectProcessor"),
-        etcd_obj_process_policy);
-
-    // Policy for etcd::UUIDReader Task.
-    TaskPolicy uuid_reader_policy = boost::assign::list_of
-        (TaskExclusion(scheduler->GetTaskId("etcd::Init")))
-        (TaskExclusion(scheduler->GetTaskId("etcd::Reader")));
-    scheduler->SetPolicy(scheduler->GetTaskId("etcd::UUIDReader"),
-        uuid_reader_policy);
-
-    // Policy for etcd::Init process
-    TaskPolicy etcd_init_policy = boost::assign::list_of
-        (TaskExclusion(scheduler->GetTaskId("etcd::EtcdWatcher")))
-        (TaskExclusion(scheduler->GetTaskId("etcd::ObjectProcessor")))
-        (TaskExclusion(scheduler->GetTaskId("etcd::UUIDReader")))
-        (TaskExclusion(scheduler->GetTaskId("etcd::Reader")));
-    scheduler->SetPolicy(scheduler->GetTaskId("etcd::Init"),
-        etcd_init_policy);
-
     // Policy for etcd::EtcdWatcher process
     TaskPolicy etcd_watcher_policy = boost::assign::list_of
-        (TaskExclusion(scheduler->GetTaskId("etcd::Init")));
+        (TaskExclusion(scheduler->GetTaskId("config_client::Init")));
     scheduler->SetPolicy(scheduler->GetTaskId("etcd::EtcdWatcher"),
         etcd_watcher_policy);
 
@@ -165,11 +128,8 @@ void ConfigClientManager::SetUp() {
     SetDefaultSchedulingPolicy();
 
     int task_id;
-    if (config_options_.config_db_use_etcd) {
-        task_id = TaskScheduler::GetInstance()->GetTaskId("etcd::Init");
-    } else {
-        task_id = TaskScheduler::GetInstance()->GetTaskId("cassandra::Init");
-    }
+    task_id = TaskScheduler::GetInstance()->GetTaskId("config_client::Init");
+
     init_trigger_.reset(new
          TaskTrigger(boost::bind(&ConfigClientManager::InitConfigClient, this),
          task_id, 0));
@@ -302,7 +262,7 @@ void ConfigClientManager::PostShutdown() {
 
 bool ConfigClientManager::InitConfigClient() {
     if (is_reinit_triggered()) {
-        // "cassandra::Init" task is mutually exclusive to
+        // "config_client::Init" task is mutually exclusive to
         // 1. FQName reader task
         // 2. Object UUID Table reader task
         // 3. AMQP reader task

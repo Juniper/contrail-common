@@ -8,6 +8,8 @@
 
 #include "base/string_util.h"
 #include "config_client_options.h"
+#include "config_client_log.h"
+#include "config_client_log_types.h"
 #include "config_client_show_types.h"
 
 using contrail::regex;
@@ -16,8 +18,11 @@ using contrail::regex_search;
 
 using namespace std;
 
-ConfigDbClient::ConfigDbClient(const ConfigClientOptions &options)
-    : config_db_user_(options.config_db_username),
+ConfigDbClient::ConfigDbClient(ConfigClientManager *mgr,
+                               EventManager *evm,
+                               const ConfigClientOptions &options)
+    : mgr_(mgr), evm_(evm),
+      config_db_user_(options.config_db_username),
       config_db_password_(options.config_db_password) {
 
     for (vector<string>::const_iterator iter =
@@ -150,6 +155,30 @@ bool ConfigDbClient::UUIDToFQNameShow(
         }
     }
     return more;
+}
+
+void ConfigDbClient::InitConnectionInfo() {
+    client_connection_up_ = false;
+    connection_status_change_at_ = UTCTimestampUsec();
+}
+
+void ConfigDbClient::UpdateConnectionInfo(bool success,
+                                          bool force) {
+    bool previous_status =
+              client_connection_up_.fetch_and_store(success);
+    if ((previous_status == success) && !force) {
+        return;
+    }
+
+    connection_status_change_at_ = UTCTimestampUsec();
+}
+
+void ConfigDbClient::GetConnectionInfo(ConfigDBConnInfo &status) const {
+    status.cluster = boost::algorithm::join(config_db_ips(), ", ");
+    status.connection_status = client_connection_up_;
+    status.connection_status_change_at =
+                    UTCUsecToString(connection_status_change_at_);
+    return;
 }
 
 bool ConfigDbClient::IsTaskTriggered() const {

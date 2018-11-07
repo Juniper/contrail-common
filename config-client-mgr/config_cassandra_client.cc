@@ -43,22 +43,20 @@ using std::string;
 
 const string ConfigCassandraClient::kUuidTableName = "obj_uuid_table";
 const string ConfigCassandraClient::kFqnTableName = "obj_fq_name_table";
-const string ConfigCassandraClient::kCassClientTaskId = "cassandra::Reader";
+const string ConfigCassandraClient::kCassClientTaskId = "config_client::Reader";
 const string ConfigCassandraClient::kObjectProcessTaskId =
-                                               "cassandra::ObjectProcessor";
+                                               "config_client::ObjectProcessor";
 
 ConfigCassandraClient::ConfigCassandraClient(ConfigClientManager *mgr,
                          EventManager *evm, const ConfigClientOptions &options,
                          int num_workers)
-        : ConfigDbClient(options), mgr_(mgr), evm_(evm),
-        num_workers_(num_workers) {
+        : ConfigDbClient(mgr, evm, options), num_workers_(num_workers) {
     dbif_.reset(ConfigFactory::Create<cass::cql::CqlIf>(evm, config_db_ips(),
              GetFirstConfigDbPort(), config_db_user(),
              config_db_password()));
 
     // Initialized the casssadra connection status;
-    cassandra_connection_up_ = false;
-    connection_status_change_at_ = UTCTimestampUsec();
+    InitConnectionInfo();
     bulk_sync_status_ = 0;
 
     for (int i = 0; i < num_workers_; i++) {
@@ -68,7 +66,7 @@ ConfigCassandraClient::ConfigCassandraClient(ConfigClientManager *mgr,
 
     fq_name_reader_.reset(new
        TaskTrigger(boost::bind(&ConfigCassandraClient::FQNameReader, this),
-       TaskScheduler::GetInstance()->GetTaskId("cassandra::FQNameReader"),
+       TaskScheduler::GetInstance()->GetTaskId("config_client::DBReader"),
        0));
 }
 
@@ -275,7 +273,7 @@ bool ConfigCassandraPartition::ProcessObjUUIDTableEntry(const string &uuid_key,
 
     ConfigCassandraParseContext context;
 
-    ConfigCassandraPartition::ObjectCacheEntry *obj = MarkCacheDirty(uuid_key);
+    ConfigCassandraPartition::ObjCacheEntry *obj = MarkCacheDirty(uuid_key);
 
     ParseObjUUIDTableEntry(uuid_key, col_list, &cass_data_vec, context);
     // Ignore draft objects.
@@ -541,7 +539,7 @@ bool ConfigCassandraClient::UUIDToObjCacheShow(
 
 void ConfigCassandraClient::EnqueueUUIDRequest(string oper, string obj_type,
                                                string uuid_str) {
-    ObjectProcessReq *req = new ObjectProcessReq(oper, obj_type, uuid_str);
+    ObjectProcessReq *req = new ObjectProcessReq(oper, uuid_str, obj_type);
     GetPartition(uuid_str)->Enqueue(req);
 }
 
@@ -558,22 +556,10 @@ void ConfigCassandraClient::BulkSyncDone() {
     }
 }
 
-void ConfigCassandraClient::GetConnectionInfo(ConfigDBConnInfo &status) const {
-    status.cluster = boost::algorithm::join(config_db_ips(), ", ");
-    status.connection_status = cassandra_connection_up_;
-    status.connection_status_change_at =
-    UTCUsecToString(connection_status_change_at_);
-    return;
-}
-
 void ConfigCassandraClient::HandleCassandraConnectionStatus(bool success,
                                                             bool force_update) {
-    bool previous_status = cassandra_connection_up_.fetch_and_store(success);
-    if ((previous_status == success) && !force_update) {
-        return;
-    }
+    UpdateConnectionInfo(success, force_update);
 
-    connection_status_change_at_ = UTCTimestampUsec();
     if (success) {
         // Update connection info
         process::ConnectionState::GetInstance()->Update(
@@ -600,12 +586,12 @@ bool ConfigCassandraClient::IsListOrMapPropEmpty(const string &uuid_key,
 ConfigCassandraPartition::ConfigCassandraPartition(
                    ConfigCassandraClient *client, size_t idx)
     : config_client_(client), worker_id_(idx) {
-    int task_id = TaskScheduler::GetInstance()->GetTaskId("cassandra::Reader");
+    int task_id = TaskScheduler::GetInstance()->GetTaskId("config_client::Reader");
     config_reader_.reset(new
      TaskTrigger(boost::bind(&ConfigCassandraPartition::ConfigReader, this),
      task_id, idx));
     task_id =
-        TaskScheduler::GetInstance()->GetTaskId("cassandra::ObjectProcessor");
+        TaskScheduler::GetInstance()->GetTaskId("config_client::ObjectProcessor");
     obj_process_queue_.reset(new WorkQueue<ObjectProcessReq *>(
         task_id, idx, bind(&ConfigCassandraPartition::RequestHandler, this, _1),
         WorkQueue<ObjectProcessReq *>::kMaxSize, 512));
@@ -620,7 +606,7 @@ void ConfigCassandraPartition::Enqueue(ObjectProcessReq *req) {
 }
 
 bool ConfigCassandraPartition::RequestHandler(ObjectProcessReq *req) {
-    AddUUIDToRequestList(req->oper_, req->obj_type_, req->uuid_str_);
+    AddUUIDToRequestList(req->oper_, req->value_, req->uuid_str_);
     delete req;
     return true;
 }
@@ -736,7 +722,7 @@ bool ConfigCassandraPartition::IsTaskTriggered() const {
 }
 
 bool ConfigCassandraPartition::ConfigReader() {
-    CHECK_CONCURRENCY("cassandra::Reader");
+    CHECK_CONCURRENCY("config_client::Reader");
 
     set<string> bunch_req_list;
     int num_req_handled = 0;
@@ -810,16 +796,16 @@ boost::asio::io_service *ConfigCassandraPartition::ioservice() {
     return client()->event_manager()->io_service();
 }
 
-ConfigCassandraPartition::ObjectCacheEntry *
-ConfigCassandraPartition::GetObjectCacheEntry(const string &uuid) {
+ConfigCassandraPartition::ObjCacheEntry *
+ConfigCassandraPartition::GetObjCacheEntry(const string &uuid) {
     ObjectCacheMap::iterator uuid_iter = object_cache_map_.find(uuid);
     if (uuid_iter == object_cache_map_.end())
         return NULL;
     return uuid_iter->second;
 }
 
-const ConfigCassandraPartition::ObjectCacheEntry *
-ConfigCassandraPartition::GetObjectCacheEntry(const string &uuid) const {
+const ConfigCassandraPartition::ObjCacheEntry *
+ConfigCassandraPartition::GetObjCacheEntry(const string &uuid) const {
     ObjectCacheMap::const_iterator uuid_iter = object_cache_map_.find(uuid);
     if (uuid_iter == object_cache_map_.end())
         return NULL;
@@ -827,73 +813,73 @@ ConfigCassandraPartition::GetObjectCacheEntry(const string &uuid) const {
 }
 
 int ConfigCassandraPartition::UUIDRetryTimeInMSec(
-        const ObjectCacheEntry *obj) const {
+        const ObjCacheEntry *obj) const {
     uint32_t retry_time_pow_of_two =
         obj->GetRetryCount() > kMaxUUIDRetryTimePowOfTwo ?
         kMaxUUIDRetryTimePowOfTwo : obj->GetRetryCount();
     return ((1 << retry_time_pow_of_two) * kMinUUIDRetryTimeMSec);
 }
 
-ConfigCassandraPartition::ObjectCacheEntry::~ObjectCacheEntry() {
+ConfigCassandraPartition::ObjCacheEntry::~ObjCacheEntry() {
     if (retry_timer_) {
         TimerManager::DeleteTimer(retry_timer_);
     }
 }
 
-void ConfigCassandraPartition::ObjectCacheEntry::EnableCassandraReadRetry(
+void ConfigCassandraPartition::ObjCacheEntry::EnableCassandraReadRetry(
         const string uuid) {
     if (!retry_timer_) {
         retry_timer_ = TimerManager::CreateTimer(
                 *parent_->client()->event_manager()->io_service(),
                 "UUID retry timer for " + uuid,
                 TaskScheduler::GetInstance()->GetTaskId(
-                                "cassandra::Reader"),
+                                "config_client::Reader"),
                 parent_->worker_id_);
-        CONFIG_CLIENT_DEBUG(ConfigCassandraReadRetry,
+        CONFIG_CLIENT_DEBUG(ConfigClientReadRetry,
                 "Created UUID read retry timer ", uuid);
     }
     retry_timer_->Cancel();
     retry_timer_->Start(parent_->UUIDRetryTimeInMSec(this),
             boost::bind(
-                &ConfigCassandraPartition::ObjectCacheEntry::CassReadRetryTimerExpired,
+                &ConfigCassandraPartition::ObjCacheEntry::CassReadRetryTimerExpired,
                 this, uuid),
             boost::bind(
-                &ConfigCassandraPartition::ObjectCacheEntry::CassReadRetryTimerErrorHandler,
+                &ConfigCassandraPartition::ObjCacheEntry::CassReadRetryTimerErrorHandler,
                 this));
-    CONFIG_CLIENT_DEBUG(ConfigCassandraReadRetry,
+    CONFIG_CLIENT_DEBUG(ConfigClientReadRetry,
             "Start/restart UUID Read Retry timer due to configuration", uuid);
 }
 
-void ConfigCassandraPartition::ObjectCacheEntry::DisableCassandraReadRetry(
+void ConfigCassandraPartition::ObjCacheEntry::DisableCassandraReadRetry(
         const string uuid) {
     if (retry_timer_) {
         retry_timer_->Cancel();
         TimerManager::DeleteTimer(retry_timer_);
         retry_timer_ = NULL;
         retry_count_ = 0;
-        CONFIG_CLIENT_DEBUG(ConfigCassandraReadRetry,
+        CONFIG_CLIENT_DEBUG(ConfigClientReadRetry,
                 "UUID Read retry timer - deleted timer due to configuration",
                 uuid);
     }
 }
 
-bool ConfigCassandraPartition::ObjectCacheEntry::IsRetryTimerRunning() const {
+bool ConfigCassandraPartition::ObjCacheEntry::IsRetryTimerRunning() const {
     if (retry_timer_)
         return (retry_timer_->running());
     return false;
 }
 
-bool ConfigCassandraPartition::ObjectCacheEntry::CassReadRetryTimerExpired(
+bool ConfigCassandraPartition::ObjCacheEntry::CassReadRetryTimerExpired(
         const string uuid) {
     parent_->client()->mgr()->EnqueueUUIDRequest(
-            "UPDATE", obj_type_, parent_->client()->uuid_str(uuid));
+            "UPDATE", GetObjType(), parent_->client()->uuid_str(uuid));
     retry_count_++;
-    CONFIG_CLIENT_DEBUG(ConfigCassandraReadRetry, "timer expired ", uuid);
+    CONFIG_CLIENT_DEBUG(ConfigClientReadRetry, "timer expired ", uuid);
     return false;
 }
 
 void
-ConfigCassandraPartition::ObjectCacheEntry::CassReadRetryTimerErrorHandler() {
+ConfigCassandraPartition::ObjCacheEntry::CassReadRetryTimerErrorHandler() {
      std::string message = "Timer";
      CONFIG_CLIENT_WARN(ConfigClientGetRowError,
             "UUID Read Retry Timer error ", message, message);
@@ -964,7 +950,7 @@ bool ConfigCassandraPartition::StoreKeyIfUpdated(const string &uuid,
         string ref_name = client()->UUIDToFQName(ref_uuid).second;
         if (ref_name == "ERROR") {
             context.parent_or_ref_fq_name_unknown = true;
-            CONFIG_CLIENT_DEBUG(ConfigCassandraReadRetry,
+            CONFIG_CLIENT_DEBUG(ConfigClientReadRetry,
                     "Out of order parent or ref", uuid + ":" + adapter->key);
             return false;
         }
@@ -1026,13 +1012,13 @@ bool ConfigCassandraPartition::StoreKeyIfUpdated(const string &uuid,
     }
 }
 
-ConfigCassandraPartition::ObjectCacheEntry *
+ConfigCassandraPartition::ObjCacheEntry *
 ConfigCassandraPartition::MarkCacheDirty(const string &uuid) {
     ObjectCacheMap::iterator uuid_iter = object_cache_map_.find(uuid);
     if (uuid_iter == object_cache_map_.end()) {
-        ObjectCacheEntry *obj;
+        ObjCacheEntry *obj;
         string tmp_uuid = uuid;
-        obj = new ObjectCacheEntry(this, UTCTimestampUsec());
+        obj = new ObjCacheEntry(this, UTCTimestampUsec());
         pair<ObjectCacheMap::iterator, bool> ret_uuid =
             object_cache_map_.insert(tmp_uuid, obj);
         assert(ret_uuid.second);

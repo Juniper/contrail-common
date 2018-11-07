@@ -37,39 +37,22 @@ class TaskTrigger;
 class ConfigEtcdClient;
 class ConfigDBUUIDCacheEntry;
 
-class UUIDProcessReq {
- public:
-    UUIDProcessReq(string oper,
-                   string uuid,
-                   string value) : oper_(oper),
-                                   uuid_(uuid),
-                                   value_(value) {
-    }
-
-    string oper_;
-    string uuid_;
-    string value_;
-
- private:
-    DISALLOW_COPY_AND_ASSIGN(UUIDProcessReq);
-};
-
 class ConfigEtcdPartition {
  public:
     ConfigEtcdPartition(ConfigEtcdClient *client, size_t idx);
     virtual ~ConfigEtcdPartition();
 
-    typedef boost::shared_ptr<WorkQueue<UUIDProcessReq *> >
+    typedef boost::shared_ptr<WorkQueue<ObjectProcessReq *> >
              UUIDProcessWorkQType;
 
-    class UUIDCacheEntry {
+    class UUIDCacheEntry : public ObjectCacheEntry {
      public:
         UUIDCacheEntry(ConfigEtcdPartition *parent,
                        const string &value_str,
                        uint64_t last_read_tstamp)
-                : retry_count_(0),
+                : ObjectCacheEntry(last_read_tstamp),
+                  retry_count_(0),
                   retry_timer_(NULL),
-                  last_read_tstamp_(last_read_tstamp),
                   json_str_(value_str),
                   parent_(parent) {
         }
@@ -93,20 +76,6 @@ class ConfigEtcdPartition {
         uint32_t GetRetryCount() const {
             return retry_count_;
         }
-
-        void SetLastReadTimeStamp(uint64_t ts) {
-            last_read_tstamp_ = ts;
-        }
-        uint64_t GetLastReadTimeStamp() const {
-            return last_read_tstamp_;
-        }
-
-        void SetFQName(string fq_name) { fq_name_ = fq_name; }
-        const string &GetFQName() const { return fq_name_; }
-
-        void SetObjType(string obj_type) { obj_type_ = obj_type; }
-        const string &GetObjType() const { return obj_type_; }
-
         bool IsRetryTimerCreated() const {
             return (retry_timer_ != NULL);
         }
@@ -119,12 +88,9 @@ class ConfigEtcdPartition {
                                        const string value);
         void EtcdReadRetryTimerErrorHandler();
         typedef map<string, bool> ListMapSet;
-        string obj_type_;
-        string fq_name_;
         ListMapSet list_map_set_;
         uint32_t retry_count_;
         Timer *retry_timer_;
-        uint64_t last_read_tstamp_;
         string json_str_;
         ConfigEtcdPartition *parent_;
     };
@@ -161,7 +127,7 @@ class ConfigEtcdPartition {
         return obj_process_queue_;
     }
 
-    void Enqueue(UUIDProcessReq *req);
+    void Enqueue(ObjectProcessReq *req);
     bool IsListOrMapPropEmpty(const string &uuid_key,
                               const string &lookup_key);
     virtual bool IsTaskTriggered() const;
@@ -187,7 +153,7 @@ private:
 
     typedef map<string, UUIDProcessRequestType *> UUIDProcessSet;
 
-    bool RequestHandler(UUIDProcessReq *req);
+    bool RequestHandler(ObjectProcessReq *req);
     void AddUUIDToProcessList(const string &oper,
                               const string &uuid_key,
                               const string &value_str);
@@ -225,12 +191,9 @@ class ConfigEtcdClient : public ConfigDbClient {
 
     virtual void InitDatabase();
     void BulkSyncDone();
-    virtual void GetConnectionInfo(ConfigDBConnInfo &status) const;
     void EnqueueUUIDRequest(string oper, string obj_type,
                                     string uuid_str);
 
-    ConfigClientManager *mgr() { return mgr_; }
-    const ConfigClientManager *mgr() const { return mgr_; }
     ConfigEtcdPartition *GetPartition(const string &uuid);
     const ConfigEtcdPartition *GetPartition(const string &uuid) const;
     const ConfigEtcdPartition *GetPartition(int worker_id) const;
@@ -266,9 +229,7 @@ protected:
     PartitionList &partitions() { return partitions_; }
     virtual void PostShutdown();
 
-    EventManager *event_manager() { return  evm_; }
-
- private:
+private:
     friend class ConfigEtcdPartition;
 
     // A Job for watching changes to config stored in etcd
@@ -282,15 +243,11 @@ protected:
     // For testing
     static bool disable_watch_;
 
-    ConfigClientManager *mgr_;
-    EventManager *evm_;
     boost::scoped_ptr<EtcdIf> eqlif_;
     int num_workers_;
     PartitionList partitions_;
     boost::scoped_ptr<TaskTrigger> uuid_reader_;
     tbb::atomic<long> bulk_sync_status_;
-    tbb::atomic<bool> etcd_connection_up_;
-    tbb::atomic<uint64_t> connection_status_change_at_;
 };
 
 #endif  // config_etcd_client_h
