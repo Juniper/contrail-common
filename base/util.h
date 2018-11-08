@@ -34,7 +34,7 @@
 
 template <typename IntType>
 bool BitIsSet(IntType value, size_t bit) {
-    return (value & (1 << bit));
+    return (value & (1 << bit)) != 0;
 }
 
 template <typename IntType>
@@ -65,13 +65,13 @@ static ModuleInitializer TOKENPASTE2(init_, __LINE__)(Func);
     do { \
         if ((x) < (y)) return true; \
         if ((y) < (x)) return false; \
-    } while (0)
+    } while (false)
 
 #define KEY_COMPARE(x, y) \
     do { \
         if ((x) < (y)) return -1; \
         if ((y) < (x)) return 1;  \
-    } while(0);
+    } while (false)
 
 // Compare sorted vectors of pointers.
 template <class InputIterator, class CompareOp>
@@ -110,7 +110,7 @@ void STLDeleteValues(Container *container) {
 }
 
 // Delete all the elements of a map.
-template <typename Container> 
+template <typename Container>
 void STLDeleteElements(Container *container) {
     typename Container::iterator next;
     for (typename Container::iterator iter = container->begin();

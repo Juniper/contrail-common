@@ -33,7 +33,7 @@ public:
     explicit SandeshServer(EventManager *evm, const SandeshConfig &config);
     virtual ~SandeshServer();
 
-    virtual bool Initialize(short port);
+    virtual bool Initialize(short port, const std::string &ip="0.0.0.0");
     virtual TcpSession *CreateSession();
     void Initiate();
     void Shutdown();

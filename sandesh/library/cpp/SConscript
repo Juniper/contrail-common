@@ -96,6 +96,7 @@ libsandesh = env.Library(target = 'sandesh',
                                   ['sandesh.cc',
                                    'sandesh_http.cc',
                                    'sandesh_client.cc',
+                                   'stats_client.cc',
                                    'sandesh_client_sm.cc',
                                    'sandesh_session.cc',
                                    'request_pipeline.cc',
@@ -110,6 +111,7 @@ libsandesh = env.Library(target = 'sandesh',
                                    'sandesh_util.cc',
                                    'sandesh_options.cc',
                                    'protocol/TXMLProtocol.cpp',
+                                   'protocol/TJSONProtocol.cpp',
                                    'transport/TFDTransport.cpp',
                                    'transport/TSimpleFileTransport.cpp',
                                    'transport/TBufferTransports.cpp',
@@ -124,6 +126,7 @@ env.Install(env['TOP_INCLUDE'] + '/sandesh', 'derived_stats.h')
 env.Install(env['TOP_INCLUDE'] + '/sandesh', 'derived_stats_algo.h') 
 env.Install(env['TOP_INCLUDE'] + '/sandesh', 'Thrift.h')
 env.Install(env['TOP_INCLUDE'] + '/sandesh', 'sandesh_client.h')
+env.Install(env['TOP_INCLUDE'] + '/sandesh', 'stats_client.h')
 env.Install(env['TOP_INCLUDE'] + '/sandesh', 'sandesh_client_sm.h')
 env.Install(env['TOP_INCLUDE'] + '/sandesh', 'sandesh_session.h')
 env.Install(env['TOP_INCLUDE'] + '/sandesh', 'sandesh_server.h')
@@ -142,6 +145,7 @@ env.Install(env['TOP_INCLUDE'] + '/sandesh/protocol', 'protocol/TProtocol.h')
 env.Install(env['TOP_INCLUDE'] + '/sandesh/protocol', 'protocol/TVirtualProtocol.h')                                  
 env.Install(env['TOP_INCLUDE'] + '/sandesh/protocol', 'protocol/TXMLProtocol.h')                                  
 env.Install(env['TOP_INCLUDE'] + '/sandesh/protocol', 'protocol/TBinaryProtocol.h')                                  
+env.Install(env['TOP_INCLUDE'] + '/sandesh/protocol', 'protocol/TJSONProtocol.h')
 env.Install(env['TOP_INCLUDE'] + '/sandesh/transport', 'transport/TTransport.h')                                  
 env.Install(env['TOP_INCLUDE'] + '/sandesh/transport', 'transport/TVirtualTransport.h')                           
 env.Install(env['TOP_INCLUDE'] + '/sandesh/transport', 'transport/TFDTransport.h')                                  

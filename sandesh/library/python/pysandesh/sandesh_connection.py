@@ -18,7 +18,7 @@ from gen_py.sandesh.constants import *
 
 class SandeshConnection(object):
 
-    def __init__(self, sandesh_instance, client, collectors):
+    def __init__(self, sandesh_instance, client, collectors, stats_collector):
         self._sandesh_instance = sandesh_instance
         self._logger = sandesh_instance.logger()
         self._client = client
@@ -26,7 +26,7 @@ class SandeshConnection(object):
         # from the Collector during connection negotiation.
         self._admin_down = False
         self._state_machine = SandeshStateMachine(self, self._logger, 
-                                                  collectors)
+                                                  collectors, stats_collector)
         self._state_machine.initialize()
     #end __init__
 

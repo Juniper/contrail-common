@@ -11,6 +11,7 @@
 #include <boost/bind.hpp>
 #include <boost/assign.hpp>
 
+#include <base/address_util.h>
 #include <sandesh/protocol/TXMLProtocol.h>
 #include <sandesh/sandesh_types.h>
 #include <sandesh/sandesh.h>
@@ -45,7 +46,7 @@ private:
 bool SandeshServer::task_policy_set_ = false;
 
 SandeshServer::SandeshServer(EventManager *evm, const SandeshConfig &config)
-    : SslServer(evm, boost::asio::ssl::context::tlsv1_server,
+    : SslServer(evm, boost::asio::ssl::context::sslv23_server,
                 config.sandesh_ssl_enable),
       sm_task_id_(TaskScheduler::GetInstance()->GetTaskId(kStateMachineTask)),
       session_reader_task_id_(TaskScheduler::GetInstance()->GetTaskId(kSessionReaderTask)),
@@ -66,6 +67,7 @@ SandeshServer::SandeshServer(EventManager *evm, const SandeshConfig &config)
         boost::asio::ssl::context *ctx = context();
         boost::system::error_code ec;
         ctx->set_options(boost::asio::ssl::context::default_workarounds |
+                         boost::asio::ssl::context::no_tlsv1 |
                          boost::asio::ssl::context::no_sslv3 |
                          boost::asio::ssl::context::no_sslv2, ec);
         if (ec.value() != 0) {
@@ -120,11 +122,18 @@ void SandeshServer::SessionShutdown() {
     TcpServer::Shutdown();
 }
 
-bool SandeshServer::Initialize(short port) {
+bool SandeshServer::Initialize(short port, const std::string &ip) {
     int count = 0;
 
+    boost::system::error_code ec;
+    boost::asio::ip::address ip_addr = AddressFromString(ip, &ec);
+    if (ec) {
+        SANDESH_LOG(ERROR, __func__ << ": Invalid server address: " <<
+                ip << " Error: " << ec);
+        return false;
+    }
     while (count++ < kMaxInitRetries) {
-        if (TcpServer::Initialize(port))
+        if (TcpServer::Initialize(port, ip_addr))
             break;
         sleep(1);
     }

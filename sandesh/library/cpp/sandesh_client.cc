@@ -63,7 +63,7 @@ SandeshClient::SandeshClient(EventManager *evm,
         const std::vector<Endpoint> &collectors,
         const SandeshConfig &config,
         bool periodicuve)
-    :   SslServer(evm, boost::asio::ssl::context::tlsv1_client,
+    :   SslServer(evm, boost::asio::ssl::context::sslv23_client,
                   config.sandesh_ssl_enable),
         sm_task_instance_(kSMTaskInstance),
         sm_task_id_(TaskScheduler::GetInstance()->GetTaskId(kSMTask)),
@@ -72,7 +72,9 @@ SandeshClient::SandeshClient(EventManager *evm,
         session_reader_task_id_(TaskScheduler::GetInstance()->GetTaskId(kSessionReaderTask)),
         dscp_value_(0),
         collectors_(collectors),
-        sm_(SandeshClientSM::CreateClientSM(evm, this, sm_task_instance_, sm_task_id_, periodicuve)),
+        stats_collector_(config.stats_collector),
+        sm_(SandeshClientSM::CreateClientSM(evm, this, sm_task_instance_, sm_task_id_,
+                                            periodicuve)),
         session_wm_info_(kSessionWaterMarkInfo),
         session_close_interval_msec_(0),
         session_close_time_usec_(0) {
@@ -89,6 +91,7 @@ SandeshClient::SandeshClient(EventManager *evm,
         boost::asio::ssl::context *ctx = context();
         boost::system::error_code ec;
         ctx->set_options(boost::asio::ssl::context::default_workarounds |
+                         boost::asio::ssl::context::no_tlsv1 |
                          boost::asio::ssl::context::no_sslv3 |
                          boost::asio::ssl::context::no_sslv2, ec);
         if (ec.value() != 0) {
@@ -129,6 +132,19 @@ SandeshClient::SandeshClient(EventManager *evm,
             exit(EINVAL);
         }
     }
+    if (stats_collector_ != "") {
+        UdpServer::Endpoint stats_server;
+        size_t found = stats_collector_.find(":");
+        if (found != std::string::npos) {
+            stats_client_.reset(new StatsClientRemote(*evm->io_service(), stats_collector_));
+        } else {
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+            stats_client_.reset(new StatsClientLocal(*evm->io_service(), stats_collector_));
+#else
+            SANDESH_LOG(ERROR, "Unix Domain Sockets are not supported on this platform");
+#endif
+        }
+    }
 }
 
 SandeshClient::~SandeshClient() {}
@@ -153,6 +169,9 @@ void SandeshClient::Initiate() {
     sm_->SetAdminState(false);
     if (collectors_.size())
         sm_->SetCollectors(collectors_);
+    if (stats_collector_ != "") {
+        stats_client_->Initialize();
+    }
 }
 
 void SandeshClient::Shutdown() {
@@ -161,6 +180,10 @@ void SandeshClient::Shutdown() {
 
 bool SandeshClient::SendSandesh(Sandesh *snh) {
     return sm_->SendSandesh(snh);
+}
+
+bool SandeshClient::SendSandeshUVE(Sandesh *snh) {
+    return sm_->SendSandeshUVE(snh);
 }
 
 bool SandeshClient::ReceiveCtrlMsg(const std::string &msg,

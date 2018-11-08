@@ -51,7 +51,7 @@ BGPaaSUtils::BgpAsServicePortIndexPair BGPaaSUtils::DecodeBgpaasServicePort(
      *  calculated based on posisiton in the the given port range in
      *  addition to the port range start.
      *  Ex : given port is 51026 and the range is 50000-50512
-     *       original port will be 50000 and index will be 2 
+     *       original port will be 50000 and index will be 2
      */
     original_sport = (((sport - port_range_end) % port_range) - 1)
                                         + port_range_start;
@@ -72,11 +72,11 @@ uint32_t BGPaaSUtils::EncodeBgpaasServicePort(const uint32_t sport,
     /*
      *  From the given original port and index, the derived port will be
      *  calculated based on selection of derived range which is the multiple
-     *  of given port range by the given index in addition to the position of 
+     *  of given port range by the given index in addition to the position of
      *  the original port with respect to port range start.
      *  Ex : given port, index : 50000, 2 and the range is 50000-50512
      *       derived port port will be 51026
      */
-    return (port_range_start + (port_range * index)
-                             + (sport - port_range_start));
+    return static_cast<uint32_t>(port_range_start + (port_range * index)
+        + (sport - port_range_start));
 }

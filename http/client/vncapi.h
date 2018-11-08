@@ -64,8 +64,6 @@ class VncApi : public boost::enable_shared_from_this<VncApi> {
     HttpClient* client_;
     std::vector<std::string> hdr_;
     std::vector<std::string> kshdr_;
-    boost::asio::ip::tcp::endpoint api_ep_;
-    boost::asio::ip::tcp::endpoint ks_ep_;
 
     void hex_dump(std::string s);
     void Reauthenticate(RespBlock *orb);
@@ -81,7 +79,6 @@ class VncApi : public boost::enable_shared_from_this<VncApi> {
     VncApi(EventManager *evm, VncApiConfig *cfg);
     virtual ~VncApi() { Stop(); }
     void Stop();
-    void SetApiServerAddress();
     void GetConfig(std::string type, std::vector<std::string> ids,
             std::vector<std::string> filters, std::vector<std::string> parents,
             std::vector<std::string> refs, std::vector<std::string> fields,

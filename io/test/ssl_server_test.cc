@@ -58,7 +58,7 @@ class EchoSession : public SslSession {
 class EchoServer : public SslServer {
 public:
     EchoServer(EventManager *evm, bool ssl_handshake_delayed = false) :
-        SslServer(evm, boost::asio::ssl::context::tlsv1_server,
+        SslServer(evm, boost::asio::ssl::context::sslv23_server,
                   true, ssl_handshake_delayed),
         session_(NULL),
         ssl_handshake_delayed_(ssl_handshake_delayed),
@@ -185,7 +185,7 @@ class SslClient : public SslServer {
 public:
     SslClient(EventManager *evm, bool ssl_handshake_delayed = false,
             bool large_data = false) :
-        SslServer(evm, boost::asio::ssl::context::tlsv1, true, ssl_handshake_delayed),
+        SslServer(evm, boost::asio::ssl::context::sslv23, true, ssl_handshake_delayed),
         session_(NULL),
         large_data_(large_data),
         ssl_handshake_delayed_(ssl_handshake_delayed),

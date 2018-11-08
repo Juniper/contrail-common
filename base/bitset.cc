@@ -25,7 +25,7 @@ using namespace std;
 static int find_first_set64(uint64_t value) {
     int bit;
 
-    int lower = value;
+    int lower = static_cast<int>(value);
     if ((bit = ffs(lower)) > 0)
         return bit;
 
@@ -86,7 +86,7 @@ static int find_last_set64(uint64_t value) {
     if ((bit = find_last_set32(upper)) > 0)
         return 32 + bit;
 
-    int lower = value;
+    int lower = static_cast<int>(value);
     if ((bit = find_last_set32(lower)) > 0)
         return bit;
 

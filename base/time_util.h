@@ -35,14 +35,22 @@ static inline uint64_t ClockMonotonicUsec() {
         assert(0);
     }
 
-    return ts.tv_sec * 1000000 + ts.tv_nsec/1000;
+    return ts.tv_sec * 1000000 + ts.tv_nsec / 1000;
 }
 
 static inline boost::posix_time::ptime UTCUsecToPTime(uint64_t tusec) {
-    boost::posix_time::ptime pt(boost::gregorian::date(1970, 1, 1), 
-                   boost::posix_time::time_duration(0, 0, 
-                   tusec/1000000, 
-                   boost::posix_time::time_duration::ticks_per_second()/1000000*(tusec%1000000)));
+    typedef boost::posix_time::time_duration::sec_type sec_type;
+    typedef boost::posix_time::time_duration::fractional_seconds_type frac_type;
+
+    int64_t tps = boost::posix_time::time_duration::ticks_per_second();
+    sec_type seconds = static_cast<sec_type>(tusec / 1000000);
+    frac_type frac_seconds =
+        static_cast<frac_type>(tps / 1000000 * (tusec % 1000000));
+
+    boost::posix_time::ptime pt(
+        boost::gregorian::date(1970, 1, 1),
+        boost::posix_time::time_duration(0, 0, seconds, frac_seconds));
+
     return pt;
 }
 

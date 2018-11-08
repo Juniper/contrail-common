@@ -47,6 +47,7 @@ public:
                         TcpServer::Endpoint ep) = 0;
             virtual void InitializeSMSession(int connects) = 0;
             virtual void DeleteSMSession(SandeshSession * session) = 0;
+            virtual StatsClient *stats_client() const = 0;
         protected:
             Mgr() {}
             virtual ~Mgr() {}

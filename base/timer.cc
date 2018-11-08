@@ -158,7 +158,7 @@ bool Timer::Cancel() {
     // Cancel Task. If Task cancel succeeds, there will be no callback.
     // Reset TaskRef if call succeeds.
     if (timer_task_) {
-        TaskScheduler::CancelReturnCode rc = 
+        TaskScheduler::CancelReturnCode rc =
             TaskScheduler::GetInstance()->Cancel(timer_task_);
         assert(rc != TaskScheduler::FAILED);
         timer_task_ = NULL;
@@ -232,20 +232,19 @@ bool TimerManager::DeleteTimer(Timer *timer) {
 }
 
 // Get timer's already elapsed time in milliseconds.
-int Timer::GetElapsedTime() const {
+int64_t Timer::GetElapsedTime() const {
     tbb::mutex::scoped_lock lock(mutex_);
     int64_t elapsed;
 
-#if BOOST_VERSION >= 104900
-#ifdef _WIN32
-    elapsed = std::chrono::nanoseconds(impl_->timer_.expires_from_now()).count();
+// The additional `defined(_WIN32)` condition is required here
+// because MSVC incorrectly defines `__cplusplus` value.
+#if __cplusplus >= 201103L || defined(_WIN32)
+    elapsed = std::chrono::nanoseconds(impl_->expires_from_now()).count();
 #else
-    elapsed = boost::chrono::nanoseconds(impl_->timer_.expires_from_now()).count();
+    elapsed = boost::chrono::nanoseconds(impl_->expires_from_now()).count();
 #endif
-#else
-    elapsed = impl_->timer_.expires_from_now().total_nanoseconds();
-#endif
-    elapsed = time_ - elapsed/1000000; // Convert nanoseconds to milliseconds.
+
+    elapsed = time_ - elapsed / 1000000; // Convert nanoseconds to milliseconds.
     if (elapsed < 0)
         elapsed = 0;
     return elapsed;
