@@ -38,6 +38,10 @@ void AddOptions(opt::options_description *sandesh_options,
          opt::value<uint32_t>()->default_value(
          g_sandesh_constants.DEFAULT_SANDESH_SEND_RATELIMIT),
          "System logs send rate limit in messages per second per message type")
+        ("DEFAULT.http_server_ip",
+         opt::value<std::string>()->default_value(
+         "0.0.0.0"),
+         "Listen IP for the Introspect")
         ;
 }
 
@@ -57,6 +61,8 @@ void ProcessOptions(const opt::variables_map &var_map,
                       "SANDESH.disable_object_logs");
     GetOptValue<uint32_t>(var_map, sandesh_config->system_logs_rate_limit,
                           "DEFAULT.sandesh_send_rate_limit");
+    GetOptValue<std::string>(var_map, sandesh_config->http_server_ip,
+                        "DEFAULT.http_server_ip");
 }
 
 }  // namespace options

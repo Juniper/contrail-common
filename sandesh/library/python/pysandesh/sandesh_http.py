@@ -59,10 +59,13 @@ class SandeshHttp(object):
     '/js/util.js',
     '/universal_parse.xsl']
 
-    def __init__(self, sandesh, module, port, pkg_list, sandesh_config=None):
+    def __init__(self, sandesh, module, port, pkg_list, sandesh_config=None,
+            http_server_ip=None):
         self._sandesh = sandesh
         self._logger = sandesh.logger()
         self._module = module
+        self._http_ip = http_server_ip \
+                if http_server_ip is not None else SandeshHttp._HTTP_SERVER_IP
         self._http_port = port
         self._http_request_dict = {}
         self._http_app = bottle.Bottle()
@@ -107,7 +110,7 @@ class SandeshHttp(object):
 
     def start_http_server(self):
         try:
-            sock = StreamServer.get_listener((SandeshHttp._HTTP_SERVER_IP,
+            sock = StreamServer.get_listener((self._http_ip,
                 self._http_port), family=socket.AF_INET)
         except socket.error as e:
             self._logger.error('Unable to open HTTP Port %d, %s' %

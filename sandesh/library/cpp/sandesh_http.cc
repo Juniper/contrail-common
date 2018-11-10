@@ -410,7 +410,16 @@ SandeshHttp::Init(EventManager *evm, const string module,
             boost::bind(&HttpSandeshRequestCallback, hServ_, _1, _2));
     }
 
-    bool success(hServ_->Initialize(port));
+    boost::system::error_code ec;
+    bool success;
+    IpAddress http_ip =
+        boost::asio::ip::address::from_string(config.http_server_ip, ec);
+    if (ec == 0) {
+        success = hServ_->Initialize(port, http_ip);
+    } else {
+        success = hServ_->Initialize(port);
+    }
+
     if (success) {
         int lport(hServ_->GetPort());
         SANDESH_LOG(DEBUG, "Sandesh Http Server Port: " << lport);
