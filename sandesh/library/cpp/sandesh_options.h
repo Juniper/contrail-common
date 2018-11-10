@@ -11,6 +11,7 @@
 
 struct SandeshConfig {
     SandeshConfig() :
+        http_server_ip(),
         keyfile(),
         certfile(),
         ca_cert(),
@@ -23,6 +24,7 @@ struct SandeshConfig {
     ~SandeshConfig() {
     }
 
+    std::string http_server_ip;
     std::string keyfile;
     std::string certfile;
     std::string ca_cert;
