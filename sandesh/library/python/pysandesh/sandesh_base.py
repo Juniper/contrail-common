@@ -38,10 +38,11 @@ from work_queue import WorkQueue
 
 class SandeshConfig(object):
 
-    def __init__(self, keyfile=None, certfile=None, ca_cert=None,
+    def __init__(self, http_server_ip=None, keyfile=None, certfile=None, ca_cert=None,
                  sandesh_ssl_enable=False, introspect_ssl_enable=False,
                  dscp_value=0, disable_object_logs=False,
                  system_logs_rate_limit=DEFAULT_SANDESH_SEND_RATELIMIT):
+        self.http_server_ip = http_server_ip
         self.keyfile = keyfile
         self.certfile = certfile
         self.ca_cert = ca_cert
@@ -71,7 +72,8 @@ class SandeshConfig(object):
                     })
             if section == 'DEFAULTS':
                 sandeshopts.update({'sandesh_send_rate_limit': \
-                    DEFAULT_SANDESH_SEND_RATELIMIT})
+                    DEFAULT_SANDESH_SEND_RATELIMIT,
+                    'http_server_ip': '0.0.0.0'})
         return sandeshopts
     # end get_default_options
 
@@ -80,6 +82,9 @@ class SandeshConfig(object):
         default_opts = SandeshConfig.get_default_options(
                 sections=['SANDESH', 'DEFAULTS'])
         sandesh_config = cls(
+            http_server_ip = parser_args.http_server_ip if parser_args and \
+                parser_args.http_server_ip else \
+                default_opts['http_server_ip'],
             keyfile = parser_args.sandesh_keyfile if parser_args and \
                 parser_args.sandesh_keyfile else \
                 default_opts['sandesh_keyfile'],
@@ -242,9 +247,12 @@ class Sandesh(object):
     # end init_generator
 
     def run_introspect_server(self, http_port):
+        self._logger.info('SANDESH: INTROSPECT IS ON: %s:%s',
+                    self._config.http_server_ip, http_port)
         self._http_server = SandeshHttp(
             self, self._module, http_port,
-            self._sandesh_req_uve_pkg_list, self._config)
+            self._sandesh_req_uve_pkg_list, self._config,
+            self._config.http_server_ip)
         self._gev_httpd = gevent.spawn(self._http_server.start_http_server)
     # end run_introspect_server
 
