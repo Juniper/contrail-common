@@ -58,6 +58,13 @@ TEST_F(AddressUtilsTest, ResolveCanonicalNameTest) {
     EXPECT_EQ(hostname, hostname_2);
 }
 
+TEST_F(AddressUtilsTest, IPv6SubnetTest) {
+    IpAddress ip1 = IpAddress::from_string("2001:2002:2003:2004::1");
+    IpAddress subnet = IpAddress::from_string("2001::");
+    EXPECT_TRUE(!IsIp6SubnetMember(ip1.to_v6(), subnet.to_v6(), 32));
+    EXPECT_TRUE(IsIp6SubnetMember(ip1.to_v6(), subnet.to_v6(), 16));
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     int result = RUN_ALL_TESTS();
