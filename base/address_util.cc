@@ -25,18 +25,12 @@ bool IsIp4SubnetMember(
 
 /* Returns true if the given IPv6 address is member of the IPv6 subnet
  * indicated by IPv6 address and prefix length. Otherwise returns false.
- * We do byte by byte comparison of IPv6 subnet address with bitwise AND of
- * IPv6 address and subnet address to decide whether an IPv6 address belongs to
- * its subnet.
  */
 bool IsIp6SubnetMember(
     const Ip6Address &ip, const Ip6Address &subnet, uint8_t plen) {
     Ip6Address mask = Address::GetIp6SubnetAddress(subnet, plen);
-    for (int i = 0; i < 16; ++i) {
-        if ((ip.to_bytes()[i] & mask.to_bytes()[i]) != mask.to_bytes()[i])
-            return false;
-    }
-    return true;
+    Ip6Address ip1 = Address::GetIp6SubnetAddress(ip, plen);
+    return (ip1 == mask);
 }
 
 /*
