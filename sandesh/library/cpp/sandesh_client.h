@@ -26,9 +26,10 @@
 #include <io/ssl_session.h>
 #include <base/queue_task.h>
 #include <base/timer.h>
+#include <sandesh/stats_client.h>
 #include <sandesh/sandesh_session.h>
 #include "sandesh_client_sm.h"
-
+#include "sandesh.h"
 
 class SandeshClient;
 class Sandesh;
@@ -71,10 +72,8 @@ public:
 
     bool SendSandesh(Sandesh *snh);
 
-    bool SendSandeshUVE(Sandesh *snh_uve) {
-        return sm_->SendSandeshUVE(snh_uve);
-    }
-    
+    bool SendSandeshUVE(Sandesh *snh_uve);
+
     SandeshClientSM::State state() {
         return sm_->state();
     }
@@ -90,6 +89,10 @@ public:
 
     SandeshClientSM* state_machine() const {
         return sm_.get();
+    }
+
+    StatsClient* stats_client() const {
+        return stats_client_.get();
     }
 
     void SetDscpValue(uint8_t value);
@@ -128,7 +131,9 @@ private:
     int session_reader_task_id_;
     uint8_t dscp_value_;
     std::vector<Endpoint> collectors_;
+    std::string stats_collector_;
     boost::scoped_ptr<SandeshClientSM> sm_;
+    boost::scoped_ptr<StatsClient> stats_client_;
     std::vector<Sandesh::QueueWaterMarkInfo> session_wm_info_;
     static bool task_policy_set_;
     int session_close_interval_msec_;
