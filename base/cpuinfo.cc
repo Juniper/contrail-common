@@ -8,6 +8,8 @@
 #include <mach/mach.h>
 #include <mach/task.h>
 #elif defined(_WIN32)
+#include <windows.h>//needed for process information
+#include <psapi.h>//needed for process information
 #include <thread>
 #include <posix_stdlib.h>
 #endif
@@ -64,6 +66,8 @@ static void LoadAvg(CpuLoad &load) {
 }
 
 static void ProcessMemInfo(ProcessMemInfo &info) {
+//initialize to 0 to prevent random values of memory contents
+    memset(&info, 0, sizeof(info));
 #if defined(__APPLE__)
     struct task_basic_info t_info;
     mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
@@ -79,7 +83,12 @@ static void ProcessMemInfo(ProcessMemInfo &info) {
     info.peakvirt = t_info.virtual_size;
     return;
 #elif defined(_WIN32)
-    // TODO(WINDOWS) JW-1121
+    PROCESS_MEMORY_COUNTERS mctr;
+    if (GetProcessMemoryInfo(GetCurrentProcess(), &mctr, sizeof(mctr))) {
+        info.res = mctr.WorkingSetSize/1024;
+        info.virt = mctr.WorkingSetSize/1024;//returned values are in bytes and workingsetSize is closes to both res and virt.
+        info.peakvirt = mctr.PeakWorkingSetSize/1024;
+    }
 #else
     std::ifstream file("/proc/self/status");
     bool vmsize = false;
@@ -109,8 +118,16 @@ static void ProcessMemInfo(ProcessMemInfo &info) {
 }
 
 static void SystemMemInfo(SystemMemInfo &info) {
+    memset(&info, 0, sizeof(info));//set to zero to prevent random values
 #if defined(_WIN32)
-    // TODO(WINDOWS) JW-1121
+    PERFORMANCE_INFORMATION pi;
+    if (GetPerformanceInfo(&pi, sizeof(pi))) {
+        info.total = (pi.PhysicalTotal*pi.PageSize)/1024;
+        info.free = (pi.PhysicalAvailable*pi.PageSize) / 1024;
+        info.buffers = info.free;
+        info.cached = (pi.SystemCache*pi.PageSize)/1024;
+        info.used = info.total - info.free;
+    }
 #else
     std::ifstream file("/proc/meminfo");
     std::string tmp;
