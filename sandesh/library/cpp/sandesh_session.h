@@ -19,9 +19,11 @@
 
 #include <base/util.h>
 #include <io/ssl_session.h>
+#include <io/udp_server.h>
 
 #include <sandesh/transport/TBufferTransports.h>
 #include <sandesh/sandesh.h>
+#include <sandesh/sandesh_utils.h>
 #include <sandesh/sandesh_uve_types.h>
 
 using contrail::sandesh::transport::TMemoryBuffer;
@@ -174,6 +176,7 @@ public:
     virtual void EnqueueClose();
     virtual boost::system::error_code SetSocketOptions();
     virtual std::string ToString() const;
+    void set_stats_client(StatsClient *stats_client) { stats_client_ = stats_client;}
     static Sandesh * DecodeCtrlSandesh(const std::string& msg, const SandeshHeader& header,
         const std::string& sandesh_name, const uint32_t& header_offset);
     // Session statistics
@@ -236,6 +239,7 @@ private:
     boost::scoped_ptr<SandeshReader> reader_;
     boost::scoped_ptr<Sandesh::SandeshQueue> send_queue_;
     boost::scoped_ptr<Sandesh::SandeshBufferQueue> send_buffer_queue_;
+    StatsClient *stats_client_;
     SandeshConnection *connection_;
     tbb::mutex conn_mutex_;
     tbb::mutex send_mutex_;

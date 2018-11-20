@@ -36,6 +36,7 @@
 #include "sandesh_uve.h"
 #include "sandesh_util.h"
 
+
 using boost::asio::ip::address;
 using namespace boost::asio;
 using boost::system::error_code;
@@ -47,6 +48,7 @@ using std::vector;
 const std::string SandeshClient::kSMTask = "sandesh::SandeshClientSM";
 const std::string SandeshClient::kSessionWriterTask = "sandesh::SandeshClientSession";
 const std::string SandeshClient::kSessionReaderTask = "sandesh::SandeshClientReader";
+const std::string SandeshClient::kStatsWriterTask = "sandesh::StatsWriter";
 bool SandeshClient::task_policy_set_ = false;
 const std::vector<Sandesh::QueueWaterMarkInfo> 
     SandeshClient::kSessionWaterMarkInfo = boost::assign::tuple_list_of
@@ -70,9 +72,12 @@ SandeshClient::SandeshClient(EventManager *evm,
         session_task_instance_(kSessionTaskInstance),
         session_writer_task_id_(TaskScheduler::GetInstance()->GetTaskId(kSessionWriterTask)),
         session_reader_task_id_(TaskScheduler::GetInstance()->GetTaskId(kSessionReaderTask)),
+        stats_client_id_(TaskScheduler::GetInstance()->GetTaskId(kStatsWriterTask)),
         dscp_value_(0),
         collectors_(collectors),
-        sm_(SandeshClientSM::CreateClientSM(evm, this, sm_task_instance_, sm_task_id_, periodicuve)),
+        stats_collector_(config.stats_collector),
+        sm_(SandeshClientSM::CreateClientSM(evm, this, sm_task_instance_, sm_task_id_,
+                                            periodicuve)),
         session_wm_info_(kSessionWaterMarkInfo),
         session_close_interval_msec_(0),
         session_close_time_usec_(0) {
@@ -129,6 +134,14 @@ SandeshClient::SandeshClient(EventManager *evm,
             exit(EINVAL);
         }
     }
+    if (stats_collector_ != "") {
+        UdpServer::Endpoint stats_server;
+        if (MakeEndpoint(&stats_server, stats_collector_)) {
+            stats_client_.reset(new StatsClientRemote(*evm->io_service(), stats_collector_));
+        } else {
+            stats_client_.reset(new StatsClientLocal(*evm->io_service(), stats_collector_));
+        }
+    }
 }
 
 SandeshClient::~SandeshClient() {}
@@ -153,6 +166,9 @@ void SandeshClient::Initiate() {
     sm_->SetAdminState(false);
     if (collectors_.size())
         sm_->SetCollectors(collectors_);
+    if (stats_collector_ != "") {
+        stats_client_->Initialize();
+    }
 }
 
 void SandeshClient::Shutdown() {
@@ -161,6 +177,10 @@ void SandeshClient::Shutdown() {
 
 bool SandeshClient::SendSandesh(Sandesh *snh) {
     return sm_->SendSandesh(snh);
+}
+
+bool SandeshClient::SendSandeshUVE(Sandesh *snh) {
+    return sm_->SendSandeshUVE(snh);
 }
 
 bool SandeshClient::ReceiveCtrlMsg(const std::string &msg,
