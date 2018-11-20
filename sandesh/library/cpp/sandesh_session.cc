@@ -18,6 +18,7 @@
 #include <sandesh/common/vns_constants.h>
 #include <sandesh/transport/TBufferTransports.h>
 #include <sandesh/protocol/TXMLProtocol.h>
+#include <sandesh/protocol/TJSONProtocol.h>
 #include "sandesh/sandesh_types.h"
 #include "sandesh/sandesh.h"
 
@@ -381,6 +382,9 @@ bool SandeshSession::SendMsg(SandeshElement element) {
         sandesh->Log();
     }
     bool more = !send_queue_->IsQueueEmpty();
+    if (sandesh->type() == SandeshType::UVE) {
+        stats_client_->SendMsg(sandesh);
+    }
     writer_->SendMsg(sandesh, more);
     return true;
 }

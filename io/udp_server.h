@@ -17,6 +17,9 @@ class SocketIOStats;
 
 class UdpServer {
 public:
+    typedef boost::asio::ip::udp::endpoint Endpoint;
+    typedef boost::asio::ip::udp::socket Socket;
+
     enum ServerState {
         OK = 42,
         Uninitialized,

@@ -387,6 +387,7 @@ struct Connect : public sc::state<Connect, SandeshClientSMImpl> {
                         boost::bind(&SandeshClientSMImpl::OnMessage,
                                           state_machine, _2, _1),
                         state_machine->server()));
+        session->set_stats_client(state_machine->GetMgr()->stats_client());
         state_machine->set_session(session);
     }
 
