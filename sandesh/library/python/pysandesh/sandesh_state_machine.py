@@ -53,7 +53,7 @@ class SandeshStateMachine(object):
     _IDLE_HOLD_TIME = 4 # in seconds
     _CONNECT_TIME = 30 # in seconds
 
-    def __init__(self, connection, logger, collectors):
+    def __init__(self, connection, logger, collectors, stats_collector):
 
         def _update_connection_state(e, status):
             from connection_info import ConnectionState
@@ -232,6 +232,7 @@ class SandeshStateMachine(object):
         self._idle_hold_timer = None
         self._connect_timer = None
         self._collectors = collectors
+        self._stats_collector = stats_collector
         self._collector_name = None
         self._collector_index = -1
         self._logger = logger
@@ -336,11 +337,15 @@ class SandeshStateMachine(object):
         self._session = SandeshSession(self._connection.sandesh_instance(),
                                        server,
                                        self.on_session_event,
-                                       self._connection._receive_sandesh_msg) 
+                                       self._connection._receive_sandesh_msg)
+        if self._stats_collector:
+            self._session.set_stats_collector(self._stats_collector)
     #end _create_session
 
     def _delete_session(self):
         if self._session:
+            if self._stats_collector:
+                self._session.stats_client().close()
             self._session.close()
             self._session = None
             self._collector_name = None
