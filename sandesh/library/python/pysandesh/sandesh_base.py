@@ -41,7 +41,8 @@ class SandeshConfig(object):
     def __init__(self, http_server_ip=None, keyfile=None, certfile=None, ca_cert=None,
                  sandesh_ssl_enable=False, introspect_ssl_enable=False,
                  dscp_value=0, disable_object_logs=False,
-                 system_logs_rate_limit=DEFAULT_SANDESH_SEND_RATELIMIT):
+                 system_logs_rate_limit=DEFAULT_SANDESH_SEND_RATELIMIT,
+                 stats_collector=None):
         self.http_server_ip = http_server_ip
         self.keyfile = keyfile
         self.certfile = certfile
@@ -51,6 +52,7 @@ class SandeshConfig(object):
         self.dscp_value = dscp_value
         self.disable_object_logs = disable_object_logs
         self.system_logs_rate_limit = system_logs_rate_limit
+        self.stats_collector = stats_collector
     # end __init__
 
     @staticmethod
@@ -74,13 +76,15 @@ class SandeshConfig(object):
                 sandeshopts.update({'sandesh_send_rate_limit': \
                     DEFAULT_SANDESH_SEND_RATELIMIT,
                     'http_server_ip': '0.0.0.0'})
+            if section == 'STATS':
+                sandeshopts.update({'stats_collector': None})
         return sandeshopts
     # end get_default_options
 
     @classmethod
     def from_parser_arguments(cls, parser_args=None):
         default_opts = SandeshConfig.get_default_options(
-                sections=['SANDESH', 'DEFAULTS'])
+                sections=['SANDESH', 'DEFAULTS', 'STATS'])
         sandesh_config = cls(
             http_server_ip = parser_args.http_server_ip if parser_args and \
                 parser_args.http_server_ip else \
@@ -112,7 +116,11 @@ class SandeshConfig(object):
             system_logs_rate_limit =
                 parser_args.sandesh_send_rate_limit if parser_args and \
                 parser_args.sandesh_send_rate_limit is not None else \
-                default_opts['sandesh_send_rate_limit'])
+                default_opts['sandesh_send_rate_limit'],
+            stats_collector =
+                parser_args.stats_collector if parser_args and \
+                parser_args.stats_collector is not None else \
+                default_opts['stats_collector'])
 
         return sandesh_config
     # end get_sandesh_config
@@ -136,6 +144,8 @@ class SandeshConfig(object):
             help="Disable sending of object logs to the oollector")
         parser.add_argument("--sandesh_send_rate_limit", type=int,
             help="System logs send rate limit in messages per second per message type")
+        parser.add_argument("--stats_collector",
+            help="External Stats Collector")
     # end add_parser_arguments
 
     @staticmethod
@@ -157,6 +167,11 @@ class SandeshConfig(object):
                         'SANDESH', 'sandesh_dscp_value')
                 except:
                     pass
+        if 'STATS' in config.sections():
+            sandeshopts.update(dict(config.items('STATS')))
+            if 'stats_collector' in config.options('STATS'):
+                sandeshopts['stats_collector'] = config.get('STATS',
+                    'stats_collector')
     # end update_options
 
 # end class SandeshConfig
