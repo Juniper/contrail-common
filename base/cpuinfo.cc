@@ -86,8 +86,8 @@ static void ProcessMemInfo(ProcessMemInfo &info) {
     PROCESS_MEMORY_COUNTERS mctr;
     if (GetProcessMemoryInfo(GetCurrentProcess(), &mctr, sizeof(mctr))) {
         info.res = mctr.WorkingSetSize/1024;
-        info.virt = mctr.WorkingSetSize/1024;//returned values are in bytes and workingsetSize is closes to both res and virt.
-        info.peakvirt = mctr.PeakWorkingSetSize/1024;
+        info.virt = mctr.PagefileUsage/1024;//returned values are in bytes and workingsetSize is closes to both res and virt.
+        info.peakvirt = mctr.PeakPagefileUsage/1024;
     }
 #else
     std::ifstream file("/proc/self/status");
@@ -124,7 +124,7 @@ static void SystemMemInfo(SystemMemInfo &info) {
     if (GetPerformanceInfo(&pi, sizeof(pi))) {
         info.total = (pi.PhysicalTotal*pi.PageSize)/1024;
         info.free = (pi.PhysicalAvailable*pi.PageSize) / 1024;
-        info.buffers = info.free;
+        info.buffers = 0;
         info.cached = (pi.SystemCache*pi.PageSize)/1024;
         info.used = info.total - info.free;
     }
