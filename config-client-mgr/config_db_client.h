@@ -10,12 +10,30 @@
 #include <tbb/spin_rw_mutex.h>
 
 #include "base/regex.h"
+#include "base/timer.h"
+#include "base/task_annotations.h"
 #include "config_client_manager.h"
 
 struct ConfigClientOptions;
 struct ConfigDBConnInfo;
 struct ConfigDBUUIDCacheEntry;
 struct ConfigDBFQNameCacheEntry;
+
+class ObjectProcessReq {
+ public:
+    ObjectProcessReq(std::string oper,
+                     std::string uuid_str,
+                     std::string value) : oper_(oper),
+    uuid_str_(uuid_str), value_(value) {
+    }
+
+    std::string oper_;
+    std::string uuid_str_;
+    std::string value_; // obj_type for Cassandra/json_value for ETCD
+
+ private:
+    DISALLOW_COPY_AND_ASSIGN(ObjectProcessReq);
+};
 
 /*
  * This is the base class for interactions with a database that stores the user
@@ -32,7 +50,9 @@ public:
     // Number of config entries to read in one read request
     static const int kNumEntriesToRead = 4096;
 
-    ConfigDbClient(const ConfigClientOptions &options);
+    ConfigDbClient(ConfigClientManager *mgr,
+                   EventManager *evm,
+                   const ConfigClientOptions &options);
     virtual ~ConfigDbClient();
 
     typedef std::pair<std::string, std::string> ObjTypeFQNPair;
@@ -45,8 +65,6 @@ public:
     virtual void InitDatabase() = 0;
     virtual void EnqueueUUIDRequest(std::string uuid_str, std::string obj_type,
                                     std::string oper) = 0;
-
-    virtual void GetConnectionInfo(ConfigDBConnInfo &status) const = 0;
 
     virtual bool UUIDToObjCacheShow(
         const std::string &search_string, int inst_num,
@@ -78,8 +96,16 @@ public:
         return key;
     }
 
+    virtual void InitConnectionInfo();
+    virtual void UpdateConnectionInfo(bool success,
+                                      bool force);
+    virtual void GetConnectionInfo(ConfigDBConnInfo &status) const;
+
     virtual bool IsTaskTriggered() const;
     virtual void StartWatcher();
+
+    ConfigClientManager *mgr() { return mgr_; }
+    const ConfigClientManager *mgr() const { return mgr_; }
 
 protected:
    // UUID to FQName mapping
@@ -106,14 +132,53 @@ protected:
     }
 
     virtual uint32_t GetNumReadRequestToBunch() const;
+    EventManager *event_manager() { return  evm_; }
 
 private:
+    ConfigClientManager *mgr_;
+    EventManager *evm_;
     std::string config_db_user_;
     std::string config_db_password_;
     std::vector<std::string> config_db_ips_;
     std::vector<int> config_db_ports_;
     FQNameCacheMap fq_name_cache_;
     mutable tbb::spin_rw_mutex rw_mutex_;
+    tbb::atomic<bool> client_connection_up_;
+    tbb::atomic<uint64_t> connection_status_change_at_;
 };
 
+class ObjectCacheEntry {
+ public:
+    ObjectCacheEntry(uint64_t last_read_tstamp)
+        : last_read_tstamp_(last_read_tstamp) {
+    }
+
+    ~ObjectCacheEntry() {};
+
+    virtual void SetLastReadTimeStamp(uint64_t ts) {
+        last_read_tstamp_ = ts;
+    }
+    virtual uint64_t GetLastReadTimeStamp() const {
+        return last_read_tstamp_;
+    }
+
+    virtual void SetFQName(std::string fq_name) {
+        fq_name_ = fq_name;
+    }
+    virtual const std::string &GetFQName() const {
+        return fq_name_;
+    }
+
+    virtual void SetObjType(std::string obj_type) {
+        obj_type_ = obj_type;
+    }
+    virtual const std::string &GetObjType() const {
+        return obj_type_;
+    }
+
+ private:
+    std::string obj_type_;
+    std::string fq_name_;
+    uint64_t last_read_tstamp_;
+};
 #endif  // config_db_client_h

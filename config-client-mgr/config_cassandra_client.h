@@ -33,21 +33,6 @@ struct ConfigCassandraParseContext;
 class ConfigDBFQNameCacheEntry;
 class ConfigDBUUIDCacheEntry;
 
-class ObjectProcessReq {
- public:
-    ObjectProcessReq(std::string oper, std::string obj_type,
-                     std::string uuid_str) : oper_(oper),
-    obj_type_(obj_type), uuid_str_(uuid_str) {
-    }
-
-    std::string oper_;
-    std::string obj_type_;
-    std::string uuid_str_;
-
- private:
-    DISALLOW_COPY_AND_ASSIGN(ObjectProcessReq);
-};
-
 class ConfigCassandraPartition {
  public:
     ConfigCassandraPartition(ConfigCassandraClient *client, size_t idx);
@@ -69,15 +54,16 @@ class ConfigCassandraPartition {
     };
     typedef std::map<JsonAdapterDataType, FieldTimeStampInfo, cmp_json_key>
                                                              FieldDetailMap;
-    class ObjectCacheEntry {
+    class ObjCacheEntry : public ObjectCacheEntry {
      public:
-        ObjectCacheEntry(ConfigCassandraPartition *parent,
+        ObjCacheEntry(ConfigCassandraPartition *parent,
                 uint64_t last_read_tstamp)
-            : retry_count_(0), retry_timer_(NULL),
-              last_read_tstamp_(last_read_tstamp), parent_(parent) {
+            : ObjectCacheEntry(last_read_tstamp),
+              retry_count_(0), retry_timer_(NULL),
+              parent_(parent) {
         }
 
-        ~ObjectCacheEntry();
+        ~ObjCacheEntry();
 
         void EnableCassandraReadRetry(const std::string uuid);
         void DisableCassandraReadRetry(const std::string uuid);
@@ -86,12 +72,6 @@ class ConfigCassandraPartition {
             return field_detail_map_;
         }
         uint32_t GetRetryCount() const { return retry_count_; }
-        void SetLastReadTimeStamp(uint64_t ts) { last_read_tstamp_ = ts; }
-        void SetFQName(std::string fq_name) { fq_name_ = fq_name; }
-        const std::string GetFQName() const { return fq_name_; }
-        void SetObjType(std::string obj_type) { obj_type_ = obj_type; }
-        const std::string GetObjType() const { return obj_type_; }
-        uint64_t GetLastReadTimeStamp() const { return last_read_tstamp_; }
         bool IsRetryTimerCreated() const { return (retry_timer_ != NULL); }
         bool IsRetryTimerRunning() const;
         Timer *GetRetryTimer() { return retry_timer_; }
@@ -102,33 +82,30 @@ class ConfigCassandraPartition {
 
         bool CassReadRetryTimerExpired(const std::string uuid);
         void CassReadRetryTimerErrorHandler();
-        std::string obj_type_;
-        std::string fq_name_;
         uint32_t retry_count_;
         Timer *retry_timer_;
-        uint64_t last_read_tstamp_;
         FieldDetailMap field_detail_map_;
         ConfigCassandraPartition *parent_;
     };
 
     static const uint32_t kMaxUUIDRetryTimePowOfTwo = 20;
     static const uint32_t kMinUUIDRetryTimeMSec = 100;
-    typedef boost::ptr_map<std::string, ObjectCacheEntry> ObjectCacheMap;
+    typedef boost::ptr_map<std::string, ObjCacheEntry> ObjectCacheMap;
 
     ObjProcessWorkQType obj_process_queue() {
         return obj_process_queue_;
     }
 
-    virtual int UUIDRetryTimeInMSec(const ObjectCacheEntry *obj) const;
-    ObjectCacheEntry *GetObjectCacheEntry(const std::string &uuid);
-    const ObjectCacheEntry *GetObjectCacheEntry(const std::string &uuid) const;
+    virtual int UUIDRetryTimeInMSec(const ObjCacheEntry *obj) const;
+    ObjCacheEntry *GetObjCacheEntry(const std::string &uuid);
+    const ObjCacheEntry *GetObjCacheEntry(const std::string &uuid) const;
     bool StoreKeyIfUpdated(const std::string &uuid,
                            JsonAdapterDataType *adapter,
                            uint64_t timestamp,
                            ConfigCassandraParseContext &context);
     void ListMapPropReviseUpdateList(const std::string &uuid,
                                      ConfigCassandraParseContext &context);
-    ObjectCacheEntry *MarkCacheDirty(const std::string &uuid);
+    ObjCacheEntry *MarkCacheDirty(const std::string &uuid);
     void DeleteCacheMap(const std::string &uuid) {
         object_cache_map_.erase(uuid);
     }
@@ -227,9 +204,6 @@ class ConfigCassandraClient : public ConfigDbClient {
 
     virtual void InitDatabase();
     void BulkSyncDone();
-    virtual void GetConnectionInfo(ConfigDBConnInfo &status) const;
-    ConfigClientManager *mgr() { return mgr_; }
-    const ConfigClientManager *mgr() const { return mgr_; }
     ConfigCassandraPartition *GetPartition(const std::string &uuid);
     const ConfigCassandraPartition *GetPartition(const std::string &uuid) const;
     const ConfigCassandraPartition *GetPartition(int worker_id) const;
@@ -263,8 +237,6 @@ protected:
     PartitionList &partitions() { return partitions_; }
     virtual void PostShutdown();
 
-    EventManager *event_manager() { return  evm_; }
-
  private:
     friend class ConfigCassandraPartition;
 
@@ -278,15 +250,11 @@ protected:
     void HandleCassandraConnectionStatus(bool success,
                                          bool force_update = false);
 
-    ConfigClientManager *mgr_;
-    EventManager *evm_;
     GenDbIfPtr dbif_;
     int num_workers_;
     PartitionList partitions_;
     boost::scoped_ptr<TaskTrigger> fq_name_reader_;
     tbb::atomic<long> bulk_sync_status_;
-    tbb::atomic<bool> cassandra_connection_up_;
-    tbb::atomic<uint64_t> connection_status_change_at_;
 };
 
 #endif  // config_cass_client_h

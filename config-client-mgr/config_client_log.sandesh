@@ -380,7 +380,7 @@ trace sandesh ConfigClientGetRowErrorTrace {
  * @description: System log for config client module
  * @severity: DEBUG
  */
-systemlog sandesh ConfigCassandraReadRetry {
+systemlog sandesh ConfigClientReadRetry {
     1: string message
     3: string uuid
 }
@@ -389,25 +389,7 @@ systemlog sandesh ConfigCassandraReadRetry {
  * @description: Trace message for config client module
  * @severity: DEBUG
  */
-trace sandesh ConfigCassandraReadRetryTrace {
-    1: string message
-    2: string uuid
-}
-
-/**
- * @description: System log for config client module
- * @severity: DEBUG
- */
-systemlog sandesh ConfigEtcdReadRetry {
-    1: string message
-    3: string uuid
-}
-
-/**
- * @description: Trace message for config client module
- * @severity: DEBUG
- */
-trace sandesh ConfigEtcdReadRetryTrace {
+trace sandesh ConfigClientReadRetryTrace {
     1: string message
     2: string uuid
 }
