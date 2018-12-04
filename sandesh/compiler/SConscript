@@ -21,6 +21,10 @@ env['CCFLAGS'] = cflags
 
 env.Append(CPPPATH = ['#src/contrail-common/sandesh/compiler','#build/include'])
 
+dependencies = ['flex', 'bison', 'm4']
+for d in dependencies:
+    env.EnsureBuildDependency(d)
+
 # Lex and Yacc
 env.Append(YACCFLAGS = '-d')
 env['YACCHXXFILESUFFIX'] = '.hh'
