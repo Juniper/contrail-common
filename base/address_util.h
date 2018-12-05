@@ -34,6 +34,13 @@ bool IsIp6SubnetMember(const Ip6Address &ip, const Ip6Address &subnet,
 std::string ResolveCanonicalName();
 
 /*
+ * Returns canonical hostname by IPv4
+ */
+
+std::string ResolveCanonicalName(const std::string& ipv4);
+
+
+/*
  * Returns boost::asio::ip::address if given string is either valid
  * IPv4, IPv6 or a resolvable FQDN
 */
