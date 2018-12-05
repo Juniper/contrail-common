@@ -228,7 +228,7 @@ void TcpSession::SetName() {
     name_ = out.str();
 
     out.str("");
-    string hostname = ResolveCanonicalName();
+    string hostname = ResolveCanonicalName(local.address().to_string());
     out << hostname << ":" << remote_.address().to_string();
     uve_key_str_ = out.str();
 }
