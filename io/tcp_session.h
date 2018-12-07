@@ -49,18 +49,21 @@ public:
         CONNECT_FAILED,
         CLOSE
     };
+
     enum Direction {
         ACTIVE,
         PASSIVE
     };
+
     typedef boost::asio::ip::tcp::socket Socket;
+    typedef boost::asio::ip::tcp::socket::native_handle_type NativeSocketType;
     typedef boost::asio::ip::tcp::endpoint Endpoint;
     typedef boost::function<void(TcpSession *, Event)> EventObserver;
     typedef boost::asio::const_buffer Buffer;
 
     // TcpSession constructor takes ownership of socket.
     TcpSession(TcpServer *server, Socket *socket,
-               bool async_read_ready = true, 
+               bool async_read_ready = true,
                size_t buffer_send_size = TcpSession::kDefaultWriteBufferSize);
     // Performs a non-blocking send operation.
     virtual bool Send(const uint8_t *data, size_t size, size_t *sent);
@@ -79,7 +82,7 @@ public:
 
     // Getters and setters
     virtual Socket *socket() const { return socket_.get(); }
-    int sock_descriptor() { return socket_->native_handle(); }
+    NativeSocketType sock_descriptor() { return socket_->native_handle(); }
     TcpServer *server() { return server_.get(); }
     int32_t local_port() const;
     int32_t remote_port() const;
