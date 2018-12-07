@@ -159,7 +159,7 @@ public:
             DerivedStats ds = DerivedStats(),
             const SandeshConfig &config = SandeshConfig());
     static bool InitGenerator(const std::string &module,
-            const std::string &source, 
+            const std::string &source,
             const std::string &node_type,
             const std::string &instance_id,
             EventManager *evm,
@@ -171,7 +171,7 @@ public:
             unsigned short port);
     // Collector
     static bool InitCollector(const std::string &module,
-            const std::string &source, 
+            const std::string &source,
             const std::string &node_type,
             const std::string &instance_id,
             EventManager *evm,
@@ -183,7 +183,7 @@ public:
     static bool InitGeneratorTest(const std::string &module,
             const std::string &source,
             const std::string &node_type,
-            const std::string &instance_id, 
+            const std::string &instance_id,
             EventManager *evm,
             unsigned short http_port,
             SandeshContext *client_context = NULL,
@@ -236,7 +236,7 @@ public:
 
     // Send queue processing
     static void SetSendQueue(bool enable);
-    static inline bool IsSendQueueEnabled() { 
+    static inline bool IsSendQueueEnabled() {
         return send_queue_enabled_;
     }
     static inline bool IsConnectToCollectorEnabled() {
@@ -395,7 +395,7 @@ private:
                            const SandeshConfig &config);
     static bool ProcessRecv(SandeshRequest *);
     static bool Initialize(SandeshRole::type role, const std::string &module,
-            const std::string &source, 
+            const std::string &source,
             const std::string &node_type,
             const std::string &instance_id,
             EventManager *evm,
@@ -481,8 +481,8 @@ class SandeshRequest : public Sandesh,
                        public boost::enable_shared_from_this<SandeshRequest> {
 public:
     virtual void HandleRequest() const = 0;
-    virtual bool RequestFromHttp(const std::string& ctx, 
-        const std::string& snh_query) = 0; 
+    virtual bool RequestFromHttp(const std::string& ctx,
+        const std::string& snh_query) = 0;
     void Release();
     boost::shared_ptr<const SandeshRequest> SharedPtr() const { return shared_from_this(); }
     bool Enqueue(SandeshRxQueue* queue);
@@ -490,7 +490,8 @@ protected:
     SandeshRequest(const std::string& name, uint32_t seqno) :
         Sandesh(SandeshType::REQUEST, name, seqno), self_(this) {}
 
-    friend void boost::checked_delete<SandeshRequest>(SandeshRequest * x);
+    template <typename T>
+    friend void boost::checked_delete<T>(T *x);
     boost::shared_ptr<SandeshRequest> self_;
 };
 
@@ -512,7 +513,7 @@ public:
         set_context(r.context());
         set_timestamp(r.timestamp());
         set_scope(r.scope());
-        set_hints(r.hints()); 
+        set_hints(r.hints());
         set_type(r.type());
         set_level(r.level());
         set_category(r.category());
@@ -581,7 +582,7 @@ protected:
         Sandesh(t, name, seqno), more_(false) {}
     bool Dispatch(SandeshConnection * sconn = NULL);
     void set_more(const bool val) { more_=val; }
-  
+
  private:
     bool more_;
 };
@@ -677,10 +678,10 @@ log4cplus::LogLevel SandeshLevelTolog4Level(
 
 template <typename T>
 struct SandeshStructDeleteTrait {
-    static bool get(const T& s) { return false; } 
+    static bool get(const T& s) { return false; }
 };
 template <typename T>
 struct SandeshStructProxyTrait {
-    static std::string get(const T& s) { return std::string(""); } 
+    static std::string get(const T& s) { return std::string(""); }
 };
 #endif // __SANDESH_H__

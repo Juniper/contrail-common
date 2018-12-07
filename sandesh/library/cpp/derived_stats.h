@@ -4,7 +4,7 @@
 
 //
 // derived_stats.h
-// 
+//
 // This file has the interface for derived stats
 // towards the sandesh generated code, and
 // the derived stats base class
@@ -20,7 +20,7 @@
 #include <base/time_util.h>
 
 template <typename T>
-class SandeshStructDeleteTrait;
+struct SandeshStructDeleteTrait;
 
 namespace contrail {
 namespace sandesh {
@@ -40,8 +40,8 @@ std::map<std::string, ElemT> DerivedStatsAgg(const std::map<std::string, ElemT> 
 
     typename std::map<std::string, ElemT>::const_iterator rit;
     typename std::map<std::string, ElemT>::iterator ait;
-   
-    // Go through all raw elements to generate diff and update agg 
+
+    // Go through all raw elements to generate diff and update agg
     for (rit=raw.begin(); rit!= raw.end(); rit++) {
         ait=agg.find(rit->first);
         // The aggregate already has this element
@@ -53,13 +53,13 @@ std::map<std::string, ElemT> DerivedStatsAgg(const std::map<std::string, ElemT> 
             else agg.erase(ait);
         } else {
             diff[rit->first] = rit->second;
-            if (!del.at(rit->first)) agg[rit->first] = diff[rit->first]; 
+            if (!del.at(rit->first)) agg[rit->first] = diff[rit->first];
         }
     }
     return diff;
-}  
+}
 
- 
+
 template<template<class,class> class DSTT, typename ElemT, typename ResultT>
 void DerivedStatsMerge(const std::map<std::string, ElemT> & raw,
         std::map<std::string, boost::shared_ptr<DSTT<ElemT,ResultT> > > & dsm,
@@ -129,16 +129,16 @@ class DerivedStatsIf {
     boost::shared_ptr<result_map> dsm_;
 
     boost::shared_ptr<DSTT<ElemT,ResultT> > ds_;
-    
+
     std::string annotation_;
-    
+
     bool is_agg_;
     ElemT agg_;
     std::map<std::string, ElemT> aggm_;
     ElemT diff_;
     std::map<std::string, ElemT> diffm_;
 
-    
+
   public:
     DerivedStatsIf(std::string annotation, bool is_agg = false):
         annotation_(annotation), is_agg_(is_agg) {}
@@ -164,7 +164,7 @@ class DerivedStatsIf {
     }
 
     void FillResult(std::map<std::string, ResultT> &mres, bool& isset, bool force=false) const {
-        mres.clear(); 
+        mres.clear();
         if (dsm_) {
             for (typename result_map::const_iterator dit = dsm_->begin();
                     dit != dsm_->end(); dit++) {
@@ -197,7 +197,7 @@ class DerivedStatsIf {
         if (is_agg_) ds_->Update(diff_, mono_usec);
         else ds_->Update(raw, mono_usec);
     }
-    
+
     void Update(const std::map<std::string, ElemT> & raw,
             const std::map<std::string, bool> &del, uint64_t mono_usec) {
         if (!dsm_) {
@@ -222,7 +222,7 @@ class DerivedStatsPeriodicIf {
 
     boost::shared_ptr<DSTT<ElemT,SubResultT> > ds_;
     boost::shared_ptr<ResultT> ds_cache_;
-    
+
     std::string annotation_;
 
     bool is_agg_;
@@ -438,7 +438,7 @@ class DerivedStatsPeriodicAnomalyIf {
         if (!init_) return false;
         DSPeriodic<ElemT> sres;
         static ElemT zelem;
-        
+
         if (periodic_.Flush(sres)) {
             bool result_available;
             periodic_.FillResult(sres, result_available);
@@ -460,9 +460,9 @@ class DerivedStatsPeriodicAnomalyIf {
             bool result_available;
             periodic_.FillResult(smres, result_available);
         }
-        
+
         typename std::map<std::string, ElemT> val;
-        std::map<std::string, bool> dmap; 
+        std::map<std::string, bool> dmap;
 
         // Extract the reportable value of the periodic DerivedStat
         for (typename std::map<std::string, DSPeriodic<ElemT> >::const_iterator
@@ -472,7 +472,7 @@ class DerivedStatsPeriodicAnomalyIf {
         }
 
         if (anomaly_.dsm_) {
-            // If existing element has no sample, assume 0   
+            // If existing element has no sample, assume 0
             for (typename result_map::const_iterator dit =
                             anomaly_.dsm_->begin();
                     dit != anomaly_.dsm_->end(); dit++) {
@@ -483,7 +483,7 @@ class DerivedStatsPeriodicAnomalyIf {
             }
         }
         anomaly_.Update(val, dmap, 0);
-   
+
         return true;
     }
 
@@ -501,4 +501,3 @@ class DerivedStatsPeriodicAnomalyIf {
 } // namespace sandesh
 } // namespace contrail
 #endif
-
