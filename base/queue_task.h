@@ -374,7 +374,7 @@ public:
     }
 
     uint32_t task_starts() const { return task_starts_; }
-    uint32_t max_queue_len() const { return max_queue_len_; }
+    size_t max_queue_len() const { return max_queue_len_; }
     bool measure_busy_time() const { return measure_busy_time_; }
     void set_measure_busy_time(bool val) const { measure_busy_time_ = val; }
     uint64_t busy_time() const { return busy_time_; }
@@ -544,7 +544,7 @@ private:
     WaterMarkTuple watermarks_;
     mutable tbb::mutex water_mutex_;
     mutable uint32_t task_starts_;
-    mutable uint32_t max_queue_len_;
+    mutable size_t max_queue_len_;
     mutable uint64_t busy_time_;
     mutable bool measure_busy_time_;
 

@@ -88,7 +88,7 @@ uint32_t LabelBlock::AllocateLabel() {
         if (first_ + pos <= last_) {
             used_bitset_.set(pos);
             prev_pos_ = pos;
-            return (first_ + pos);
+            return static_cast<uint32_t>(first_ + pos);
         }
     }
 

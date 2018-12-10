@@ -34,7 +34,7 @@
 
 template <typename IntType>
 bool BitIsSet(IntType value, size_t bit) {
-    return (value & (1 << bit));
+    return (value & (1 << bit)) != 0;
 }
 
 template <typename IntType>
@@ -110,7 +110,7 @@ void STLDeleteValues(Container *container) {
 }
 
 // Delete all the elements of a map.
-template <typename Container> 
+template <typename Container>
 void STLDeleteElements(Container *container) {
     typename Container::iterator next;
     for (typename Container::iterator iter = container->begin();

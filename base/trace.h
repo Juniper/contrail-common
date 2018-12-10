@@ -18,8 +18,8 @@
 template<typename TraceEntryT>
 class TraceBuffer {
 public:
-    TraceBuffer(const std::string& buf_name, size_t size, bool trace_enable) 
-        : trace_buf_name_(buf_name), 
+    TraceBuffer(const std::string& buf_name, size_t size, bool trace_enable)
+        : trace_buf_name_(buf_name),
           trace_buf_size_(size),
           trace_buf_(trace_buf_size_),
           write_index_(0),
@@ -37,11 +37,11 @@ public:
     std::string Name() {
         return trace_buf_name_;
     }
-   
+
     void TraceOn() {
         trace_enable_ = true;
     }
-    
+
     void TraceOff() {
         trace_enable_ = false;
     }
@@ -51,12 +51,12 @@ public:
     }
 
     size_t TraceBufSizeGet() {
-        return trace_buf_size_; 
+        return trace_buf_size_;
     }
 
     void TraceWrite(TraceEntryT *trace_entry) {
         tbb::mutex::scoped_lock lock(mutex_);
-       
+
         // Add the trace
         trace_buf_.push_back(trace_entry);
 
@@ -72,22 +72,22 @@ public:
             write_index_ = 0;
             wrap_ = true;
         }
-        
-        // Trace messages could be read in batches instead of reading 
+
+        // Trace messages could be read in batches instead of reading
         // the entire trace buffer in one shot. Therefore, trace messages
-        // could be added between subsequent read requests. If the 
-        // read_index_ [points to the oldest message in the trace buffer] 
-        // becomes same as the read index [points to the position in the 
-        // trace buffer from where the next trace message should be read] 
+        // could be added between subsequent read requests. If the
+        // read_index_ [points to the oldest message in the trace buffer]
+        // becomes same as the read index [points to the position in the
+        // trace buffer from where the next trace message should be read]
         // stored in the read context, then there is no need to remember the
-        // read context. 
+        // read context.
         ReadContextMap::iterator it = read_context_map_.begin();
-        ReadContextMap::iterator next = it; 
-        for (int i = 0, cnt = read_context_map_.size(); i < cnt; 
+        ReadContextMap::iterator next = it;
+        for (size_t i = 0, cnt = read_context_map_.size(); i < cnt;
              i++, it = next) {
             ++next;
             if (*it->second.get() == read_index_) {
-                read_context_map_.erase(it); 
+                read_context_map_.erase(it);
             }
         }
     }
@@ -101,7 +101,7 @@ public:
         return nseqno;
     }
 
-    void TraceRead(const std::string& context, const int count, 
+    void TraceRead(const std::string& context, const int count,
             boost::function<void (TraceEntryT *, bool)> cb) {
         tbb::mutex::scoped_lock lock(mutex_);
         if (trace_buf_.empty()) {
@@ -110,22 +110,22 @@ public:
         }
 
         // if count = 0, then set the cnt equal to the size of trace_buf_
-        int cnt = count ? count : trace_buf_.size();
+        size_t cnt = count ? count : trace_buf_.size();
 
-        int *read_index_ptr;
+        size_t *read_index_ptr;
         typename ContainerType::iterator it;
-        ReadContextMap::iterator context_it = 
+        ReadContextMap::iterator context_it =
             read_context_map_.find(context);
         if (context_it != read_context_map_.end()) {
             // If the read context is present, manipulate the position
             // from where we wanna start
             read_index_ptr = context_it->second.get();
-            int offset = *read_index_ptr - read_index_;
-            offset = offset > 0 ? offset : trace_buf_size_ + offset; 
+            size_t offset = *read_index_ptr - read_index_;
+            offset = offset > 0 ? offset : trace_buf_size_ + offset;
             it = trace_buf_.begin() + offset;
         } else {
             // Create read context
-            boost::shared_ptr<int> read_context(new int(read_index_));
+            boost::shared_ptr<size_t> read_context(new size_t(read_index_));
             read_index_ptr = read_context.get();
             read_context_map_.insert(std::make_pair(context, read_context));
             it = trace_buf_.begin();
@@ -139,14 +139,14 @@ public:
         }
 
         // Update the read index in the read context
-        int offset = *read_index_ptr + i;
-        *read_index_ptr = offset >= trace_buf_size_ ? 
+        size_t offset = *read_index_ptr + i;
+        *read_index_ptr = offset >= trace_buf_size_ ?
             offset - trace_buf_size_ : offset;
     }
 
     void TraceReadDone(const std::string& context) {
         tbb::mutex::scoped_lock lock(mutex_);
-        ReadContextMap::iterator context_it = 
+        ReadContextMap::iterator context_it =
             read_context_map_.find(context);
         if (context_it != read_context_map_.end()) {
             read_context_map_.erase(context_it);
@@ -155,22 +155,22 @@ public:
 
 private:
     typedef boost::ptr_circular_buffer<TraceEntryT> ContainerType;
-    typedef std::map<const std::string, boost::shared_ptr<int> > 
+    typedef std::map<const std::string, boost::shared_ptr<size_t> >
         ReadContextMap;
 
     std::string trace_buf_name_;
-    int trace_buf_size_;
+    size_t trace_buf_size_;
     ContainerType trace_buf_;
     tbb::atomic<bool> trace_enable_;
-    int write_index_; // points to the position in the trace buffer, 
+    int write_index_; // points to the position in the trace buffer,
                       // where the next trace message would be added
-    int read_index_; // points to the position of the oldest 
+    int read_index_; // points to the position of the oldest
                      // trace message in the trace buffer
     bool wrap_; // indicates if the trace buffer is wrapped
-    ReadContextMap read_context_map_; // stores the read context  
+    ReadContextMap read_context_map_; // stores the read context
     tbb::atomic<uint32_t> seqno_;
     tbb::mutex mutex_;
-    
+
     // Reserve 0 and max(uint32_t)
     static const uint32_t kMaxSeqno = ((2 ^ 32) - 1) - 1;
     static const uint32_t kMinSeqno = 1;
@@ -215,19 +215,19 @@ public:
         if (!trace_) {
             trace_ = new Trace;
         }
-        return trace_; 
+        return trace_;
     }
-    
+
     void TraceOn() {
-        trace_enable_ = true; 
+        trace_enable_ = true;
     }
-    
-    void TraceOff() { 
-        trace_enable_ = false; 
+
+    void TraceOff() {
+        trace_enable_ = false;
     }
-    
-    bool IsTraceOn() { 
-        return trace_enable_; 
+
+    bool IsTraceOn() {
+        return trace_enable_;
     }
 
     boost::shared_ptr<TraceBuffer<TraceEntryT> > TraceBufGet(const std::string& buf_name) {
@@ -239,7 +239,7 @@ public:
             return boost::shared_ptr<TraceBuffer<TraceEntryT> >();
         }
     }
-        
+
     boost::shared_ptr<TraceBuffer<TraceEntryT> > TraceBufAdd(const std::string& buf_name, size_t size,
                      bool trace_enable) {
         // should we have a default size for the buffer?
@@ -279,7 +279,7 @@ private:
     tbb::atomic<bool> trace_enable_;
     TraceBufMap trace_buf_map_;
     tbb::mutex mutex_;
-    
+
     DISALLOW_COPY_AND_ASSIGN(Trace);
 };
 
