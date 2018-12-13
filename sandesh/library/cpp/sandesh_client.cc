@@ -63,7 +63,7 @@ SandeshClient::SandeshClient(EventManager *evm,
         const std::vector<Endpoint> &collectors,
         const SandeshConfig &config,
         bool periodicuve)
-    :   SslServer(evm, boost::asio::ssl::context::tlsv1_client,
+    :   SslServer(evm, boost::asio::ssl::context::sslv23_client,
                   config.sandesh_ssl_enable),
         sm_task_instance_(kSMTaskInstance),
         sm_task_id_(TaskScheduler::GetInstance()->GetTaskId(kSMTask)),
