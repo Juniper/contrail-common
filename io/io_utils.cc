@@ -29,7 +29,8 @@ void SocketStats::GetRxStats(SocketIOStats *socket_stats) const {
     socket_stats->calls = read_calls;
     socket_stats->bytes = read_bytes;
     if (read_calls) {
-        socket_stats->average_bytes = read_bytes/read_calls;
+        socket_stats->average_bytes =
+            static_cast<double>(read_bytes / read_calls);
     }
     socket_stats->blocked_count = read_blocked;
     socket_stats->blocked_duration = duration_usecs_to_string(
@@ -47,7 +48,8 @@ void SocketStats::GetTxStats(SocketIOStats *socket_stats) const {
     socket_stats->calls = write_calls;
     socket_stats->bytes = write_bytes;
     if (write_calls) {
-        socket_stats->average_bytes = write_bytes/write_calls;
+        socket_stats->average_bytes =
+            static_cast<double>(write_bytes / write_calls);
     }
     socket_stats->blocked_count = write_blocked;
     socket_stats->blocked_duration = duration_usecs_to_string(
