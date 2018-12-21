@@ -135,9 +135,9 @@ private:
     }
     void bf2bool(unsigned short bf, bool &header, bool &short_timeout,
             bool &reuse) {
-        header = bf & 4u;
-        short_timeout = bf & 2u;
-        reuse = bf & 1u;
+        header = (bf & 4u) != 0;
+        short_timeout = (bf & 2u) != 0;
+        reuse = (bf & 1u) != 0;
     }
     void HttpProcessInternal(const std::string body, std::string path,
                              //bool header, bool short_timeout, bool reuse,
@@ -145,9 +145,9 @@ private:
                              std::vector<std::string> hdr_options,
                              HttpCb cb, http_method m);
 
-    // key = endpoint_ + id_ 
+    // key = endpoint_ + id_
     boost::asio::ip::tcp::endpoint endpoint_;
-    size_t id_; 
+    size_t id_;
     HttpCb cb_;
     size_t offset_;
     std::string buf_;
@@ -186,7 +186,7 @@ public:
 
     void Init();
     void Shutdown();
-    void SessionShutdown(); 
+    void SessionShutdown();
 
     virtual TcpSession *CreateSession();
     HttpConnection *CreateConnection(boost::asio::ip::tcp::endpoint);
@@ -207,10 +207,10 @@ protected:
     virtual TcpSession *AllocSession(Socket *socket);
 
 private:
-    void TimerErrorHandler(std::string name, std::string error); 
+    void TimerErrorHandler(std::string name, std::string error);
     void RemoveConnectionInternal(HttpConnection *);
     bool DequeueEvent(EnqueuedCb);
-    void ShutdownInternal(); 
+    void ShutdownInternal();
 
     typedef boost::asio::ip::tcp::endpoint endpoint;
     typedef std::pair<endpoint, size_t> Key;
