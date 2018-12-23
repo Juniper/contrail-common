@@ -45,7 +45,7 @@ private:
 bool SandeshServer::task_policy_set_ = false;
 
 SandeshServer::SandeshServer(EventManager *evm, const SandeshConfig &config)
-    : SslServer(evm, boost::asio::ssl::context::tlsv1_server,
+    : SslServer(evm, boost::asio::ssl::context::sslv23_server,
                 config.sandesh_ssl_enable),
       sm_task_id_(TaskScheduler::GetInstance()->GetTaskId(kStateMachineTask)),
       session_reader_task_id_(TaskScheduler::GetInstance()->GetTaskId(kSessionReaderTask)),
@@ -66,6 +66,7 @@ SandeshServer::SandeshServer(EventManager *evm, const SandeshConfig &config)
         boost::asio::ssl::context *ctx = context();
         boost::system::error_code ec;
         ctx->set_options(boost::asio::ssl::context::default_workarounds |
+                         boost::asio::ssl::context::no_tlsv1 |
                          boost::asio::ssl::context::no_sslv3 |
                          boost::asio::ssl::context::no_sslv2, ec);
         if (ec.value() != 0) {
