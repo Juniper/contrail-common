@@ -33,7 +33,7 @@ class SslSession(TcpSession):
                     self._socket = ssl.wrap_socket(sock, keyfile=self._keyfile,
                         certfile=self._certfile, ca_certs=self._ca_cert,
                         cert_reqs=ssl.CERT_REQUIRED,
-                        ssl_version=ssl.PROTOCOL_TLSv1)
+                        ssl_version=ssl.PROTOCOL_SSLv23)
             except socket.error as err_msg:
                 self._socket = None
                 self._handle_event(self.SESSION_ERROR)
