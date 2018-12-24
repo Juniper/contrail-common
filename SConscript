@@ -36,6 +36,7 @@ common.Append(LIBPATH = libpath)
 common.Prepend(LIBS = libs)
 if sys.platform != 'win32':
     common.Append(CCFLAGS = '-Wall -Werror -Wsign-compare')
+    common.Append(CXXFLAGS = ['-std=c++11', '-Wno-deprecated'])
 if not sys.platform.startswith('darwin'):
     if platform.system().startswith('Linux'):
         if not platform.linux_distribution()[0].startswith('XenServer'):
