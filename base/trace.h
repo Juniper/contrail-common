@@ -131,7 +131,7 @@ public:
             it = trace_buf_.begin();
         }
 
-        int i;
+        size_t i;
         typename ContainerType::iterator next = it;
         for (i = 0; (it != trace_buf_.end()) && (i < cnt); i++, it = next) {
             ++next;
@@ -162,9 +162,9 @@ private:
     size_t trace_buf_size_;
     ContainerType trace_buf_;
     tbb::atomic<bool> trace_enable_;
-    int write_index_; // points to the position in the trace buffer,
+    size_t write_index_; // points to the position in the trace buffer,
                       // where the next trace message would be added
-    int read_index_; // points to the position of the oldest
+    size_t read_index_; // points to the position of the oldest
                      // trace message in the trace buffer
     bool wrap_; // indicates if the trace buffer is wrapped
     ReadContextMap read_context_map_; // stores the read context

@@ -325,10 +325,10 @@ class CassStatementIndexBinder : public boost::static_visitor<> {
         CassInet cinet;
         if (tipaddr.is_v4()) {
             boost::asio::ip::address_v4 tv4(tipaddr.to_v4());
-            cinet = cci_->CassInetInitV4(tv4.to_bytes().c_array());
+            cinet = cci_->CassInetInitV4(tv4.to_bytes().data());
         } else {
             boost::asio::ip::address_v6 tv6(tipaddr.to_v6());
-            cinet = cci_->CassInetInitV6(tv6.to_bytes().c_array());
+            cinet = cci_->CassInetInitV6(tv6.to_bytes().data());
         }
         CassError rc(cci_->CassStatementBindInet(statement_, index,
             cinet));
@@ -396,10 +396,10 @@ class CassStatementNameBinder : public boost::static_visitor<> {
         CassInet cinet;
         if (tipaddr.is_v4()) {
             boost::asio::ip::address_v4 tv4(tipaddr.to_v4());
-            cinet = cci_->CassInetInitV4(tv4.to_bytes().c_array());
+            cinet = cci_->CassInetInitV4(tv4.to_bytes().data());
         } else {
             boost::asio::ip::address_v6 tv6(tipaddr.to_v6());
-            cinet = cci_->CassInetInitV6(tv6.to_bytes().c_array());
+            cinet = cci_->CassInetInitV6(tv6.to_bytes().data());
         }
         CassError rc(cci_->CassStatementBindInetByName(statement_, name,
             cinet));
@@ -1100,11 +1100,19 @@ static GenDb::DbDataValue CassValue2DbDataValue(
         IpAddress ipaddr;
         if (ctinet.address_length == CASS_INET_V4_LENGTH) {
             Ip4Address::bytes_type ipv4;
+#ifdef BOOST_ASIO_HAS_STD_ARRAY
+            memcpy(ipv4.data(), ctinet.address, CASS_INET_V4_LENGTH);
+#else
             memcpy(ipv4.c_array(), ctinet.address, CASS_INET_V4_LENGTH);
+#endif
             ipaddr = Ip4Address(ipv4);
         } else if (ctinet.address_length == CASS_INET_V6_LENGTH) {
             Ip6Address::bytes_type ipv6;
+#ifdef BOOST_ASIO_HAS_STD_ARRAY
+            memcpy(ipv6.data(), ctinet.address, CASS_INET_V6_LENGTH);
+#else
             memcpy(ipv6.c_array(), ctinet.address, CASS_INET_V6_LENGTH);
+#endif
             ipaddr = Ip6Address(ipv6);
         } else {
             assert(0);
