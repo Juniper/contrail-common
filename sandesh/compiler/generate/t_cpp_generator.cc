@@ -3816,53 +3816,91 @@ void t_cpp_generator::generate_sandesh_http_reader(ofstream& out,
             indent() << "boost::tokenizer<boost::char_separator<char> >" <<
             "::iterator it1 = tokens.begin();" << endl << endl;
 
+	indent(out) << "string entity_name;"  << endl;
+
+	indent(out) << " int size_vector =" << fields.size() << ";" << endl;
+
 
 	// Required variables aren't in __isset, so we need tmp vars to check them.
-	for (f_iter = fields.begin(); f_iter != fields.end(); ++f_iter) {
-	    indent(out) << "if (it1 != tokens.end())" << endl;
-	    scope_up(out);
-	    indent(out) << "string tok = (*it1++).c_str();" << endl ;
-
-	    indent(out) << "boost::tokenizer<boost::char_separator<char> >" <<
+	indent(out) << "for(int i =0; i < size_vector; i++)" << endl;
+	scope_up(out);
+	indent(out) << "if (it1 != tokens.end())" << endl;
+	scope_up(out);
+	indent(out) << "string tok = (*it1++).c_str();" << endl ;
+	indent(out) << "boost::tokenizer<boost::char_separator<char> >" <<
 	            " var(tok, varsep);" << endl;
-	    indent(out) << "boost::tokenizer<boost::char_separator<char> >" <<
+	indent(out) << "boost::tokenizer<boost::char_separator<char> >" <<
 	            "::iterator it2 = var.begin();" << endl << endl;
+ 
+	indent(out) << "string tok_new = (*it2).c_str();" << endl;   
+        indent(out) << "if (it2 != var.end()&& ++it2 != var.end()) " << endl;
+        scope_up(out);
 
-	    t_type *ftype = (*f_iter)->get_type();
-	    if (ftype->is_base_type()) {
-	        t_base_type *btype = static_cast<t_base_type *>(ftype);
-	        indent(out) << "if (it2 != var.end()&& ++it2 != var.end()) " << endl;
-	        scope_up(out);
-	        if ((*f_iter)->get_req() == t_field::T_OPTIONAL) {
-	            indent(out) << "__isset." << (*f_iter)->get_name() << " = true;" << endl;
-	        }
-	        if (btype->is_string() || btype->is_xml()) {
-	            indent(out) << "char * unescaped = curl_easy_unescape(cr, (*it2).c_str(), 0, NULL);" << endl;
-	            indent(out) << "std::string tmpstr(unescaped);" << endl;
-	            indent(out) << (*f_iter)->get_name() << " = boost::lexical_cast<std::string>((tmpstr));" << endl;
-	            indent(out) << "curl_free(unescaped);" << endl;
-	        } else if (btype->is_uuid()) {
-                indent(out) << "std::stringstream ss;" << endl;
-                indent(out) << "ss << *it2;" << endl;
-                indent(out) << "ss >> " << (*f_iter)->get_name() << ";" << endl;
-            } else if (btype->is_ipaddr()) {
-                indent(out) << "boost::system::error_code ec;" << endl;
-                indent(out) << (*f_iter)->get_name() <<
-                    " = boost::asio::ip::address::from_string((*it2), ec);" << endl;
-            } else {
-	            assert(btype->is_integer());
-	            indent(out) << "stringToInteger((*it2), " << (*f_iter)->get_name() << ");" << endl;
-	        }
-	        scope_down(out);
-	    } else {
-	        // Ignore this field
-	        indent(out) << "++it2;" << endl;
-	    }
+	indent(out) << "char * unescaped = curl_easy_unescape(cr, (*it2).c_str(), 0, NULL);" << endl;
+        indent(out) << "std::string tmpstr(unescaped);" << endl;        
+	
+		for (f_iter = fields.begin(); f_iter != fields.end(); ++f_iter)
+		{
+			t_type *ftype = (*f_iter)->get_type();
+			if (ftype->is_base_type())  
+                        {
+                                t_base_type *btype = static_cast<t_base_type *>(ftype);
+				if (btype->is_string() || btype->is_xml())
+				{
+					indent(out) << "entity_name=\""  << (*f_iter)->get_name() << "\";" <<  endl;
+					indent(out) << "if((tok_new.substr(0,(entity_name.length()))).compare(entity_name) == 0)" << endl;
+					scope_up(out);
+					indent(out) << (*f_iter)->get_name() << " = boost::lexical_cast<std::string>((tmpstr));" << endl; 
+                                        indent(out) << "curl_free(unescaped);" << endl;
+					indent(out) << "continue;" << endl;
+                                        scope_down(out); 
+				}
+				else if (btype->is_uuid())
+                                {
+                                        indent(out) << "entity_name=\""  << (*f_iter)->get_name() << "\";" <<  endl;
+                                        indent(out) << "if((tok_new.substr(0,(entity_name.length()))).compare(entity_name) == 0)" << endl;
+                                        scope_up(out);
+					indent(out) << "std::stringstream ss;" << endl;
+                                        indent(out) << "ss << *it2;" << endl;
+                                        indent(out) << "ss >> " << (*f_iter)->get_name() << ";" << endl;
+                                        indent(out) << "continue;" << endl;
+                                        scope_down(out); 
+                                }
+				else if (btype->is_ipaddr())
+                                {
+                                        indent(out) << "entity_name=\""  << (*f_iter)->get_name() << "\";" <<  endl;
+                                        indent(out) << "if((tok_new.substr(0,(entity_name.length()))).compare(entity_name) == 0)" << endl;
+                                        scope_up(out);
+                                        indent(out) << "boost::system::error_code ec;" << endl;
+                                	indent(out) << (*f_iter)->get_name() <<
+                                	" = boost::asio::ip::address::from_string((*it2), ec);" << endl;
+					indent(out) << "continue;" << endl;
+                                        scope_down(out);
+                                }
+				else
+				{
+				indent(out) << "entity_name=\""  << (*f_iter)->get_name() << "\";" <<  endl;
+                                indent(out) << "if((tok_new.substr(0,(entity_name.length()))).compare(entity_name) == 0)" << endl;
+                                scope_up(out);
+				assert(btype->is_integer());
+                                indent(out) << "stringToInteger((*it2), " << (*f_iter)->get_name() << ");" << endl;
+                                indent(out) << "continue;" << endl;
+				scope_down(out);
+				}
+			}
+		  	else 
+			{
+	        		// Ignore this field
+	        		indent(out) << "++it2;" << endl;
+	    		}
+		}
 	    scope_down(out);
-	}
+	    scope_down(out);
+            scope_down(out);
+
 
 	indent(out) << "set_context(ctx);" << endl;
-  indent(out) << "curl_easy_cleanup(cr);" << endl;
+ 	indent(out) << "curl_easy_cleanup(cr);" << endl;
 	indent(out) << "return true;" << endl;
 	indent_down();
 	indent(out) <<  "}" << endl << endl;
