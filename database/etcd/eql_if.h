@@ -27,6 +27,7 @@ namespace etcdql {
 
 typedef boost::asio::ip::tcp::endpoint Endpoint;
 
+class ConnectionConfig;
 class EtcdResponse;
 
 /**
@@ -49,10 +50,9 @@ public:
      * @param etcd_hosts The IP address(es)of the etcd server
      * @param port The port to connect to
      */
-    EtcdIf(const std::vector<std::string> &etcd_hosts,
-           const int port, bool useSsl);
+    EtcdIf(const ConnectionConfig &connection_config);
 
-    virtual ~EtcdIf();
+    virtual ~EtcdIf() = default;
 
     /**
      * Open a grpc connection to the etcd server.
@@ -106,16 +106,17 @@ public:
 
     int port() const { return port_; }
     std::vector<Endpoint> endpoints() const { return endpoints_; }
-    std::vector<std::string> hosts() const { return hosts_; }
+    std::vector<std::string> hosts() const { return connection_config_.hosts; }
 
 private:
+    grpc::Channel CreateGRPCChannel(const std::string &etcd_host);
+
     /**
      * Data
      */
+    const ConnectionConfig connection_config_;
     std::vector<Endpoint> endpoints_;
-    std::vector<std::string> hosts_;
-    int port_;
-    bool useSsl_;
+
     std::unique_ptr<KV::Stub> kv_stub_;
     std::unique_ptr<Watch::Stub> watch_stub_;
 
@@ -178,6 +179,18 @@ typedef enum {
     DELETE,
     INVALID
 } WatchAction;
+
+/**
+ * Configuration for EtcdIf connection.
+ */
+struct ConnectionConfig {
+    std::vector<std::string> etcd_hosts;
+    int port;
+    bool use_ssl;
+    std::string key_file;
+    std::string cert_file;
+    std::string ca_cert_file;
+};
 
 /**
  * Wrapper to store the response received from ETCD
@@ -246,6 +259,8 @@ private:
     int revision_;
     kv_map kv_map_;
 };
+
+std::string ReadFile(const std::string &path)
 
 } //namespace etcdql
 } //namespace etcd
