@@ -87,9 +87,15 @@ ConfigEtcdClient::ConfigEtcdClient(ConfigClientManager *mgr,
                  : ConfigDbClient(mgr, evm, options),
                    num_workers_(num_workers)
 {
-    eqlif_.reset(ConfigFactory::Create<EtcdIf>(config_db_ips(),
-                                              GetFirstConfigDbPort(),
-                                              false));
+    etcd::etcdql::ConnectionConfig cc;
+    cc.etcd_hosts = config_db_ips();
+    cc.port = GetFirstConfigDbPort();
+    cc.use_ssl = options.use_ssl;
+    cc.key_file = options.etcd_key_file;
+    cc.cert_file = options.etcd_cert_file;
+    cc.ca_cert_file = options.etcd_ca_cert_file;
+
+    eqlif_.reset(ConfigFactory::Create<EtcdIf>(cc);
 
     InitConnectionInfo();
     bulk_sync_status_ = 0;
