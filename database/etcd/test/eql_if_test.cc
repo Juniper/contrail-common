@@ -13,26 +13,20 @@
 #include <database/etcd/eql_if.h>
 
 using namespace std;
-using etcd::etcdql::EtcdIf;
 using etcd::etcdql::EtcdResponse;
+
+etcd::etcdql::EtcdIf NewConnectedEqlIf();
 
 class EqlIfTest : public ::testing::Test {
     protected:
         EqlIfTest() {
+            etcd = NewConnectedEqlIf();
         }
-        virtual ~EqlIfTest(){
-        }
-        virtual void SetUp() {
-        }
-        virtual void TearDown() {
-        }
+
+        etcd::etcdql::EtcdIf etcd;
 };
 
-
 TEST_F(EqlIfTest, CreateKeys) {
-    vector<string> hosts = {"127.0.0.1"};
-    EtcdIf etcd(hosts, 2379, false);
-    (void)etcd.Connect();
     etcd.Delete("/", "\\0");
     etcd.Set("/contrail/vn1", "vn1");
     etcd.Set("/contrail/vn2", "vn2");
@@ -54,9 +48,6 @@ TEST_F(EqlIfTest, CreateKeys) {
 
 TEST_F(EqlIfTest, UpdateKey)
 {
-    vector<string> hosts = {"127.0.0.1"};
-    EtcdIf etcd(hosts, 2379, false);
-    etcd.Connect();
     etcd.Set("/contrail/vn1", "updated vn1");
 
     EtcdResponse resp;
@@ -73,9 +64,6 @@ TEST_F(EqlIfTest, UpdateKey)
 
 TEST_F(EqlIfTest, ReadKeys)
 {
-    vector<string> hosts = {"127.0.0.1"};
-    EtcdIf etcd(hosts, 2379, false);
-    etcd.Connect();
     etcd.Delete("/", "\\0");
     etcd.Set("/contrail/vn1", "1");
     etcd.Set("/contrail/vn2", "2");
@@ -112,9 +100,6 @@ TEST_F(EqlIfTest, ReadKeys)
 
 TEST_F(EqlIfTest, ReadLimit)
 {
-    vector<string> hosts = {"127.0.0.1"};
-    EtcdIf etcd(hosts, 2379, false);
-    etcd.Connect();
     etcd.Delete("/", "\\0");
     etcd.Set("/contrail/vn1", "1");
     etcd.Set("/contrail/vn2", "2");
@@ -147,9 +132,6 @@ TEST_F(EqlIfTest, ReadLimit)
 
 TEST_F(EqlIfTest, ReadUnknownKey)
 {
-    vector<string> hosts = {"127.0.0.1"};
-    EtcdIf etcd(hosts, 2379, false);
-    etcd.Connect();
     etcd.Delete("/", "\\0");
     etcd.Set("/contrail/vn1", "1");
     etcd.Set("/contrail/vn2", "2");
@@ -167,9 +149,6 @@ TEST_F(EqlIfTest, ReadUnknownKey)
 
 TEST_F(EqlIfTest, ReadOneKey)
 {
-    vector<string> hosts = {"127.0.0.1"};
-    EtcdIf etcd(hosts, 2379, false);
-    etcd.Connect();
     etcd.Delete("/", "\\0");
     etcd.Set("/contrail/vn1", "1");
     etcd.Set("/contrail/vn2", "2");
@@ -190,9 +169,6 @@ TEST_F(EqlIfTest, ReadOneKey)
 
 TEST_F(EqlIfTest, DeleteOneKey)
 {
-    vector<string> hosts = {"127.0.0.1"};
-    EtcdIf etcd(hosts, 2379, false);
-    etcd.Connect();
     etcd.Set("/contrail/vn1", "1");
     etcd.Delete("/contrail/vn1", "");
 
@@ -208,9 +184,6 @@ TEST_F(EqlIfTest, DeleteOneKey)
 
 TEST_F(EqlIfTest, DeleteAllKeys)
 {
-    vector<string> hosts = {"127.0.0.1"};
-    EtcdIf etcd(hosts, 2379, false);
-    etcd.Connect();
     etcd.Delete("/", "\\0");
 
     etcd::etcdql::EtcdResponse resp;
@@ -242,9 +215,6 @@ void StopWatch(etcd::etcdql::EtcdIf *etcd) {
 
 TEST_F(EqlIfTest, WatchSetKey)
 {
-    vector<string> hosts = {"127.0.0.1"};
-    EtcdIf etcd(hosts, 2379, false);
-    etcd.Connect();
     std::thread th1 = thread(&WatchSetReq, &etcd);
     etcd.Set("/contrail/vn1/", "1");
 
@@ -256,17 +226,11 @@ TEST_F(EqlIfTest, WatchSetKey)
 void WatchForDelChanges(EtcdResponse resp) {
     EXPECT_EQ("2", to_string(resp.action()));
 
-    vector<string> hosts = {"127.0.0.1"};
-    EtcdIf etcd(hosts, 2379, false);
-    etcd.Connect();
-    EtcdResponse resp1;
-
-    resp1 = etcd.Get("/contrail/vn1/", "\\0", 4);
-
-    string str = "Prefix/Key not found";
+    auto etcd = NewConnectedEqlIf()
+    auto resp1 = etcd.Get("/contrail/vn1/", "\\0", 4);
 
     EXPECT_EQ(100, resp1.err_code());
-    EXPECT_EQ(str, resp1.err_msg());
+    EXPECT_EQ(std::string{"Prefix/Key not found"}, resp1.err_msg());
 }
 
 void WatchDelReq(etcd::etcdql::EtcdIf *etcd) {
@@ -275,15 +239,23 @@ void WatchDelReq(etcd::etcdql::EtcdIf *etcd) {
 
 TEST_F(EqlIfTest, WatchDeleteKey)
 {
-    vector<string> hosts = {"127.0.0.1"};
-    EtcdIf etcd(hosts, 2379, false);
-    etcd.Connect();
     std::thread th1 = thread(&WatchDelReq, &etcd);
     etcd.Delete("/contrail/vn1/", "");
 
     thread th2 = thread(&StopWatch, &etcd);
     th1.join();
     th2.join();
+}
+
+etcd::etcdql::EtcdIf NewConnectedEqlIf() {
+    etcd::etcdql::ConnectionConfig cc;
+    cc.etcd_hosts = {"127.0.0.1"};
+    cc.port = 2379;
+    cc.use_ssl = false;
+    auto eqlif = etcd::etcdql::EqlIf(cc);
+
+    eqlif.Connect();
+    return eqlif;
 }
 
 int main(int argc, char **argv) {

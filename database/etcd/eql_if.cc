@@ -2,7 +2,10 @@
 // Copyright (c) 2018 Juniper Networks, Inc. All rights reserved.
 //
 
+#include <ifstream>
 #include <iostream>
+#include <sstream>
+#include <vector>
 #include <sandesh/sandesh.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -19,7 +22,6 @@
 using namespace std;
 using namespace etcd::etcdql;
 
-using grpc::Channel;
 using etcdserverpb::RangeRequest;
 using etcdserverpb::PutRequest;
 using etcdserverpb::DeleteRangeRequest;
@@ -28,12 +30,10 @@ using etcdserverpb::WatchCreateRequest;
 SandeshTraceBufferPtr EqlTraceBuf(SandeshTraceBufferCreate(
      EQL_TRACE_BUF, 10000));
 
-EtcdIf::EtcdIf(const std::vector<std::string> &etcd_hosts,
-               const int port, bool useSsl)
-    : port_(port),
-      useSsl_(useSsl) {
+EtcdIf::EtcdIf(const ConnectionConfig &connection_config)
+        : connection_config_(connection_config) {
 
-    BOOST_FOREACH(const std::string &etcd_host, etcd_hosts) {
+    BOOST_FOREACH(const std::string &etcd_host, connection_config.etcd_hosts) {
         hosts_.push_back(etcd_host);
         boost::system::error_code ec;
         boost::asio::ip::address etcd_addr;
@@ -48,35 +48,43 @@ EtcdIf::EtcdIf(const std::vector<std::string> &etcd_hosts,
     watch_call_.reset(new EtcdAsyncWatchCall);
 }
 
-EtcdIf::~EtcdIf () {
-}
-
 bool EtcdIf::Connect() {
-    ostringstream url;
-
-    BOOST_FOREACH(const std::string &etcd_host, hosts_) {
-        url << etcd_host << ":" << port_;
-
-        shared_ptr<Channel> chan;
-
-        if (useSsl_) {
-            auto channel_creds = grpc::SslCredentials(
-                                     grpc::SslCredentialsOptions());
-            chan = grpc::CreateChannel(url.str(), channel_creds);
-        } else {
-            chan = grpc::CreateChannel(
-                                     url.str(),
-                                     grpc::InsecureChannelCredentials());
-        }
-
-        //if (chan->GetState(false) != GRPC_CHANNEL_READY) continue;
-
+    BOOST_FOREACH(const std::string &etcd_host, connection_config_.etcd_hosts) {
+        auto chan = CreateGRPCChannel(etcd_host)
         kv_stub_ = KV::NewStub(chan);
         watch_stub_ = Watch::NewStub(chan);
         return true;
     }
 
     return false;
+}
+
+grpc::Channel EtcdIf::CreateGRPCChannel(const std::string &etcd_host) {
+    ostringstream url;
+    url << etcd_host << ":" << connection_config_.port;
+
+    if (connection_config_.use_ssl) {
+        grpc::SslCredentialsOptions ssl_opts;
+        ssl_opts.pem_private_key = ReadFile(connection_config_.key_file);
+        ssl_opts.pem_cert_chain = ReadFile(connection_config_.cert_file);
+        ssl_opts.pem_root_certs = ReadFile(connection_config_.ca_cert_file);
+        auto channel_creds = grpc::SslCredentials(ssl_opts);
+        return grpc::CreateChannel(url.str(), channel_creds);
+    } else {
+        return grpc::CreateChannel(
+                url.str(),
+                grpc::InsecureChannelCredentials(),
+        );
+    }
+}
+
+std::string etcd::etcdql::ReadFile(const std::string &path) {
+    std::ifstream file(path.c_str());
+    std::string content(
+            std::istreambuf_iterator<char>(file),
+            std::istreambuf_iterator<char>(),
+    );
+    return content;
 }
 
 EtcdResponse EtcdIf::Get(string const& key,
