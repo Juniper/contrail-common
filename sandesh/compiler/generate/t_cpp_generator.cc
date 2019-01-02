@@ -3853,6 +3853,7 @@ void t_cpp_generator::generate_sandesh_http_reader(ofstream& out,
 	            assert(btype->is_integer());
 	            indent(out) << "stringToInteger((*it2), " << (*f_iter)->get_name() << ");" << endl;
 	        }
+
 	        scope_down(out);
 	    } else {
 	        // Ignore this field
