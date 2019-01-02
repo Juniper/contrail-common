@@ -163,10 +163,17 @@ static std::string FormatTime(const time_t *valuep) {
 static bool ParseInteger(const contrail_rapidjson::Value &node, int *valuep) {
     if (node.IsString())
         return ParseInteger(node.GetString(), valuep);
-    if (!node.IsInt())
-        return false;
-    *valuep = node.GetInt();
-    return true;
+    if (node.IsInt()) {
+        *valuep = node.GetInt();
+        return true;
+    }
+    // We need to check for Uint also because Int value becomes Uint in json
+    // if MSB is set
+    if (node.IsUint()) {
+        *valuep = node.GetUint();
+        return true;
+    }
+    return false;
 }
 
 static bool ParseUnsignedLong(const contrail_rapidjson::Value &node, uint64_t *valuep) {
