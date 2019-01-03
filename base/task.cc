@@ -49,7 +49,7 @@ boost::scoped_ptr<TaskScheduler> TaskScheduler::singleton_;
 #define TASK_TRACE(scheduler, task, msg, delay)\
     do {\
         scheduler->Log(__FILE__, __LINE__, task, msg, delay);\
-    } while(false);\
+    } while (false)
 
 // Private class used to implement tbb::task
 // An object is created when task is ready for execution and 
