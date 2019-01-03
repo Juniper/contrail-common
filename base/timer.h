@@ -2,7 +2,7 @@
  * Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
  */
 
-//  Timer implementation using ASIO and Task infrastructure. 
+//  Timer implementation using ASIO and Task infrastructure.
 //  Registers an ASIO timer. On ASIO timer expiry, a task will be created to
 //  run the timer. Supports user specified task-id.
 //
@@ -28,7 +28,7 @@
 //  - Timer is allocated by application
 //  - Applications must call TimerManager::DeleteTimer() to delete the timer
 //  - All operations on timer are protected by mutex
-//  - When timer is running, it can have references from ASIO and Task. 
+//  - When timer is running, it can have references from ASIO and Task.
 //    Timer class will keep of reference from ASIO and Task. Timer will
 //    be deleted when both the references go away. (via intrusive pointer)
 //
@@ -41,6 +41,7 @@
 #include <boost/asio/placeholders.hpp>
 #include <boost/bind.hpp>
 #include <boost/intrusive_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
 #include <boost/function.hpp>
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
@@ -82,12 +83,12 @@ public:
     // Cancel a running timer
     bool Cancel();
 
-    bool running() const { 
+    bool running() const {
         tbb::mutex::scoped_lock lock(mutex_);
         return (state_ == Running);
     }
 
-    bool fired() const { 
+    bool fired() const {
         tbb::mutex::scoped_lock lock(mutex_);
         return (state_ == Fired);
     }
@@ -98,7 +99,7 @@ public:
 
     bool cancelled() const {
         tbb::mutex::scoped_lock lock(mutex_);
-        return (state_ == Cancelled); 
+        return (state_ == Cancelled);
     }
 
     bool Idle() const {
@@ -114,7 +115,7 @@ public:
 
     // Only for state machine test
     // XXX: Don't use in production code
-    void Fire() { 
+    void Fire() {
         tbb::mutex::scoped_lock lock(mutex_);
         if (handler_ && !handler_.empty()) {
             SetState(Fired);
@@ -127,7 +128,6 @@ public:
         return name_;
     }
 private:
-    friend class TimerImpl;
     friend class TimerManager;
     friend class TimerTest;
 
@@ -159,7 +159,7 @@ private:
         return timer_task_id;
     }
 
-    std::auto_ptr<TimerImpl> impl_;
+    boost::scoped_ptr<TimerImpl> impl_;
     std::string name_;
     Handler handler_;
     ErrorHandler error_handler_;
@@ -194,7 +194,7 @@ inline void intrusive_ptr_release(Timer *timer) {
 //
 // Since Timer objects are also held by boost::asio routines, they are
 // protected using intrusive pointers
-// 
+//
 // This is similar to how TcpSession objects are managed via TcpSessionPtr
 //
 class TimerManager {
