@@ -5,28 +5,17 @@
 #ifndef BASE_TIMER_IMPL_H_
 #define BASE_TIMER_IMPL_H__
 
-
-#include <boost/version.hpp>
-#if BOOST_VERSION >= 104900
 #include <boost/asio/steady_timer.hpp>
-#include<boost/chrono.hpp>
-#else
-#include <boost/asio/monotonic_deadline_timer.hpp>
-#endif
+#include <boost/chrono.hpp>
 
 class TimerImpl {
 public:
-#if BOOST_VERSION >= 104900
     typedef boost::asio::steady_timer TimerType;
-#else
-    typedef boost::asio::monotonic_deadline_timer TimerType;
-#endif
 
     TimerImpl(boost::asio::io_service &io_service)
             : timer_(io_service) {
     }
 
-#if BOOST_VERSION >= 104900
     void expires_from_now(int ms, boost::system::error_code &ec) {
 #if __cplusplus >= 201103L || defined(_WIN32)
         timer_.expires_from_now(std::chrono::milliseconds(ms), ec);
@@ -34,18 +23,16 @@ public:
         timer_.expires_from_now(boost::chrono::milliseconds(ms), ec);
 #endif
     }
-#else
-    void expires_from_now(int ms, boost::system::error_code &ec) {
-        timer_.expires_from_now(boost::posix_time::milliseconds(ms), ec);
+
+    TimerType::duration expires_from_now() {
+        return timer_.expires_from_now();
     }
-#endif
 
     template <typename WaitHandler>
     void async_wait(WaitHandler handler) { timer_.async_wait(handler); }
     void cancel(boost::system::error_code &ec) { timer_.cancel(ec); }
 
 private:
-    friend class Timer;
     TimerType timer_;
 };
 
