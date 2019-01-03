@@ -65,13 +65,13 @@ static ModuleInitializer TOKENPASTE2(init_, __LINE__)(Func);
     do { \
         if ((x) < (y)) return true; \
         if ((y) < (x)) return false; \
-    } while (0)
+    } while (false)
 
 #define KEY_COMPARE(x, y) \
     do { \
         if ((x) < (y)) return -1; \
         if ((y) < (x)) return 1;  \
-    } while(0);
+    } while (false)
 
 // Compare sorted vectors of pointers.
 template <class InputIterator, class CompareOp>

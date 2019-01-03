@@ -19,13 +19,13 @@ extern SandeshTraceBufferPtr VersionTraceBuf;
 
 #define VERSION_TRACE(obj, ...) do {                                  \
     obj::TraceMsg(VersionTraceBuf, __FILE__, __LINE__, ##__VA_ARGS__); \
-} while (0);
+} while (false)
 
 #define VERSION_LOG(obj, categ, ...)\
     do {\
             obj::Send(g_vns_constants.CategoryNames.find(categ)->second,\
                                   SandeshLevel::SYS_INFO, __FILE__, __LINE__, ##__VA_ARGS__);\
-    } while (false);
+    } while (false)
 
 
 
@@ -68,4 +68,4 @@ private:
     static time_t startup_time_secs_;
 };
 
-#endif // ctrlplane_misc_utils_h 
+#endif // ctrlplane_misc_utils_h
