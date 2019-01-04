@@ -16,7 +16,7 @@ public:
             : timer_(io_service) {
     }
 
-    void expires_from_now(int ms, boost::system::error_code &ec) {
+    void expires_from_now(uint64_t ms, boost::system::error_code &ec) {
 #if __cplusplus >= 201103L || defined(_WIN32)
         timer_.expires_from_now(std::chrono::milliseconds(ms), ec);
 #else
