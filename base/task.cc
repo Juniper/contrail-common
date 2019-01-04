@@ -11,6 +11,7 @@
 #include <map>
 #include <iostream>
 #include <boost/intrusive/set.hpp>
+#include <boost/optional.hpp>
 
 #include "tbb/atomic.h"
 #include "tbb/task.h"
@@ -113,7 +114,7 @@ public:
     TaskStats *GetTaskStats();
     void ClearTaskStats();
     void ClearQueues();
-    int GetTaskDeferEntrySeqno() const;
+    boost::optional<uint64_t> GetTaskDeferEntrySeqno() const;
     int GetTaskId() const { return task_id_; }
     int GetTaskInstance() const { return task_instance_; }
     int GetRunCount() const { return run_count_; }
@@ -451,7 +452,7 @@ void TaskScheduler::EnableMonitor(EventManager *evm,
 
 void TaskScheduler::Log(const char *file_name, uint32_t line_no,
                         const Task *task, const char *description,
-                        uint32_t delay) {
+                        uint64_t delay) {
     if (log_fn_.empty() == false) {
         log_fn_(file_name, line_no, task, description, delay);
     }
@@ -761,13 +762,14 @@ void TaskScheduler::Print() {
     for (TaskGroupDb::iterator iter = task_group_db_.begin();
          iter != task_group_db_.end(); ++iter) {
         TaskGroup *group = *iter;
-	if (group == NULL) {
-	    continue;
-	}
-        cout << "id: " << group->task_id()
-	     << " run: " << group->TaskRunCount() << endl;
-        cout << "deferq: " << group->deferq_size()
-	     << " task count: " << group->num_tasks() << endl;
+        if (group == NULL) {
+            continue;
+        }
+
+        cout << "id: " << group->task_id() <<
+            " run: " << group->TaskRunCount() << endl;
+        cout << "deferq: " << group->deferq_size() <<
+            " task count: " << group->num_tasks() << endl;
     }
 }
 
@@ -1546,12 +1548,13 @@ TaskStats *TaskEntry::GetTaskStats() {
 // seqno of the first Task in the waitq_ is used as the key. This function
 // would be invoked by the comparison function during addition/deletion
 // of TaskEntry in the deferq_.
-int TaskEntry::GetTaskDeferEntrySeqno() const {
+boost::optional<uint64_t> TaskEntry::GetTaskDeferEntrySeqno() const {
     if(waitq_.size()) {
         const Task *task = &(*waitq_.begin());
         return task->GetSeqno();
     }
-    return -1;
+
+    return boost::none;
 }
 
 ////////////////////////////////////////////////////////////////////////////
