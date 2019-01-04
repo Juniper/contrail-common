@@ -18,7 +18,7 @@
 // Returns true if any set is modified, false if they are identical.
 //
 template <typename SetType, typename AddFunctor, typename DelFunctor>
-bool set_synchronize(SetType *set1, const SetType *set2,
+bool set_synchronize(const SetType *set1, const SetType *set2,
                      AddFunctor add_fn, DelFunctor del_fn) {
     typename SetType::iterator it1 = set1->begin(), next1 = set1->begin();
     typename SetType::const_iterator it2 = set2->begin();

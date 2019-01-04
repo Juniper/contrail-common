@@ -63,6 +63,8 @@ std::string ResolveCanonicalName()
 */
 std::string ResolveCanonicalName(const std::string& ipv4)
 {
+    if (boost::starts_with(ipv4, "127."))
+        return "localhost";
     boost::asio::ip::tcp::endpoint endpoint;
     boost::asio::io_service io_service;
     boost::asio::ip::address_v4 ip =
