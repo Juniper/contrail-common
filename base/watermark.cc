@@ -127,7 +127,7 @@ void WaterMarkTuple::ProcessHighWaterMarks(size_t count) {
         SetWaterMarkIndexes(-1, lwater_index);
         return;
     }
-    int nhwater_index(ubound - high_water_.begin() - 1);
+    const size_t nhwater_index(ubound - high_water_.begin() - 1);
     if (hwater_index == nhwater_index) {
         return;
     }
@@ -154,7 +154,7 @@ void WaterMarkTuple::ProcessLowWaterMarks(size_t count) {
     if (lbound == low_water_.end()) {
         return;
     }
-    int nlwater_index(lbound - low_water_.begin());
+    const size_t nlwater_index(lbound - low_water_.begin());
     // Get the high and low water indexes
     int hwater_index, lwater_index;
     GetWaterMarkIndexes(&hwater_index, &lwater_index);
