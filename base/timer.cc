@@ -232,7 +232,7 @@ bool TimerManager::DeleteTimer(Timer *timer) {
 }
 
 // Get timer's already elapsed time in milliseconds.
-int Timer::GetElapsedTime() const {
+int64_t Timer::GetElapsedTime() const {
     tbb::mutex::scoped_lock lock(mutex_);
     int64_t elapsed;
 
