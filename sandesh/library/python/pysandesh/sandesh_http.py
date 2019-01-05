@@ -111,7 +111,7 @@ class SandeshHttp(object):
     def start_http_server(self):
         try:
             sock = StreamServer.get_listener((self._http_ip,
-                self._http_port), family=socket.AF_INET)
+                    self._http_port), family=socket.AF_INET)
         except socket.error as e:
             self._logger.error('Unable to open HTTP Port %d, %s' %
                 (self._http_port, e))
@@ -128,7 +128,7 @@ class SandeshHttp(object):
                 certfile=self._sandesh_config.certfile
                 self._http_server = WSGIServer(sock, self._http_app,
                     ca_certs=ca_certs, keyfile=keyfile,
-                    certfile=certfile, ssl_version=ssl.PROTOCOL_TLSv1,
+                    certfile=certfile, ssl_version=ssl.PROTOCOL_SSLv23,
                     cert_reqs=ssl.CERT_REQUIRED, log=self._std_log)
             else:
                 self._http_server = WSGIServer(sock, self._http_app, log=self._std_log)

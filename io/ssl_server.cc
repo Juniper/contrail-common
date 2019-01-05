@@ -20,7 +20,10 @@ SslServer::SslServer(EventManager *evm, boost::asio::ssl::context::method m,
     // By default set verify mode to none, to be set by derived class later.
     context_.set_verify_mode(boost::asio::ssl::context::verify_none, ec);
     assert(ec.value() == 0);
-    context_.set_options(boost::asio::ssl::context::default_workarounds, ec);
+    context_.set_options(boost::asio::ssl::context::default_workarounds |
+            boost::asio::ssl::context::no_sslv3 |
+            boost::asio::ssl::context::no_sslv2 |
+            boost::asio::ssl::context::no_tlsv1, ec);
     assert(ec.value() == 0);
 
 #if BOOST_VERSION >= 105400
