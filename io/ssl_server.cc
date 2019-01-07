@@ -65,7 +65,7 @@ void SslServer::AcceptHandlerComplete(TcpSessionPtr session) {
         TcpServer::AcceptHandlerComplete(session);
     } else {
         // trigger ssl server handshake
-        std::srand(std::time(0));
+        std::srand(static_cast<unsigned>(std::time(0)));
         ssl->ssl_handshake_in_progress_ = true;
         ssl->ssl_socket_->async_handshake
             (boost::asio::ssl::stream_base::server,
@@ -103,7 +103,7 @@ void SslServer::ConnectHandlerComplete(TcpSessionPtr session) {
         TcpServer::ConnectHandlerComplete(session);
     } else {
         // trigger ssl client handshake
-        std::srand(std::time(0));
+        std::srand(static_cast<unsigned>(std::time(0)));
         ssl->ssl_handshake_in_progress_ = true;
         ssl->ssl_socket_->async_handshake
             (boost::asio::ssl::stream_base::client,
@@ -144,4 +144,3 @@ void SslServer::set_accept_socket() {
     so_ssl_accept_.reset(new SslSocket(*event_manager()->io_service(),
                                        context_));
 }
-

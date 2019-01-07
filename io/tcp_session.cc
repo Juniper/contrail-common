@@ -750,7 +750,7 @@ error_code TcpSession::SetTcpNoDelay() {
     return ec;
 }
 
-error_code TcpSession::SetTcpSendBufSize(uint64_t size) {
+error_code TcpSession::SetTcpSendBufSize(uint32_t size) {
     error_code ec;
     socket_base::send_buffer_size send_buffer_size_option(size);
     socket()->set_option(send_buffer_size_option, ec);
@@ -763,7 +763,7 @@ error_code TcpSession::SetTcpSendBufSize(uint64_t size) {
     return ec;
 }
 
-error_code TcpSession::SetTcpRecvBufSize(uint64_t size) {
+error_code TcpSession::SetTcpRecvBufSize(uint32_t size) {
     error_code ec;
     socket_base::receive_buffer_size receive_buffer_size_option(size);
     socket()->set_option(receive_buffer_size_option, ec);
@@ -865,7 +865,7 @@ error_code TcpSession::SetSocketOptions() {
     char *buffer_size_str = getenv("TCP_SESSION_SOCKET_BUFFER_SIZE");
     if (!buffer_size_str) return ec;
 
-    uint64_t sz = strtoul(buffer_size_str, NULL, 0);
+    uint32_t sz = static_cast<uint32_t>(strtoul(buffer_size_str, NULL, 0));
     if (sz) {
         //
         // Set socket send and receive buffer size
