@@ -139,7 +139,7 @@ bool SslSession::IsSocketErrorHard(const error_code &ec) {
 
     return error;
 }
- 
+
 size_t SslSession::ReadSome(mutable_buffer buffer, error_code *error) {
     // Read data from the tcp socket or from the ssl socket, as appropriate.
     assert(!ssl_handshake_in_progress_);
@@ -176,7 +176,7 @@ void SslSession::SslHandShakeCallback(SslHandShakeCallbackHandler cb,
 
 void SslSession::TriggerSslHandShakeInternal(
         SslSessionPtr session, SslHandShakeCallbackHandler cb) {
-    srand(time(0));
+    srand(static_cast<unsigned>(time(0)));
     error_code ec;
     session->ssl_handshake_in_progress_ = true;
     if (session->IsServerSession()) {

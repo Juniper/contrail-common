@@ -91,7 +91,7 @@ bool TcpServer::InitializeInternal(tcp::endpoint localaddr) {
 
     acceptor_->bind(localaddr, ec);
     if (ec) {
-        TCP_SERVER_LOG_ERROR(this, TCP_DIR_NA, "TCP bind(" << localaddr.address() << 
+        TCP_SERVER_LOG_ERROR(this, TCP_DIR_NA, "TCP bind(" << localaddr.address() <<
                              ":" << localaddr.port() << "): " << ec.message());
         ResetAcceptor();
         return false;
@@ -112,7 +112,7 @@ bool TcpServer::InitializeInternal(tcp::endpoint localaddr) {
 
     acceptor_->listen(socket_base::max_connections, ec);
     if (ec) {
-        TCP_SERVER_LOG_ERROR(this, TCP_DIR_NA, "TCP listen(" << localaddr.port() << 
+        TCP_SERVER_LOG_ERROR(this, TCP_DIR_NA, "TCP listen(" << localaddr.port() <<
                              "): " << ec.message());
         ResetAcceptor();
         return false;
@@ -463,7 +463,7 @@ void TcpServer::Connect(TcpSession *session, Endpoint remote) {
                     TcpSessionPtr(session), error));
 }
 
-int TcpServer::SetMd5SocketOption(int fd, uint32_t peer_ip,
+int TcpServer::SetMd5SocketOption(NativeSocketType fd, uint32_t peer_ip,
                                   const string &md5_password) {
     assert(md5_password.size() <= TCP_MD5SIG_MAXKEYLEN);
     if (!peer_ip) {
@@ -516,7 +516,7 @@ int TcpServer::SetListenSocketDscp(uint8_t value) {
     return retval;
 }
 
-int TcpServer::SetDscpSocketOption(int fd, uint8_t value) {
+int TcpServer::SetDscpSocketOption(NativeSocketType fd, uint8_t value) {
     /* The 'value' argument is expected to have DSCP value between 0 and 63 ie
      * in the lower order 6 bits of a byte. However, setsockopt expects DSCP
      * value in upper 6 bits of a byte. Hence left shift the value by 2 digits
@@ -533,7 +533,7 @@ int TcpServer::SetDscpSocketOption(int fd, uint8_t value) {
     return retval;
 }
 
-uint8_t TcpServer::GetDscpValue(int fd) const {
+uint8_t TcpServer::GetDscpValue(NativeSocketType fd) const {
     uint8_t dscp = 0;
     unsigned int optlen = sizeof(dscp);
     int retval = getsockopt(fd, IPPROTO_IP, IP_TOS,
