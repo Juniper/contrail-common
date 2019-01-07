@@ -175,8 +175,8 @@ public:
     uint8_t GetDscpValue() const;
     const std::string &ToUVEKey() const { return uve_key_str_; }
     boost::system::error_code SetTcpNoDelay();
-    boost::system::error_code SetTcpSendBufSize(uint64_t size);
-    boost::system::error_code SetTcpRecvBufSize(uint64_t size);
+    boost::system::error_code SetTcpSendBufSize(uint32_t size);
+    boost::system::error_code SetTcpRecvBufSize(uint32_t size);
 
 protected:
     typedef boost::intrusive_ptr<TcpSession> TcpSessionPtr;
