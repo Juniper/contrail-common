@@ -48,7 +48,7 @@ class t_html_generator : public t_generator {
     : t_generator(program)
   {
     (void) parsed_options;
-    (void) option_string;  
+    (void) option_string;
     out_dir_base_ = "gen-html";
   }
 
@@ -85,7 +85,7 @@ void t_html_generator::generate_struct_xml(const string &stname) {
       vector<t_field*>::iterator mem_iter = members.begin();
       for ( ; mem_iter != members.end(); mem_iter++) {
           generate_field_xml(*mem_iter);
-      }        
+      }
       f_out_ << "</" << sname << ">";
     }
   }
@@ -152,7 +152,7 @@ void t_html_generator::generate_xml() {
     vector<t_sandesh*>::iterator s_iter;
     for (s_iter = sandeshs.begin(); s_iter != sandeshs.end(); ++s_iter) {
       if (static_cast<const t_base_type*>((*s_iter)->get_type())->get_base() ==
-              t_base_type::TYPE_SANDESH_REQUEST) 
+              t_base_type::TYPE_SANDESH_REQUEST)
           generate_sandesh_xml(*s_iter);
     }
   }
