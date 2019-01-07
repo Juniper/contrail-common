@@ -371,7 +371,7 @@ string t_xsd_generator::type_name(t_type* ttype) {
 
 #ifdef SANDESH
   if (ttype->is_sandesh()) {
-	return ttype->get_name();
+    return ttype->get_name();
   }
 #endif
 
@@ -411,4 +411,3 @@ string t_xsd_generator::base_type_name(t_base_type::t_base tbase) {
 }
 
 THRIFT_REGISTER_GENERATOR(xsd, "XSD", "")
-

@@ -86,4 +86,3 @@ class t_oop_generator : public t_generator {
 };
 
 #endif
-

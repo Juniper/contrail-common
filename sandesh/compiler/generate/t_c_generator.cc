@@ -237,7 +237,7 @@ void t_c_generator::init_generator() {
   f_types_impl_ << autogen_comment();
 
   /* include inclusion guard */
-  f_types_ << 
+  f_types_ <<
     "#ifndef " << this->nspace_uc << program_name_uc << "_TYPES_H" << endl <<
     "#define " << this->nspace_uc << program_name_uc << "_TYPES_H" << endl <<
     endl;
@@ -247,7 +247,7 @@ void t_c_generator::init_generator() {
     "#ifdef __cplusplus" << endl <<
     "extern \"C\" {" << endl <<
     "#endif" << endl <<
-    endl; 
+    endl;
 
   /* include base types */
   f_types_ <<
@@ -281,7 +281,7 @@ void t_c_generator::init_generator() {
   // include the types file
   f_types_impl_ <<
     endl <<
-    "#include \"" << this->nspace_lc << program_name_u << 
+    "#include \"" << this->nspace_lc << program_name_u <<
         "_types.h\"" << endl <<
     endl;
 
@@ -293,7 +293,7 @@ void t_c_generator::init_generator() {
  *  Finish up generation and close all file streams.
  */
 void t_c_generator::close_generator() {
-  string program_name_uc = to_upper_case 
+  string program_name_uc = to_upper_case
     (initial_caps_to_underscores(program_name_));
 
   /* end the C++ compatibility */
@@ -314,11 +314,11 @@ void t_c_generator::close_generator() {
 
 /**
  * Generates a Thrift typedef in C code.  For example:
- * 
- * Thrift: 
+ *
+ * Thrift:
  * typedef map<i32,i32> SomeMap
- * 
- * C: 
+ *
+ * C:
  * typedef GHashTable * ThriftSomeMap;
  */
 void t_c_generator::generate_typedef(t_typedef* ttypedef) {
@@ -326,7 +326,7 @@ void t_c_generator::generate_typedef(t_typedef* ttypedef) {
     indent() << "typedef " << type_name(ttypedef->get_type(), true) <<
         " " << this->nspace << ttypedef->get_symbolic() << ";" << endl <<
     endl;
-} 
+}
 
 /**
  * Generates a C enumeration.  For example:
@@ -944,7 +944,7 @@ void t_c_generator::generate_object_internal(string name,
   // close the structure definition and create a typedef
   f_types_ <<
     "};" << endl <<
-    "typedef struct _" << this->nspace << name << " " << 
+    "typedef struct _" << this->nspace << name << " " <<
         this->nspace << name << ";" << endl <<
       endl;
 
@@ -1371,7 +1371,7 @@ void t_c_generator::generate_struct_writer (ofstream &out,
     if ((*f_iter)->get_req() == t_field::T_OPTIONAL) {
       indent(out) << "if (" << wname << "->__isset_" << (*f_iter)->get_name() << " == 1) {" << endl;
       indent_up();
-    } 
+    }
 
     out <<
      indent() << "if ((ret = thrift_protocol_write_field_begin (protocol, " <<
@@ -2780,7 +2780,7 @@ void t_c_generator::generate_deserialize_container (ofstream &out, t_type *ttype
     scope_down(out);
 
     out <<
-      indent() << "if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)" << endl << 
+      indent() << "if ((ret = thrift_protocol_read_list_end (protocol, error)) < 0)" << endl <<
       indent() << "  return " << error_ret << ";" << endl <<
       indent() << "xfer += ret;" << endl <<
       endl;
@@ -2897,7 +2897,7 @@ string initial_caps_to_underscores(string name) {
   ret += tolower (tmp[pos]);
   pos++;
   for (unsigned int i = pos; i < name.length(); i++) {
-    char lc = tolower (tmp[i]); 
+    char lc = tolower (tmp[i]);
     if (lc != tmp[i]) {
       ret += '_';
     }

@@ -892,7 +892,7 @@ t_doc_generator::sandesh_level::type t_doc_generator::get_sandesh_level(
     t_sandesh* tsandesh) {
     string content = get_doc_member(tsandesh, "severity");
     if (content != "")
-	return string_to_sandesh_level(content);
+      return string_to_sandesh_level(content);
     return sandesh_level::INVALID;
 }
 
@@ -1197,7 +1197,7 @@ void t_doc_generator::generate_stat_schema_toplevel_tags(T* tstruct, vector<
             if (tag == (*m_iter)->get_name()) {
                 string fname;
                 schema.push_back(generate_stat_schema_struct_base_member(
-			    fname, *m_iter, "true", tfield));
+                    fname, *m_iter, "true", tfield));
                 break;
             }
         }
@@ -1284,7 +1284,7 @@ void t_doc_generator::is_indexed_or_suffixed_field(string fname,
                 is_tag = true;
                 return;
             }
-	}
+        }
     }
 }
 
@@ -1313,8 +1313,7 @@ void t_doc_generator::generate_stat_schema_struct_members(string prefix,
         }
         t_type* mtype = (*m_iter)->get_type();
         if(mtype->is_base_type()) {
-            string schema = generate_stat_schema_struct_base_member(
-		    prefix, *m_iter, index, tfield);
+            string schema = generate_stat_schema_struct_base_member(prefix, *m_iter, index, tfield);
             if (index == "true" || is_tag)
                 schemas.push_back(schema);
         } else if (mtype->is_struct()) {
@@ -1588,7 +1587,7 @@ void t_doc_generator::generate_stat_table_schema(string oname, t_field* tfield, 
     if (tfield->get_type()->is_list()) {
         t_type* ltype= ((t_list*)((tfield)->get_type()))->get_elem_type();
         generate_stat_schema_list(prefix, ltype, tfield, tsandesh, true, false, tags);
-    } else if (tfield->get_type()->is_map()) { 
+    } else if (tfield->get_type()->is_map()) {
         t_type* valtype= ((t_map*)(tfield->get_type()))->get_val_type();
         t_type* keytype= ((t_map*)(tfield->get_type()))->get_key_type();
         generate_stat_schema_map(prefix, keytype, valtype, tfield, tsandesh, true, false, tags);
@@ -1647,7 +1646,7 @@ void t_doc_generator::find_recursive_tags(T* tsandesh, t_field* tfield, string t
     if (tfield->get_type()->is_list()) {
         t_type* ltype= ((t_list*)((tfield)->get_type()))->get_elem_type();
         find_recursive_tags_list(tsandesh, tfield, table, ltype, fname, index_schemas);
-    } else if (tfield->get_type()->is_map()) { 
+    } else if (tfield->get_type()->is_map()) {
         t_type* keytype= ((t_map*)(tfield->get_type()))->get_key_type();
         t_type* valtype= ((t_map*)(tfield->get_type()))->get_val_type();
         find_recursive_tags_map(tsandesh, tfield, table, keytype, valtype, fname, index_schemas);
@@ -1900,4 +1899,3 @@ void t_doc_generator::generate_sandesh_uve(t_sandesh* tsandesh, ofstream &f_out)
 }
 
 THRIFT_REGISTER_GENERATOR(doc, "Documentation", "")
-
