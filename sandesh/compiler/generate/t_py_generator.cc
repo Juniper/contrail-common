@@ -93,7 +93,7 @@ class t_py_generator : public t_generator {
     gen_utf8strings_ = (iter != parsed_options.end());
 
     copy_options_ = option_string;
-    
+
     if (gen_twisted_){
       out_dir_base_ = "gen-py.twisted";
     } else {
@@ -183,7 +183,7 @@ class t_py_generator : public t_generator {
   void generate_service_remote    (t_service* tservice);
   void generate_service_server    (t_service* tservice);
   void generate_process_function  (t_service* tservice, t_function* tfunction);
-  
+
   /**
    * Serialization constructs
    */
@@ -313,17 +313,17 @@ class t_py_generator : public t_generator {
    * True if we should generate dynamic style classes.
    */
   bool gen_dynamic_;
- 
+
   bool gen_dynbase_;
   std::string gen_dynbaseclass_;
   std::string gen_dynbaseclass_exc_;
- 
+
   std::string import_dynbase_;
 
   bool gen_slots_;
 
   std::string copy_options_;
- 
+
   /**
    * True if we should generate Twisted-friendly RPC services.
    */
@@ -435,9 +435,9 @@ void t_py_generator::init_generator() {
 #ifdef SANDESH
   string f_request_impl_name = package_dir_+"/request_skeleton.py";
   f_request_impl_.open(f_request_impl_name.c_str());
-  f_request_impl_ << 
+  f_request_impl_ <<
     py_autogen_comment() << endl;
-  f_request_impl_ << 
+  f_request_impl_ <<
     py_autogen_sandesh_request_skeleton_comment() << endl;
 
   string f_http_request_name = package_dir_+"/http_request.py";
@@ -498,7 +498,7 @@ string t_py_generator::render_fastbinary_includes() {
 string t_py_generator::render_sandesh_includes() {
   std::string module = get_real_py_module(program_, gen_twisted_);
   std::string sandesh_includes("\n");
-  sandesh_includes += 
+  sandesh_includes +=
     "import cStringIO\n"
     "import uuid\n"
     "import netaddr\n"
@@ -597,7 +597,7 @@ void t_py_generator::generate_enum(t_enum* tenum) {
   f_types_ <<
     "class " << tenum->get_name() <<
     (gen_newstyle_ ? "(object)" : "") <<
-    (gen_dynamic_ ? "(" + gen_dynbaseclass_ + ")" : "") <<  
+    (gen_dynamic_ ? "(" + gen_dynbaseclass_ + ")" : "") <<
     ":" << endl;
   indent_up();
   generate_python_docstring(f_types_, tenum);
@@ -925,10 +925,10 @@ void t_py_generator::generate_py_struct_definition(ofstream& out,
           render_field_default_value(*m_iter) << endl;
 #ifdef SANDESH
       } else if (type->is_static_const_string()) {
-        indent(out) << 
-          "self." << (*m_iter)->get_name() << " = " << 
+        indent(out) <<
+          "self." << (*m_iter)->get_name() << " = " <<
           render_const_value(type, (*m_iter)->get_value()) << endl;
-      } else { 
+      } else {
 #else
       }
 #endif
@@ -1013,7 +1013,7 @@ void t_py_generator::generate_py_struct_definition(ofstream& out,
       indent() << "    for key in self.__slots__]" << endl <<
       indent() << "  return '%s(%s)' % (self.__class__.__name__, ', '.join(L))" << endl <<
       endl;
-    
+
     // Equality method that compares each attribute by value and type, walking __slots__
     out <<
       indent() << "def __eq__(self, other):" << endl <<
@@ -1026,7 +1026,7 @@ void t_py_generator::generate_py_struct_definition(ofstream& out,
       indent() << "      return False" << endl <<
       indent() << "  return True" << endl <<
       endl;
-    
+
     out <<
       indent() << "def __ne__(self, other):" << endl <<
       indent() << "  return not (self == other)" << endl <<
@@ -1093,7 +1093,7 @@ void t_py_generator::generate_py_struct_reader(ofstream& out,
       "(length, fname, ftype, fid) = iprot.readFieldBegin()" << endl;
     indent(out) <<
       "if length < 0: return -1" << endl;
-    indent(out) << 
+    indent(out) <<
       "read_cnt += length" << endl;
 #else
     indent(out) <<
@@ -1156,7 +1156,7 @@ void t_py_generator::generate_py_struct_reader(ofstream& out,
 #ifdef SANDESH
     indent(out) <<
       "length = iprot.readStructEnd()" << endl;
-    indent(out) << 
+    indent(out) <<
       "if length < 0: return -1" << endl;
     indent(out) <<
       "read_cnt += length" << endl;
@@ -1311,9 +1311,9 @@ void t_py_generator::generate_py_sandesh_definition(ofstream& out,
   const vector<t_field*>& members = tsandesh->get_members();
   const vector<t_field*>& sorted_members = tsandesh->get_sorted_members();
   vector<t_field*>::const_iterator m_iter;
-  const t_base_type *sandesh_type = (t_base_type *)tsandesh->get_type(); 
-  
-  std::string base_class; 
+  const t_base_type *sandesh_type = (t_base_type *)tsandesh->get_type();
+
+  std::string base_class;
   if (sandesh_type->is_sandesh_system()) {
     base_class = "sandesh_base.SandeshSystem";
   } else if (sandesh_type->is_sandesh_object()) {
@@ -1349,7 +1349,7 @@ void t_py_generator::generate_py_sandesh_definition(ofstream& out,
   // generate_python_docstring(out, tstruct);
 
   out << endl;
-  
+
   /*
      Here we generate the structure specification for the fastbinary codec.
      These specifications have the following structure:
@@ -1468,15 +1468,15 @@ void t_py_generator::generate_py_sandesh_definition(ofstream& out,
         indent(out) << "  " << (*m_iter)->get_name() << " = " <<
           render_field_default_value(*m_iter) << endl;
       } else if (type->is_static_const_string()) {
-        indent(out) << 
-          "self." << (*m_iter)->get_name() << " = " << 
+        indent(out) <<
+          "self." << (*m_iter)->get_name() << " = " <<
           render_const_value(type, (*m_iter)->get_value()) << endl;
       } else {
         indent(out) <<
           "self." << (*m_iter)->get_name() << " = " << (*m_iter)->get_name() << endl;
       }
     }
-      
+
     indent(out) << "self._scope = sandesh.scope()" << endl;
     indent(out) << "self._module = sandesh.module()" << endl;
     indent(out) << "self._source = sandesh.source_id()" << endl;
@@ -1484,7 +1484,7 @@ void t_py_generator::generate_py_sandesh_definition(ofstream& out,
     indent(out) << "self._instance_id = sandesh.instance_id()" << endl;
     indent(out) << "self._seqnum = 0" << endl;
     indent(out) << "self._timestamp = UTCTimestampUsec()" << endl;
-    indent(out) << "self._versionsig = " << tsandesh->get_4byte_fingerprint() << endl; 
+    indent(out) << "self._versionsig = " << tsandesh->get_4byte_fingerprint() << endl;
     generate_py_sandesh_hint(out, tsandesh);
     if (sandesh_type->is_sandesh_system() ||
         sandesh_type->is_sandesh_object() ||
@@ -1522,9 +1522,9 @@ void t_py_generator::generate_py_sandesh_definition(ofstream& out,
              sandesh_type->is_sandesh_trace_object()) {
     generate_py_sandesh_trace(out, tsandesh);
   }
-  
+
   generate_py_sandesh_logger(out, tsandesh);
-  
+
   if (!gen_dynamic_) {
     generate_py_sandesh_reader(out, tsandesh);
     generate_py_sandesh_writer(out, tsandesh);
@@ -1569,7 +1569,7 @@ void t_py_generator::generate_py_sandesh_definition(ofstream& out,
       indent() << "    for key in self.__slots__]" << endl <<
       indent() << "  return '%s(%s)' % (self.__class__.__name__, ', '.join(L))" << endl <<
       endl;
-    
+
     // Equality method that compares each attribute by value and type, walking __slots__
     out <<
       indent() << "def __eq__(self, other):" << endl <<
@@ -1582,7 +1582,7 @@ void t_py_generator::generate_py_sandesh_definition(ofstream& out,
       indent() << "      return False" << endl <<
       indent() << "  return True" << endl <<
       endl;
-    
+
     out <<
       indent() << "def __ne__(self, other):" << endl <<
       indent() << "  return not (self == other)" << endl <<
@@ -1592,7 +1592,7 @@ void t_py_generator::generate_py_sandesh_definition(ofstream& out,
 }
 
 /**
- * Generates the read method for sandesh 
+ * Generates the read method for sandesh
  */
 void t_py_generator::generate_py_sandesh_reader(ofstream& out,
                                                 t_sandesh* tsandesh) {
@@ -1687,14 +1687,14 @@ void t_py_generator::generate_py_sandesh_reader(ofstream& out,
 
     indent_down();
 
-    indent(out) << 
+    indent(out) <<
       "length = iprot.readSandeshEnd()" << endl;
     indent(out) <<
       "if length < 0: return -1" << endl;
     indent(out) <<
       "read_cnt += length" << endl;
 
-    indent(out) << 
+    indent(out) <<
       "return read_cnt" << endl;
 
     indent_down();
@@ -1734,7 +1734,7 @@ void t_py_generator::generate_py_sandesh_writer(ofstream& out,
     if (!((*f_iter)->annotations_.empty())) {
       std::map<std::string, std::string>::iterator it;
       for (it = (*f_iter)->annotations_.begin(); it != (*f_iter)->annotations_.end(); it++) {
-        indent(out) << "annotations['" << (*it).first << "'] = '" << 
+        indent(out) << "annotations['" << (*it).first << "'] = '" <<
           (*it).second << "'" << endl;
       }
     }
@@ -1792,12 +1792,12 @@ void t_py_generator::generate_py_sandesh_required_validator(ofstream& out,
   indent_down();
 }
 
-void t_py_generator::generate_py_sandesh_compare(ofstream& out, 
+void t_py_generator::generate_py_sandesh_compare(ofstream& out,
                                                  t_sandesh* tsandesh) {
   const vector<t_field*>& fields = tsandesh->get_sorted_members();
   vector<t_field*>::const_iterator f_iter;
 
-  indent(out) << 
+  indent(out) <<
     "def compare(self, other):" << endl;
   indent_up();
   indent(out) <<
@@ -1809,7 +1809,7 @@ void t_py_generator::generate_py_sandesh_compare(ofstream& out,
 
   for (f_iter = fields.begin(); f_iter != fields.end(); ++f_iter) {
       indent(out) <<
-        "if self." << (*f_iter)->get_name() << " != " << 
+        "if self." << (*f_iter)->get_name() << " != " <<
         "other." << (*f_iter)->get_name() << ":" << endl;
       indent_up();
       indent(out) << "return False" << endl;
@@ -1827,12 +1827,12 @@ void t_py_generator::generate_py_sandesh_http_attr(ofstream& out,
 
     t_base_type::t_base bftype = ((t_base_type *)ftype)->get_base();
 
-    indent(out) << 
+    indent(out) <<
       "if bottle.request.query." << namer << ":" << endl;
     indent_up();
     if (bftype == t_base_type::TYPE_STRING) {
       indent(out) <<
-        "sandesh_req." << namel << " = str(" << 
+        "sandesh_req." << namel << " = str(" <<
         "bottle.request.query." << namer << ")" << endl;
     } else if (bftype == t_base_type::TYPE_UUID) {
       indent(out) << "try:" << endl;
@@ -1870,24 +1870,24 @@ void t_py_generator::generate_py_sandesh_http_attr(ofstream& out,
         "try:" << endl;
       indent_up();
       indent(out) <<
-        "sandesh_req." << namel << " = int(" << 
+        "sandesh_req." << namel << " = int(" <<
         "bottle.request.query." << namer << ")" << endl;
       indent_down();
       indent(out) <<
         "except ValueError:" << endl;
       indent_up();
-      indent(out) << 
+      indent(out) <<
         "return SandeshHttp.http_error('Invalid data provided in Sandesh Request')" << endl;
       indent_down();
     }
     indent_down();
 
   } else {
-    // Ignore this field for now   
+    // Ignore this field for now
   }
 }
 
-void t_py_generator::generate_py_sandesh_http_request_handler(ofstream& out, 
+void t_py_generator::generate_py_sandesh_http_request_handler(ofstream& out,
                                                               t_sandesh* tsandesh) {
   const vector<t_field*>& fields = tsandesh->get_sorted_members();
   vector<t_field*>::const_iterator f_iter;
@@ -1897,12 +1897,12 @@ void t_py_generator::generate_py_sandesh_http_request_handler(ofstream& out,
   indent(out) <<
     "def handle_http_request(sandesh=sandesh_base.sandesh_global):" << endl;
   indent_up();
-  indent(out) << 
+  indent(out) <<
     "sandesh_req = " << tsandesh->get_name() << "()" << endl;
   indent(out) <<
     "if not sandesh_req:" << endl;
   indent_up();
-  indent(out) << "return SandeshHttp.http_error('Sandesh Request \"" << tsandesh->get_name() << 
+  indent(out) << "return SandeshHttp.http_error('Sandesh Request \"" << tsandesh->get_name() <<
       "\" not implemented')" << endl;
   indent_down();
   for (f_iter = fields.begin(); f_iter != fields.end(); ++f_iter) {
@@ -1912,7 +1912,7 @@ void t_py_generator::generate_py_sandesh_http_request_handler(ofstream& out,
     }
     generate_py_sandesh_http_attr(out, ftype, (*f_iter)->get_name(), (*f_iter)->get_name());
   }
-  // TODO: Call validate() to check if all the mandatory parameters are provided 
+  // TODO: Call validate() to check if all the mandatory parameters are provided
   indent(out) << "sandesh_req._context = bottle.request.url" << endl;
   indent(out) << "handle_req_fn = getattr(sandesh_req, \"handle_request\", None)" << endl;
   indent(out) << "if callable(handle_req_fn):" << endl;
@@ -1932,7 +1932,7 @@ void t_py_generator::generate_py_sandesh_http_request_handler(ofstream& out,
   indent(out) << "else:" << endl;
   indent_up();
   indent(out) << "return SandeshHttp.http_error('No Response for Sandesh Request \"" <<
-    tsandesh->get_name() << "\"')" << endl; 
+    tsandesh->get_name() << "\"')" << endl;
   indent_down();
   indent(out) << endl;
   indent_down();
@@ -1970,8 +1970,8 @@ void t_py_generator::py_autogen_sandesh_http_request_close(ofstream& out) {
 std::string t_py_generator::py_autogen_sandesh_request_skeleton_comment() {
     return
       std::string("\n") +
-      "# This autogenerated skeleton file illustrates the implementation of" + 
-      "\n" + 
+      "# This autogenerated skeleton file illustrates the implementation of" +
+      "\n" +
       "# derived class to handle the sandesh request." +
       "\n";
 }
@@ -1994,7 +1994,7 @@ void t_py_generator::generate_py_sandesh_skeleton_request(ofstream& out,
   out << "(" << tsandesh->get_name() << "):" << endl;
   indent_up();
   out << endl;
-  
+
   if (members.size() > 0) {
     out <<
       indent() << "def __init__(self):" << endl;
@@ -2017,8 +2017,8 @@ void t_py_generator::generate_py_sandesh_skeleton_request(ofstream& out,
   out << endl;
   out << indent() << "def handle_request(self):" << endl;
   indent_up();
-  indent(out) << 
-    "# Add your code to handle the \"" << tsandesh->get_name() << 
+  indent(out) <<
+    "# Add your code to handle the \"" << tsandesh->get_name() <<
     "\" request" << endl;
   indent(out) <<
     "pass" << endl;
@@ -2031,21 +2031,21 @@ void t_py_generator::generate_struct_log(ofstream& out,
                                          string log_str) {
   indent(out) <<
     log_str << ".write('<<  ')" << endl;
-  indent(out) << 
+  indent(out) <<
     log_str << ".write(" << prefix << ".log())" << endl;
   indent(out) <<
     log_str << ".write('>>')" << endl;
 }
 
-void t_py_generator::generate_container_log(ofstream& out, 
+void t_py_generator::generate_container_log(ofstream& out,
                                             string prefix,
                                             t_type* ttype,
                                             string log_str) {
   if (ttype->is_map()) {
     string kiter = tmp("kiter");
     string viter = tmp("viter");
-    indent(out) << 
-      log_str << ".write('{ ')" << endl; 
+    indent(out) <<
+      log_str << ".write('{ ')" << endl;
     indent(out) <<
       "for " << kiter << "," << viter << " in " << prefix << ".iteritems():" << endl;
     indent_up();
@@ -2056,8 +2056,8 @@ void t_py_generator::generate_container_log(ofstream& out,
     t_field vfield(((t_map*)ttype)->get_val_type(), viter);
     generate_field_log(out, &vfield, log_str, "");
     indent_down();
-    indent(out) << 
-      log_str << ".write(' }')" << endl; 
+    indent(out) <<
+      log_str << ".write(' }')" << endl;
   } else if (ttype->is_set()) {
     string iter = tmp("iter");
     indent(out) <<
@@ -2113,13 +2113,13 @@ void t_py_generator::generate_field_log(ofstream& out,
           log_str << ".write(" << name << ")" << endl;
         break;
       case t_base_type::TYPE_BOOL:
-        indent(out) << 
+        indent(out) <<
           "if " << name << ":" << endl;
         indent_up();
-        indent(out) << 
+        indent(out) <<
           log_str << ".write('True')" << endl;
         indent_down();
-        indent(out) << 
+        indent(out) <<
           "else:" << endl;
         indent_up();
         indent(out) <<
@@ -2127,7 +2127,7 @@ void t_py_generator::generate_field_log(ofstream& out,
         indent_down();
         break;
       case t_base_type::TYPE_BYTE:
-        indent(out) << 
+        indent(out) <<
           log_str << ".write(hex(" << name << "))" << endl;
         break;
       case t_base_type::TYPE_I16:
@@ -2185,7 +2185,7 @@ void t_py_generator::generate_field_log(ofstream& out,
   }
 }
 
-void t_py_generator::generate_py_sandesh_logger(ofstream &out, 
+void t_py_generator::generate_py_sandesh_logger(ofstream &out,
                                                 t_sandesh* tsandesh) {
   const vector<t_field*>& fields = tsandesh->get_members();
   vector<t_field*>::const_iterator f_iter;
@@ -2223,7 +2223,7 @@ void t_py_generator::generate_py_sandesh_logger(ofstream &out,
       indent(out) << log_str << ".write(self.__class__.__name__ + " <<
         "': ')" << endl;
     }
-    indent(out) << 
+    indent(out) <<
       "if self." << (*f_iter)->get_name() << " is not None:" << endl;
     indent_up();
     if (sandesh_type->is_sandesh_system() ||
@@ -2243,7 +2243,7 @@ void t_py_generator::generate_py_sandesh_logger(ofstream &out,
   indent_down();
 }
 
-void t_py_generator::generate_py_struct_logger(ofstream &out, 
+void t_py_generator::generate_py_struct_logger(ofstream &out,
                                                t_struct* tstruct) {
   const vector<t_field*>& fields = tstruct->get_members();
   vector<t_field*>::const_iterator f_iter;
@@ -2254,9 +2254,9 @@ void t_py_generator::generate_py_struct_logger(ofstream &out,
   indent_up();
   indent(out) <<
     log_str << " = cStringIO.StringIO()" << endl;
-  
+
   for (f_iter = fields.begin(); f_iter != fields.end(); ++f_iter) {
-    indent(out) << 
+    indent(out) <<
       "if self." << (*f_iter)->get_name() << " is not None:" << endl;
     indent_up();
     t_type *type = get_true_type((*f_iter)->get_type());
@@ -2338,7 +2338,7 @@ void t_py_generator::generate_py_sandesh_trace(std::ofstream& out,
                                                t_sandesh* tsandesh) {
 }
 
-void t_py_generator::generate_py_sandesh_async(std::ofstream& out, 
+void t_py_generator::generate_py_sandesh_async(std::ofstream& out,
                                                t_sandesh* tsandesh) {
 }
 
@@ -3713,7 +3713,7 @@ void t_py_generator::generate_serialize_field(ofstream &out,
     out << " < 0: return -1" << endl;
 #ifdef SANDESH
   } else if (type->is_sandesh()) {
-    generate_serialize_sandesh(out, (t_sandesh*)type, 
+    generate_serialize_sandesh(out, (t_sandesh*)type,
                                prefix + tfield->get_name());
 #endif
   } else {
@@ -4186,4 +4186,3 @@ THRIFT_REGISTER_GENERATOR(py, "Python",
 "    dynexc=CLS       Derive generated exceptions from CLS instead of TExceptionBase.\n" \
 "    dynimport='from foo.bar import CLS'\n" \
 "                     Add an import line to generated code to find the dynbase class.\n")
-
