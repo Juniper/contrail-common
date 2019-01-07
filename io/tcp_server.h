@@ -28,6 +28,7 @@ class TcpServer {
 public:
     typedef boost::asio::ip::tcp::endpoint Endpoint;
     typedef boost::asio::ip::tcp::socket Socket;
+    typedef boost::asio::ip::tcp::socket::native_handle_type NativeSocketType;
 
     explicit TcpServer(EventManager *evm);
     virtual ~TcpServer();
@@ -93,12 +94,12 @@ public:
         GetTxSocketStats(&socket_stats);
     }
 
-    int SetMd5SocketOption(int fd, uint32_t peer_ip,
+    int SetMd5SocketOption(NativeSocketType fd, uint32_t peer_ip,
                            const std::string &md5_password);
     int SetListenSocketMd5Option(uint32_t peer_ip,
                                  const std::string &md5_password);
-    int SetDscpSocketOption(int fd, uint8_t value);
-    uint8_t GetDscpValue(int fd) const;
+    int SetDscpSocketOption(NativeSocketType fd, uint8_t value);
+    uint8_t GetDscpValue(NativeSocketType fd) const;
     int SetListenSocketDscp(uint8_t value);
 
 protected:
