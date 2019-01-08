@@ -1647,7 +1647,7 @@ void t_cpp_generator::generate_sandesh_flow_send_fn(ofstream &out,
         indent_up();
         out << indent() << "return;" << endl;
         scope_down(out);
-        out << indent() << " if (is_send_sampled_to_collector_enabled() != is_send_slo_to_collector_enabled()) {" << endl;
+        out << indent() << " if (is_send_sampled_to_collector_enabled() || is_send_slo_to_collector_enabled()) {" << endl;
         indent_up();
         out << indent() << "adjust_session_end_point_objects(snh->session_data);";
         scope_down(out);
