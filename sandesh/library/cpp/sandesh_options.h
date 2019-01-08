@@ -15,6 +15,7 @@ struct SandeshConfig {
         keyfile(),
         certfile(),
         ca_cert(),
+        stats_collector(),
         sandesh_ssl_enable(false),
         introspect_ssl_enable(false),
         disable_object_logs(false),
@@ -28,6 +29,7 @@ struct SandeshConfig {
     std::string keyfile;
     std::string certfile;
     std::string ca_cert;
+    std::string stats_collector;
     bool sandesh_ssl_enable;
     bool introspect_ssl_enable;
     bool disable_object_logs;

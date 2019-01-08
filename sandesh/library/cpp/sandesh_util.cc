@@ -34,3 +34,27 @@ bool MakeEndpoint(TcpServer::Endpoint* ep, const std::string& epstr) {
     *ep = TcpServer::Endpoint(addr, port);
     return true;
 }
+
+bool MakeEndpoint(UdpServer::Endpoint* ep, const std::string& epstr) {
+    typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+    boost::char_separator<char> sep(":");
+
+    try {
+        tokenizer tokens(epstr, sep);
+        tokenizer::iterator it = tokens.begin();
+        std::string sip(*it);
+        ++it;
+        std::string sport(*it);
+        int port;
+        stringToInteger(sport, port);
+        boost::system::error_code ec;
+        address addr = AddressFromString(sip, &ec);
+        if (ec) {
+            return false;
+        }
+        *ep = UdpServer::Endpoint(addr, port);
+        return true;
+    } catch (...) {
+        return false;
+    }
+}

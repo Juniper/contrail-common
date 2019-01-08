@@ -34,6 +34,9 @@ void AddOptions(opt::options_description *sandesh_options,
         ("SANDESH.disable_object_logs",
          opt::bool_switch(&sandesh_config->disable_object_logs),
          "Disable sending of object logs to collector")
+        ("STATS.stats_collector", opt::value<std::string>()->default_value(
+         ""),
+         "External Stats Collector")
         ("DEFAULT.sandesh_send_rate_limit",
          opt::value<uint32_t>()->default_value(
          g_sandesh_constants.DEFAULT_SANDESH_SEND_RATELIMIT),
@@ -59,6 +62,8 @@ void ProcessOptions(const opt::variables_map &var_map,
                       "SANDESH.introspect_ssl_enable");
     GetOptValue<bool>(var_map, sandesh_config->disable_object_logs,
                       "SANDESH.disable_object_logs");
+    GetOptValue<std::string>(var_map, sandesh_config->stats_collector,
+                        "STATS.stats_collector");
     GetOptValue<uint32_t>(var_map, sandesh_config->system_logs_rate_limit,
                           "DEFAULT.sandesh_send_rate_limit");
     GetOptValue<std::string>(var_map, sandesh_config->http_server_ip,
