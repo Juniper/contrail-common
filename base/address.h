@@ -43,9 +43,9 @@ public:
     static Family VpnFamilyFromFamily(Family family);
     static Ip4Address V4FromV4MappedV6(const Ip6Address &v6_address);
     static Ip4Address GetIp4SubnetAddress(const Ip4Address &prefix,
-                                          uint16_t plen);
+                                          uint8_t plen);
     static Ip6Address GetIp6SubnetAddress(const Ip6Address &prefix,
-                                          uint16_t plen);
+                                          uint8_t plen);
 
 private:
     IpAddress addr_;

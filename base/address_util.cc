@@ -17,7 +17,7 @@
  * member of the subnet or not.
  */
 bool IsIp4SubnetMember(
-    const Ip4Address &ip, const Ip4Address &prefix_ip, uint16_t plen) {
+    const Ip4Address &ip, const Ip4Address &prefix_ip, uint8_t plen) {
     Ip4Address prefix = Address::GetIp4SubnetAddress(prefix_ip, plen);
     return ((prefix.to_ulong() | ~(0xFFFFFFFF << (32 - plen))) ==
             (ip.to_ulong() | ~(0xFFFFFFFF << (32 - plen))));

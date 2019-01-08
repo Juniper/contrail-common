@@ -15,13 +15,13 @@ class io_service;
 }
 }
 
-/* 
+/*
  * Returns true if the given IPv4 address is member of the IPv4 subnet
  * indicated by IPv4 address and prefix length. Otherwise returns false.
  */
 bool IsIp4SubnetMember(const Ip4Address &ip, const Ip4Address &prefix_ip,
-                       uint16_t plen);
-/* 
+                       uint8_t plen);
+/*
  * Returns true if the given IPv6 address is member of the IPv6 subnet
  * indicated by IPv6 address and prefix length. Otherwise returns false.
  */
