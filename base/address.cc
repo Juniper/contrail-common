@@ -113,7 +113,7 @@ boost::system::error_code Ip4PrefixParse(const string &str, Ip4Address *addr,
     if ((*plen < 0) || (*plen > Address::kMaxV4PrefixLen)) {
         return make_error_code(boost::system::errc::invalid_argument);
     }
-    
+
     string addrstr = str.substr(0, pos);
     int dots = CountDots(addrstr);
     while (dots < 3) {
@@ -133,7 +133,7 @@ boost::system::error_code Ip4SubnetParse(const string &str, Ip4Address *addr,
     boost::system::error_code err;
     err = Ip4PrefixParse(str, &address, plen);
     if (!err) {
-        *addr = Address::GetIp4SubnetAddress(address, *plen);
+        *addr = Address::GetIp4SubnetAddress(address, static_cast<uint8_t>(*plen)); // TODO: Fix properly
     }
     return err;
 }
@@ -164,7 +164,7 @@ boost::system::error_code Inet6SubnetParse(const string &str, Ip6Address *addr,
     boost::system::error_code err;
     err = Inet6PrefixParse(str, &address, plen);
     if (!err) {
-        *addr = Address::GetIp6SubnetAddress(address, *plen);
+        *addr = Address::GetIp6SubnetAddress(address, static_cast<uint8_t>(*plen)); // TODO: Fix properly
     }
     return err;
 }
@@ -175,7 +175,7 @@ boost::system::error_code Inet6SubnetParse(const string &str, Ip6Address *addr,
  * number is converted to IPv4Address object and returned. If prefix length is 0
  * then 0 is converted to IPv4Address object and returned.
  */
-Ip4Address Address::GetIp4SubnetAddress(const Ip4Address &prefix, uint16_t plen) {
+Ip4Address Address::GetIp4SubnetAddress(const Ip4Address &prefix, uint8_t plen) {
     if (plen == 0) {
         return boost::asio::ip::address_v4(0);
     }
@@ -196,7 +196,7 @@ Ip4Address Address::GetIp4SubnetAddress(const Ip4Address &prefix, uint16_t plen)
  * return an IPv6 object constructed using its default constructors which
  * assumes all bits as 0s.
  */
-Ip6Address Address::GetIp6SubnetAddress(const Ip6Address &prefix, uint16_t plen) {
+Ip6Address Address::GetIp6SubnetAddress(const Ip6Address &prefix, uint8_t plen) {
     if (plen == 0) {
         return boost::asio::ip::address_v6();
     }
@@ -291,7 +291,7 @@ Ip4Address Address::V4FromV4MappedV6(const Ip6Address &v6_address) {
     Ip4Address v4_address;
     if (v6_address.is_v4_mapped()) {
         Ip6Address::bytes_type v6_bt = v6_address.to_bytes();
-        Ip4Address::bytes_type v4_bt = 
+        Ip4Address::bytes_type v4_bt =
             { { v6_bt[12], v6_bt[13], v6_bt[14], v6_bt[15] } };
         v4_address = Ip4Address(v4_bt);
     }
