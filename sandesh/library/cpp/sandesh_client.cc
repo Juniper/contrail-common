@@ -134,7 +134,8 @@ SandeshClient::SandeshClient(EventManager *evm,
     }
     if (stats_collector_ != "") {
         UdpServer::Endpoint stats_server;
-        if (MakeEndpoint(&stats_server, stats_collector_)) {
+        size_t found = stats_collector_.find(":");
+        if (found != std::string::npos) {
             stats_client_.reset(new StatsClientRemote(*evm->io_service(), stats_collector_));
         } else {
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
