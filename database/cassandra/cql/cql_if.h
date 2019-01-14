@@ -22,11 +22,20 @@ namespace cql {
 
 class CqlIf : public GenDb::GenDbIf {
  public:
+    // TODO: this constructor will be removed when changes in contrail-analytics will be merged.
     CqlIf(EventManager *evm,
         const std::vector<std::string> &cassandra_ips,
         int cassandra_port,
         const std::string &cassandra_user,
         const std::string &cassandra_password,
+        bool create_schema=false);
+    CqlIf(EventManager *evm,
+        const std::vector<std::string> &cassandra_ips,
+        int cassandra_port,
+        const std::string &cassandra_user,
+        const std::string &cassandra_password,
+        bool use_ssl,
+        const std::string &ca_certs_path,
         bool create_schema=false);
     CqlIf();
     virtual ~CqlIf();

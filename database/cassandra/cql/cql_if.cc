@@ -3,6 +3,7 @@
 //
 
 #include <assert.h>
+#include <fstream>
 
 #include <tbb/atomic.h>
 #include <boost/foreach.hpp>
@@ -1804,6 +1805,19 @@ static void CassLibraryLog(const CassLogMessage* message, void *data) {
     CASS_LIB_TRACE(log4level, buf.str());
 }
 
+static std::string LoadCertFile(const std::string &ca_certs_path) {
+    if (ca_certs_path.length() == 0) {
+        return std::string();
+    }
+    std::ifstream file(ca_certs_path.c_str());
+    if (!file) {
+        return std::string();
+    }
+    std::string content((std::istreambuf_iterator<char>(file)),
+                        std::istreambuf_iterator<char>());
+    return content;
+}
+
 
 class WorkerTask : public Task {
  public:
@@ -1833,10 +1847,13 @@ CqlIfImpl::CqlIfImpl(EventManager *evm,
                      int cassandra_port,
                      const std::string &cassandra_user,
                      const std::string &cassandra_password,
+                     bool use_ssl,
+                     const std::string &ca_certs_path,
                      interface::CassLibrary *cci) :
     evm_(evm),
     cci_(cci),
     cluster_(cci_->CassClusterNew(), cci_),
+    ssl_(0, cci_),
     session_(cci_->CassSessionNew(), cci_),
     schema_session_(cci_->CassSessionNew(), cci_),
     keyspace_(),
@@ -1853,6 +1870,18 @@ CqlIfImpl::CqlIfImpl(EventManager *evm,
             schema_contact_point_ = GetHostIp(
                             evm->io_service(), cassandra_ips[0]);
         }
+    }
+    if (use_ssl) {
+        ssl_ = impl::CassSslPtr(cci->CassSslNew(), cci_);
+        /* Only verify the certification and not the identity */
+        cci_->CassSslSetVerifyFlags(ssl_.get(), CASS_SSL_VERIFY_PEER_CERT);
+        std::string content = impl::LoadCertFile(ca_certs_path);
+        if (content.length() == 0) {
+            cci_->CassSslSetVerifyFlags(ssl_.get(), CASS_SSL_VERIFY_NONE);
+        } else {
+            cci_->CassSslAddTrustedCert(ssl_.get(), content);
+        }
+        cci_->CassClusterSetSsl(cluster_.get(), ssl_.get());
     }
     std::string contact_points(boost::algorithm::join(cassandra_ips, ","));
     cci_->CassClusterSetContactPoints(cluster_.get(), contact_points.c_str());
@@ -2460,10 +2489,40 @@ CqlIf::CqlIf(EventManager *evm,
              int cassandra_port,
              const std::string &cassandra_user,
              const std::string &cassandra_password,
+             bool use_ssl,
+             const std::string &ca_certs_path,
              bool create_schema) :
     cci_(new interface::CassDatastaxLibrary),
     impl_(new CqlIfImpl(evm, cassandra_ips, cassandra_port,
-        cassandra_user, cassandra_password, cci_.get())),
+        cassandra_user, cassandra_password, use_ssl,
+        ca_certs_path, cci_.get())),
+    use_prepared_for_insert_(true),
+    create_schema_(create_schema) {
+    // Setup library logging
+    cci_->CassLogSetLevel(impl::Log4Level2CassLogLevel(
+        log4cplus::Logger::getRoot().getLogLevel()));
+    cci_->CassLogSetCallback(impl::CassLibraryLog, NULL);
+    initialized_ = false;
+    BOOST_FOREACH(const std::string &cassandra_ip, cassandra_ips) {
+        boost::system::error_code ec;
+        boost::asio::ip::address cassandra_addr(
+            AddressFromString(cassandra_ip, &ec));
+        GenDb::Endpoint endpoint(cassandra_addr, cassandra_port);
+        endpoints_.push_back(endpoint);
+    }
+}
+
+// TODO: this constructor will be removed when changes in contrail-analytics will be merged.
+CqlIf::CqlIf(EventManager *evm,
+             const std::vector<std::string> &cassandra_ips,
+             int cassandra_port,
+             const std::string &cassandra_user,
+             const std::string &cassandra_password,
+             bool create_schema) :
+    cci_(new interface::CassDatastaxLibrary),
+    impl_(new CqlIfImpl(evm, cassandra_ips, cassandra_port,
+        cassandra_user, cassandra_password, false,
+        std::string(), cci_.get())),
     use_prepared_for_insert_(true),
     create_schema_(create_schema) {
     // Setup library logging
@@ -3033,6 +3092,10 @@ CassError CassDatastaxLibrary::CassClusterSetPort(CassCluster* cluster,
     return cass_cluster_set_port(cluster, port);
 }
 
+void CassDatastaxLibrary::CassClusterSetSsl(CassCluster* cluster, CassSsl* ssl) {
+    cass_cluster_set_ssl(cluster, ssl);
+}
+
 void CassDatastaxLibrary::CassClusterSetCredentials(CassCluster* cluster,
     const char* username, const char* password) {
     cass_cluster_set_credentials(cluster, username, password);
@@ -3068,6 +3131,24 @@ CassError CassDatastaxLibrary::CassClusterSetWriteBytesLowWaterMark(
 void CassDatastaxLibrary::CassClusterSetWhitelistFiltering(
     CassCluster* cluster, const char* hosts) {
     cass_cluster_set_whitelist_filtering(cluster, hosts);
+}
+
+// CassSsl
+CassSsl* CassDatastaxLibrary::CassSslNew() {
+    return cass_ssl_new();
+}
+
+void CassDatastaxLibrary::CassSslFree(CassSsl* ssl) {
+    return cass_ssl_free(ssl);
+}
+
+CassError CassDatastaxLibrary::CassSslAddTrustedCert(CassSsl* ssl,
+    const std::string &cert) {
+    return cass_ssl_add_trusted_cert_n(ssl, cert.c_str(), cert.length());
+}
+
+void CassDatastaxLibrary::CassSslSetVerifyFlags(CassSsl* ssl, int flags) {
+    cass_ssl_set_verify_flags(ssl, flags);
 }
 
 // CassSession
