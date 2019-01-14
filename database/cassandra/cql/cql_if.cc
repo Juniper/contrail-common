@@ -3,6 +3,7 @@
 //
 
 #include <assert.h>
+#include <fstream>
 
 #include <tbb/atomic.h>
 #include <boost/foreach.hpp>
@@ -1804,6 +1805,13 @@ static void CassLibraryLog(const CassLogMessage* message, void *data) {
     CASS_LIB_TRACE(log4level, buf.str());
 }
 
+static std:string LoadCertFile(const char* ca_certs_path) {
+    std::ifstream file(ca_certs_path);
+    std::string content(istreambuf_iterator<char>(file),
+                        istreambuf_iterator<char>());
+    return content;
+}
+
 
 class WorkerTask : public Task {
  public:
@@ -1833,6 +1841,8 @@ CqlIfImpl::CqlIfImpl(EventManager *evm,
                      int cassandra_port,
                      const std::string &cassandra_user,
                      const std::string &cassandra_password,
+                     bool use_ssl,
+                     const std:string &ca_certs_path,
                      interface::CassLibrary *cci) :
     evm_(evm),
     cci_(cci),
@@ -1853,6 +1863,18 @@ CqlIfImpl::CqlIfImpl(EventManager *evm,
             schema_contact_point_ = GetHostIp(
                             evm->io_service(), cassandra_ips[0]);
         }
+    }
+    if (use_ssl) {
+        ssl_ = CassSslPtr(cci->CassSslNew(), cci_);
+        /* Only verify the certification and not the identity */
+        cci_->CassSslSetVerifyFlags(ssl_.get(), CASS_SSL_VERIFY_PEER_CERT);
+        std::string content = LoadCertFile("cert.pem", ssl);
+        if (content.length() == 0) {
+            cci_->CassSslSetVerifyFlags(ssl_.get(), CASS_SSL_VERIFY_NONE;
+        } else {
+            cci_->CassSslAddTrustedCert(content)
+        }
+        cci_->CassClusterSetSsl(cluster_.get(), ssl_.get())
     }
     std::string contact_points(boost::algorithm::join(cassandra_ips, ","));
     cci_->CassClusterSetContactPoints(cluster_.get(), contact_points.c_str());
@@ -2460,10 +2482,13 @@ CqlIf::CqlIf(EventManager *evm,
              int cassandra_port,
              const std::string &cassandra_user,
              const std::string &cassandra_password,
+             bool use_ssl,
+             const std:string &ca_certs_path,
              bool create_schema) :
     cci_(new interface::CassDatastaxLibrary),
     impl_(new CqlIfImpl(evm, cassandra_ips, cassandra_port,
-        cassandra_user, cassandra_password, cci_.get())),
+        cassandra_user, cassandra_password, use_ssl,
+        ca_certs_path, cci_.get())),
     use_prepared_for_insert_(true),
     create_schema_(create_schema) {
     // Setup library logging
@@ -3033,6 +3058,10 @@ CassError CassDatastaxLibrary::CassClusterSetPort(CassCluster* cluster,
     return cass_cluster_set_port(cluster, port);
 }
 
+void CassDatastaxLibrary::CassClusterSetSsl(CassCluster* cluster, CassSsl* ssl) {
+    cass_cluster_set_ssl(cluster, ssl)
+}
+
 void CassDatastaxLibrary::CassClusterSetCredentials(CassCluster* cluster,
     const char* username, const char* password) {
     cass_cluster_set_credentials(cluster, username, password);
@@ -3068,6 +3097,24 @@ CassError CassDatastaxLibrary::CassClusterSetWriteBytesLowWaterMark(
 void CassDatastaxLibrary::CassClusterSetWhitelistFiltering(
     CassCluster* cluster, const char* hosts) {
     cass_cluster_set_whitelist_filtering(cluster, hosts);
+}
+
+// CassSsl
+CassSsl* CassDatastaxLibrary::CassSslNew() {
+    return cass_ssl_new();
+}
+
+void CassDatastaxLibrary::CassSslFree(CassSsl* ssl) {
+    return cass_ssl_free(ssl);
+}
+
+CassError CassDatastaxLibrary::CassSslAddTrustedCert(CassSsl* ssl,
+    const std::string &cert) {
+    cass_ssl_add_trusted_cert_n(ssl, cert.c_str(), cert.length());
+}
+
+void CassDatastaxLibrary::CassSslSetVerifyFlags(CassSsl* ssl, int flags) {
+    return cass_ssl_set_verify_flags(ssl, flags);
 }
 
 // CassSession
