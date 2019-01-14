@@ -34,9 +34,9 @@ class ConfigFactory : public Factory<ConfigFactory> {
                     int);
     FACTORY_TYPE_N2(ConfigFactory, ConfigCassandraPartition,
                     ConfigCassandraClient *, size_t);
-    FACTORY_TYPE_N5(ConfigFactory, CqlIf, EventManager *,
+    FACTORY_TYPE_N7(ConfigFactory, CqlIf, EventManager *,
                     const std::vector<std::string> &, int, const std::string &,
-                    const std::string &);
+                    const std::string &, bool, const std::string &);
     FACTORY_TYPE_N4(ConfigFactory, ConfigEtcdClient, ConfigClientManager *,
                     EventManager *, const ConfigClientOptions &,
                     int);
