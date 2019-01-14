@@ -101,9 +101,10 @@ class CqlIfTest : public cass::cql::CqlIf {
 public:
     CqlIfTest(EventManager *evm, const std::vector<std::string> &cassandra_ips,
               int cassandra_port, const std::string &cassandra_user,
-              const std::string &cassandra_password) :
+              const std::string &cassandra_password, bool use_ssl,
+              const std::string &ca_certs_path) :
             cass::cql::CqlIf(evm, cassandra_ips, cassandra_port, cassandra_user,
-                             cassandra_password) {
+                             cassandra_password, use_ssl, ca_certs_path) {
     }
 
     virtual bool Db_Init() { return db_init_result_-- < 1; }
