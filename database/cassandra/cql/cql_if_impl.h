@@ -68,6 +68,18 @@ struct Deleter<CassCluster> {
 };
 
 template<>
+struct Deleter<CassSsl> {
+    Deleter(interface::CassLibrary *cci) :
+       cci_(cci) {}
+    void operator()(CassSsl *ptr) {
+        if (ptr != NULL) {
+            cci_->CassSslFree(ptr);
+        }
+    }
+    interface::CassLibrary *cci_;
+};
+
+template<>
 struct Deleter<CassSession> {
     Deleter(interface::CassLibrary *cci) :
        cci_(cci) {}
@@ -159,6 +171,7 @@ class CassSharedPtr : public boost::shared_ptr<T> {
 };
 
 typedef CassSharedPtr<CassCluster> CassClusterPtr;
+typedef CassSharedPtr<CassSsl> CassSslPtr;
 typedef CassSharedPtr<CassSession> CassSessionPtr;
 typedef CassSharedPtr<CassFuture> CassFuturePtr;
 typedef CassSharedPtr<CassStatement> CassStatementPtr;
@@ -220,6 +233,8 @@ class CqlIfImpl {
         int cassandra_port,
         const std::string &cassandra_user,
         const std::string &cassandra_password,
+        bool use_ssl,
+        const std::string &ca_certs_path,
         interface::CassLibrary *cci);
     virtual ~CqlIfImpl();
 
@@ -322,6 +337,7 @@ class CqlIfImpl {
     EventManager *evm_;
     interface::CassLibrary *cci_;
     impl::CassClusterPtr cluster_;
+    impl::CassSslPtr ssl_;
     impl::CassSessionPtr session_;
     impl::CassSessionPtr schema_session_;
     tbb::atomic<SessionState::type> session_state_;
