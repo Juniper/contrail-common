@@ -79,12 +79,6 @@ for module in pysandesh_modules:
         env.Install(PYSANDESH_INSTALL_PATH,
                     str(File(PYSANDESH_PATH + module).srcnode())))
 
-fysom_sources_rules = []
-fysom_sources_rules.append(
-    env.Command(PYSANDESH_INSTALL_PATH + '/fysom.py',
-                "#/third_party/fysom-1.0.8/fysom/__init__.py",
-                Copy("$TARGET", "$SOURCE")))
-
 transport_modules = [
                      '__init__.py',
                      'TTransport.py'
@@ -133,7 +127,6 @@ sdist_depends = [local_modules_rules, web_srv_rules,
                  protocol_modules_rules, sandesh_hdr_pkg,
                  sandesh_ctrl_pkg, sandesh_uve_pkg,
                  sandesh_alarm_pkg, sandesh_trace_pkg,
-                 fysom_sources_rules,
                  io_pkg, ds_pkg, process_info_pkg]
 
 env['pysandesh_target'] = sdist_depends
