@@ -35,6 +35,7 @@ setup(
     install_requires=[
                       'gevent',
                       'bottle',
-                      'netaddr>=0.7.5'
+                      'netaddr>=0.7.5',
+					  'fysom==1.0.8'
                      ]
 )
