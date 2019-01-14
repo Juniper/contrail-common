@@ -27,6 +27,8 @@ class CqlIf : public GenDb::GenDbIf {
         int cassandra_port,
         const std::string &cassandra_user,
         const std::string &cassandra_password,
+        bool use_ssl=false,
+        const std::string &ca_certs_path=std::string(),
         bool create_schema=false);
     CqlIf();
     virtual ~CqlIf();

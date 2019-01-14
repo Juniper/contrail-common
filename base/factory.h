@@ -5,6 +5,9 @@
 #ifndef __BASE__FACTORY_H__
 #define __BASE__FACTORY_H__
 
+// in Boost this macro defaults to 6 but we're defining FACTORY_TYPE_N8 so we need to define it manually
+#define BOOST_FUNCTIONAL_FORWARD_ADAPTER_MAX_ARITY 8
+
 #include <boost/function.hpp>
 #include <boost/functional/factory.hpp>
 #include <boost/functional/forward_adapter.hpp>
