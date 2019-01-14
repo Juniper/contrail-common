@@ -53,7 +53,8 @@ ConfigCassandraClient::ConfigCassandraClient(ConfigClientManager *mgr,
         : ConfigDbClient(mgr, evm, options), num_workers_(num_workers) {
     dbif_.reset(ConfigFactory::Create<cass::cql::CqlIf>(evm, config_db_ips(),
              GetFirstConfigDbPort(), config_db_user(),
-             config_db_password()));
+             config_db_password(),
+             options.config_db_use_ssl, options.config_db_ca_certs));
 
     // Initialized the casssadra connection status;
     InitConnectionInfo();
