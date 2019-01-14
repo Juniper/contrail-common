@@ -68,7 +68,7 @@ public:
               int cassandra_port, const string &cassandra_user,
               const string &cassandra_password) :
             cass::cql::CqlIf(evm, cassandra_ips, cassandra_port, cassandra_user,
-                             cassandra_password) {
+                             cassandra_password, false, std::string()) {
     }
 
     virtual bool Db_Init() { return true; }

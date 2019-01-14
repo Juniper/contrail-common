@@ -22,6 +22,8 @@ class CassLibrary {
         const char* contact_points) = 0;
     virtual CassError CassClusterSetPort(CassCluster* cluster,
         int port) = 0;
+    virtual void CassClusterSetSsl(CassCluster* cluster,
+        CassSsl* ssl) = 0;
     virtual void CassClusterSetCredentials(CassCluster* cluster,
         const char* username, const char* password) = 0;
     virtual CassError CassClusterSetNumThreadsIo(CassCluster* cluster,
@@ -38,6 +40,13 @@ class CassLibrary {
         const char* hosts) = 0;
     virtual void CassClusterSetRequestTimeout(CassCluster* cluster,
         unsigned timeout_ms) = 0;
+
+    //CassSsl
+    virtual CassSsl* CassSslNew() = 0;
+    virtual void CassSslFree(CassSsl* ssl) = 0;
+    virtual CassError CassSslAddTrustedCert(CassSsl* ssl,
+        const std::string &cert) = 0;
+    virtual void CassSslSetVerifyFlags(CassSsl* ssl, int flags) = 0;
 
     // CassSession
     virtual CassSession* CassSessionNew() = 0;
@@ -178,6 +187,8 @@ class CassDatastaxLibrary : public CassLibrary {
         const char* contact_points);
     virtual CassError CassClusterSetPort(CassCluster* cluster,
         int port);
+    virtual void CassClusterSetSsl(CassCluster* cluster,
+        CassSsl* ssl);
     virtual void CassClusterSetCredentials(CassCluster* cluster,
         const char* username, const char* password);
     virtual CassError CassClusterSetNumThreadsIo(CassCluster* cluster,
@@ -194,6 +205,13 @@ class CassDatastaxLibrary : public CassLibrary {
         const char* hosts);
     virtual void CassClusterSetRequestTimeout(CassCluster* cluster,
         unsigned timeout_ms);
+
+    //CassSsl
+    virtual CassSsl* CassSslNew();
+    virtual void CassSslFree(CassSsl* ssl);
+    virtual CassError CassSslAddTrustedCert(CassSsl* ssl,
+        const std::string &cert);
+    virtual void CassSslSetVerifyFlags(CassSsl* ssl, int flags);
 
     // CassSession
     virtual CassSession* CassSessionNew();
