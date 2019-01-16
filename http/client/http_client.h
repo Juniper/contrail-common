@@ -61,7 +61,8 @@ private:
 
 class HttpConnection {
 public:
-    HttpConnection(boost::asio::ip::tcp::endpoint, size_t id, HttpClient *);
+    HttpConnection(boost::asio::ip::tcp::endpoint, size_t id, HttpClient *client);
+    HttpConnection(const std::string& host, int port, size_t id, HttpClient *client);
     ~HttpConnection();
 
     int Initialize();
@@ -146,6 +147,7 @@ private:
                              HttpCb cb, http_method m);
 
     // key = endpoint_ + id_ 
+    const std::string host_;
     boost::asio::ip::tcp::endpoint endpoint_;
     size_t id_; 
     HttpCb cb_;
@@ -190,6 +192,8 @@ public:
 
     virtual TcpSession *CreateSession();
     HttpConnection *CreateConnection(boost::asio::ip::tcp::endpoint);
+    HttpConnection *CreateConnection(const std::string& host, int port);
+
     bool AddConnection(HttpConnection *);
     void RemoveConnection(HttpConnection *);
 

@@ -5,6 +5,7 @@
 #include "http_client.h"
 #include <boost/bind.hpp>
 #include <boost/algorithm/string.hpp>
+#include "base/address_util.h"
 #include "base/task_annotations.h"
 #include "io/event_manager.h"
 #include "base/logging.h"
@@ -61,9 +62,25 @@ void HttpClientSession::RegisterEventCb(SessionEventCb cb) {
     event_cb_ = cb;
 }
 
-HttpConnection::HttpConnection(boost::asio::ip::tcp::endpoint ep, size_t id, 
-                               HttpClient *client) :
-    endpoint_(ep), id_(id), cb_(NULL), offset_(0), curl_handle_(NULL),
+namespace {
+    boost::asio::ip::address String2Addr(const std::string& host) {
+        boost::system::error_code ec;
+        return AddressFromString(host, &ec);
+    }
+}
+
+HttpConnection::HttpConnection(boost::asio::ip::tcp::endpoint ep,
+                               size_t id, HttpClient *client) :
+    host_(ep.address().to_string()), endpoint_(ep),
+    id_(id), cb_(NULL), offset_(0), curl_handle_(NULL),
+    session_(NULL), client_(client), use_ssl_(false), client_cert_(""),
+    client_cert_type_("PEM"), client_key_(""), ca_cert_(""), state_(STATUS) {
+}
+
+HttpConnection::HttpConnection(const std::string& host, int port,
+                               size_t id, HttpClient *client) :
+    host_(host), endpoint_(String2Addr(host), port),
+    id_(id), cb_(NULL), offset_(0), curl_handle_(NULL),
     session_(NULL), client_(client), use_ssl_(false), client_cert_(""),
     client_cert_type_("PEM"), client_key_(""), ca_cert_(""), state_(STATUS) {
 }
@@ -76,9 +93,9 @@ std::string HttpConnection::make_url(std::string &path) {
     std::ostringstream ret;
 
     if (use_ssl_) {
-        ret << "https://" << endpoint_.address().to_string();
+        ret << "https://" << host_;
     } else {
-        ret << "http://" << endpoint_.address().to_string();
+        ret << "http://" << host_;
     }
     if (endpoint_.port() != 0) {
         ret << ":" << endpoint_.port();
@@ -436,6 +453,11 @@ TcpSession *HttpClient::CreateSession() {
 
 HttpConnection *HttpClient::CreateConnection(boost::asio::ip::tcp::endpoint ep) {
     HttpConnection *conn = new HttpConnection(ep, ++id_, this);
+    return conn;
+}
+
+HttpConnection *HttpClient::CreateConnection(const std::string& host, int port) {
+    HttpConnection *conn = new HttpConnection(host, port, ++id_, this);
     return conn;
 }
 
