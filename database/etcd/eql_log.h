@@ -20,7 +20,7 @@ do { \
         obj::Send(g_vns_constants.CategoryNames.find(category)->second, \
                   SandeshLevel::SYS_DEBUG, __FILE__, __LINE__, ##__VA_ARGS__); \
     } \
-} while(0)
+} while (false)
 
 #define EQL_DEBUG(obj, arg) \
 do { \
@@ -29,7 +29,7 @@ do { \
     _os << arg; \
     EQL_DEBUG_LOG(obj, Category::EQL, _os.str()); \
     EQL_TRACE(obj##Trace, _os.str()); \
-} while(0)
+} while (false)
 
 
 #define EQL_TRACE(obj, ...) \
@@ -37,12 +37,12 @@ do { \
     if (!LoggingDisabled()) { \
         obj::TraceMsg(EqlTraceBuf, __FILE__, __LINE__, __VA_ARGS__); \
     } \
-} while(0)
+} while (false)
 
 #define EQL_DEBUG_ONLY(obj, ...) \
 do { \
     EQL_DEBUG_LOG(obj, Category::EQL, __VA_ARGS__); \
-} while(0)
+} while (false)
 
 // Warnings
 
@@ -52,15 +52,12 @@ do { \
         obj::Send(g_vns_constants.CategoryNames.find(category)->second, \
                   SandeshLevel::SYS_WARN, __FILE__, __LINE__, ##__VA_ARGS__); \
     } \
-} while(0)
+} while (false)
 
 #define EQL_WARN(obj, ...) \
 do { \
     EQL_WARN_LOG(obj, Category::EQL, __VA_ARGS__); \
     EQL_TRACE(obj##Trace, __VA_ARGS__); \
-} while(0)
+} while (false)
 
 #endif  // __EQL_LOG_H__
-
-
-
