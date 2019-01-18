@@ -116,7 +116,7 @@ void
 VncApi::Reauthenticate(RespBlock *orb)
 {
     if (client_) {
-        HttpConnection *conn = client_->CreateConnection(ks_ep_);
+        HttpConnection *conn = client_->CreateConnection(cfg_->ks_srv_ip, cfg_->ks_srv_port);
         if (cfg_->ks_protocol == "https") {
             conn->set_use_ssl(true);
             conn->set_client_cert(cfg_->ks_certfile);
@@ -246,11 +246,6 @@ VncApi::VncApi(EventManager *evm, VncApiConfig *cfg) : evm_(evm), cfg_(cfg),
     //hdr_.push_back(std::string("X-AUTH-TOKEN: some junk"));
     kshdr_ = hdr_;
 
-
-    boost::system::error_code ec;
-    SetApiServerAddress();
-    ks_ep_.address(AddressFromString(cfg_->ks_srv_ip, &ec));
-    ks_ep_.port(cfg_->ks_srv_port);
     if (cfg_->api_use_ssl) {
         boost::property_tree::ptree pt;
         try {
@@ -265,13 +260,6 @@ VncApi::VncApi(EventManager *evm, VncApiConfig *cfg) : evm_(evm), cfg_(cfg),
         cfg_->api_certfile = pt.get<std::string>("global.certfile", "");
         cfg_->api_cafile = pt.get<std::string>("global.cafile", "");
     }
-}
-
-void
-VncApi::SetApiServerAddress() {
-    boost::system::error_code ec;
-    api_ep_.address(AddressFromString(cfg_->api_srv_ip, &ec));
-    api_ep_.port(cfg_->api_srv_port);
 }
 
 void
@@ -296,7 +284,7 @@ VncApi::GetConfig(std::string type, std::vector<std::string> ids,
             std::map<std::string, std::string> *headers)> cb)
 {
     if (client_) {
-        HttpConnection *conn = client_->CreateConnection(api_ep_);
+        HttpConnection *conn = client_->CreateConnection(cfg_->api_srv_ip, cfg_->api_srv_port);
         if (cfg_->api_use_ssl) {
             conn->set_use_ssl(true);
             conn->set_client_cert(cfg_->api_certfile);
@@ -326,7 +314,7 @@ VncApi::RespHandler(RespBlock *rb, std::string &str,
             if (rb->GetConnection()->Status() == 401) {
                 // retry
                 // client_->RemoveConnection(rb->GetConnection());
-                // rb->Clear(client_->CreateConnection(api_ep_));
+                // rb->Clear(client_->CreateConnection(cfg_->api_srv_ip, cfg_->api_srv_port));
                 rb->Clear();
                 Reauthenticate(rb);
             } else {
