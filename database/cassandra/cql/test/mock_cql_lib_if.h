@@ -22,6 +22,8 @@ class MockCassLibrary : public interface::CassLibrary {
         const char* contact_points));
     MOCK_METHOD2(CassClusterSetPort, CassError (CassCluster* cluster,
         int port));
+    MOCK_METHOD2(CassClusterSetSsl, void (CassCluster* cluster,
+        CassSsl* ssl));
     MOCK_METHOD3(CassClusterSetCredentials, void (CassCluster* cluster,
         const char* username, const char* password));
     MOCK_METHOD2(CassClusterSetNumThreadsIo, CassError (CassCluster* cluster,
@@ -38,6 +40,14 @@ class MockCassLibrary : public interface::CassLibrary {
         CassCluster* cluster, const char* hosts));
     MOCK_METHOD2(CassClusterSetRequestTimeout, void (
         CassCluster* cluster, unsigned timeout_ms));
+
+    //CassSsl
+    MOCK_METHOD0(CassSslNew, CassSsl* ());
+    MOCK_METHOD1(CassSslFree, void (CassSsl* ssl));
+    MOCK_METHOD2(CassSslAddTrustedCert, CassError (CassSsl* ssl,
+        const std::string &cert));
+    MOCK_METHOD2(CassSslSetVerifyFlags, void (CassSsl* ssl,
+        int flags));
 
     // CassSession
     MOCK_METHOD0(CassSessionNew, CassSession* ());
