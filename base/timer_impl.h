@@ -17,6 +17,8 @@ public:
     }
 
     void expires_from_now(uint64_t ms, boost::system::error_code &ec) {
+// The additional `defined(_WIN32)` condition is required here
+// because MSVC incorrectly defines `__cplusplus` value.
 #if __cplusplus >= 201103L || defined(_WIN32)
         timer_.expires_from_now(std::chrono::milliseconds(ms), ec);
 #else
