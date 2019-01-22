@@ -111,7 +111,7 @@ public:
         return delete_on_completion_;
     }
 
-    int GetElapsedTime() const;
+    int64_t GetElapsedTime() const;
 
     // Only for state machine test
     // XXX: Don't use in production code
