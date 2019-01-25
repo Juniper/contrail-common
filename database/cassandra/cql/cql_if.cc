@@ -2512,34 +2512,6 @@ CqlIf::CqlIf(EventManager *evm,
     }
 }
 
-// TODO: this constructor will be removed when changes in
-// contrail-analytics will be merged.
-CqlIf::CqlIf(EventManager *evm,
-             const std::vector<std::string> &cassandra_ips,
-             int cassandra_port,
-             const std::string &cassandra_user,
-             const std::string &cassandra_password,
-             bool create_schema) :
-    cci_(new interface::CassDatastaxLibrary),
-    impl_(new CqlIfImpl(evm, cassandra_ips, cassandra_port,
-        cassandra_user, cassandra_password, false,
-        std::string(), cci_.get())),
-    use_prepared_for_insert_(true),
-    create_schema_(create_schema) {
-    // Setup library logging
-    cci_->CassLogSetLevel(impl::Log4Level2CassLogLevel(
-        log4cplus::Logger::getRoot().getLogLevel()));
-    cci_->CassLogSetCallback(impl::CassLibraryLog, NULL);
-    initialized_ = false;
-    BOOST_FOREACH(const std::string &cassandra_ip, cassandra_ips) {
-        boost::system::error_code ec;
-        boost::asio::ip::address cassandra_addr(
-            AddressFromString(cassandra_ip, &ec));
-        GenDb::Endpoint endpoint(cassandra_addr, cassandra_port);
-        endpoints_.push_back(endpoint);
-    }
-}
-
 CqlIf::CqlIf() : impl_(NULL) {
 }
 
