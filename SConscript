@@ -4,6 +4,9 @@
 
 import sys
 import platform
+import os
+
+os.environ['CONTRAIL_ETCD_INCL'] = '1'
 
 subdirs = [
            'base',
