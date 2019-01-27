@@ -30,6 +30,18 @@ typedef boost::asio::ip::tcp::endpoint Endpoint;
 class EtcdResponse;
 
 /**
+ * Configuration for EtcdIf connection.
+ */
+struct ConnectionConfig {
+    std::vector<std::string> etcd_hosts;
+    int port;
+    bool use_ssl;
+    std::string key_file;
+    std::string cert_file;
+    std::string ca_cert_file;
+};
+
+/**
  * EtcdIf is the etcd client that is used to create and maintain connection
  * to the etcd server.
  * The methods of the client can be used to perform etcd operations.
@@ -49,10 +61,9 @@ public:
      * @param etcd_hosts The IP address(es)of the etcd server
      * @param port The port to connect to
      */
-    EtcdIf(const std::vector<std::string> &etcd_hosts,
-           const int port, bool useSsl);
+    EtcdIf(ConnectionConfig &connection_config);
 
-    virtual ~EtcdIf();
+    virtual ~EtcdIf() = default;
 
     /**
      * Open a grpc connection to the etcd server.
@@ -104,18 +115,17 @@ public:
      */
     virtual void StopWatch();
 
-    int port() const { return port_; }
+    int port() const { return connection_config_.port; }
     std::vector<Endpoint> endpoints() const { return endpoints_; }
-    std::vector<std::string> hosts() const { return hosts_; }
+    std::vector<std::string> hosts() const { return connection_config_.etcd_hosts; }
 
 private:
     /**
      * Data
      */
+    ConnectionConfig connection_config_;
     std::vector<Endpoint> endpoints_;
-    std::vector<std::string> hosts_;
-    int port_;
-    bool useSsl_;
+
     std::unique_ptr<KV::Stub> kv_stub_;
     std::unique_ptr<Watch::Stub> watch_stub_;
 
@@ -246,6 +256,8 @@ private:
     int revision_;
     kv_map kv_map_;
 };
+
+std::string ReadFile(const std::string &path);
 
 } //namespace etcdql
 } //namespace etcd

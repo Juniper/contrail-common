@@ -13,8 +13,13 @@
 namespace cass { namespace cql { class CqlIf; } }
 using cass::cql::CqlIf;
 
-namespace etcd { namespace etcdql { class EtcdIf; } }
+namespace etcd { namespace etcdql {
+    struct ConnectionConfig;
+    class EtcdIf;
+}
+}
 using etcd::etcdql::EtcdIf;
+using etcd::etcdql::ConnectionConfig;
 
 class ConfigAmqpChannel;
 class ConfigCassandraClient;
@@ -42,9 +47,8 @@ class ConfigFactory : public Factory<ConfigFactory> {
                     int);
     FACTORY_TYPE_N2(ConfigFactory, ConfigEtcdPartition,
                     ConfigEtcdClient *, size_t);
-    FACTORY_TYPE_N3(ConfigFactory, EtcdIf,
-                    const std::vector<std::string> &,
-                    const int, bool);
+    FACTORY_TYPE_N1(ConfigFactory, EtcdIf,
+                    ConnectionConfig &);
 };
 
 #endif  // __CONFIG__CONFIG_FACTORY_H__
