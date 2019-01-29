@@ -236,6 +236,8 @@ int64_t Timer::GetElapsedTime() const {
     tbb::mutex::scoped_lock lock(mutex_);
     int64_t elapsed;
 
+// The additional `defined(_WIN32)` condition is required here
+// because MSVC incorrectly defines `__cplusplus` value.
 #if __cplusplus >= 201103L || defined(_WIN32)
     elapsed = std::chrono::nanoseconds(impl_->expires_from_now()).count();
 #else
