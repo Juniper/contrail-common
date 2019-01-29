@@ -160,7 +160,7 @@ class TaskScheduler {
 public:
     typedef boost::function<void(const char *file_name, uint32_t line_no,
                                  const Task *task, const char *description,
-                                 uint32_t delay)> LogFn;
+                                 uint64_t delay)> LogFn;
 
     TaskScheduler(int thread_count = 0);
     ~TaskScheduler();
@@ -226,7 +226,7 @@ public:
     void SetMaxThreadCount(int n);
     void GetSandeshData(SandeshTaskScheduler *resp, bool summary);
     void Log(const char *file_name, uint32_t line_no, const Task *task,
-             const char *description, uint32_t delay);
+             const char *description, uint64_t delay);
     void RegisterLog(LogFn fn);
 
     void SetTrackRunTime(bool value) { track_run_time_ = value; }
