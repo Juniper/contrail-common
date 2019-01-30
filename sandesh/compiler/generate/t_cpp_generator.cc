@@ -138,7 +138,7 @@ class t_cpp_generator : public t_oop_generator {
   std::string generate_sandesh_no_static_const_string_function(t_sandesh *tsandesh, bool signature, bool autogen_darg, bool trace = false, bool request = false, bool ctorcall = false);
   void generate_static_const_string_definition(std::ofstream& out, std::string name,
                                                const vector<t_field*>& fields);
-  std::string generate_sandesh_async_creator(t_sandesh *tsandesh, bool signature, bool expand_autogen, bool skip_autogen, 
+  std::string generate_sandesh_async_creator(t_sandesh *tsandesh, bool signature, bool expand_autogen, bool skip_autogen,
                                              std::string prefix, std::string suffix, bool category_level_file_line_first,
                                              bool autogen_category_level, bool drop_log_reason, bool use_sandesh_object = false);
   void generate_sandesh_rate_limit_fn(ofstream &out, t_sandesh *tsandesh);
@@ -158,7 +158,7 @@ class t_cpp_generator : public t_oop_generator {
   void generate_sandesh_objectlog_creators(ofstream &out, t_sandesh *tsandesh);
   void generate_sandesh_flow_creators(ofstream &out, t_sandesh *tsandesh);
   void generate_sandesh_uve_creator(std::ofstream& out, t_sandesh* tsandesh);
-  std::string generate_sandesh_trace_creator(t_sandesh *tsandesh, bool signature, bool expand_autogen, bool skip_autogen, 
+  std::string generate_sandesh_trace_creator(t_sandesh *tsandesh, bool signature, bool expand_autogen, bool skip_autogen,
                                              std::string prefix, std::string suffix);
   void generate_sandesh_updater(ofstream& out, t_sandesh* tsandesh);
   void generate_isRatelimitPass(ofstream& out, t_sandesh* tsandesh);
@@ -179,7 +179,7 @@ class t_cpp_generator : public t_oop_generator {
       RM_DIAL = 0,
       RM_AGG = 1,
       RM_DIFF = 2,
-      RM_MAX = 3 
+      RM_MAX = 3
   } RawMetric;
 
   struct DSInfo {
@@ -191,7 +191,7 @@ class t_cpp_generator : public t_oop_generator {
         rawtype_(rawtype), rmtype_(rmtype),
         resulttype_(resulttype), algo_(algo),
         annotation_(annotation),
-        compattr_(compattr) , subcompattr_(subcompattr), prealgo_(prealgo) {} 
+        compattr_(compattr) , subcompattr_(subcompattr), prealgo_(prealgo) {}
     bool is_map_;
     size_t period_;
     CacheAttribute cat_;
@@ -211,7 +211,7 @@ class t_cpp_generator : public t_oop_generator {
 
   void cache_attr_info(t_struct* tstruct, std::map<string, CacheAttribute>& attrs);
 
-  void freq_info(t_struct* tstruct, 
+  void freq_info(t_struct* tstruct,
     set<string>& inl, set<string>& never, set<string>& periodic);
 #endif
 
@@ -572,8 +572,8 @@ void t_cpp_generator::init_generator() {
     "#include <sandesh/sandesh_uve.h>" << endl <<
     "#include <sandesh/sandesh_http.h>" << endl <<
     "#include <sandesh/sandesh_trace.h>" << endl <<
-    "#include <curl/curl.h>" << endl << 
-    "#include <boost/foreach.hpp>" << endl << 
+    "#include <curl/curl.h>" << endl <<
+    "#include <boost/foreach.hpp>" << endl <<
     "#include <boost/assign/list_of.hpp>" << endl <<
     "#include <boost/make_shared.hpp>" << endl << endl;
 #endif
@@ -596,7 +596,7 @@ void t_cpp_generator::init_generator() {
   f_html_template_ <<
     "#include <sandesh/sandesh_http.h>" << endl;
   f_html_template_ <<
-    "static SandeshHttp::HtmlInfo h_info(" << 
+    "static SandeshHttp::HtmlInfo h_info(" <<
     program_name_ << "_xml," << program_name_ << "_xml_len);" << endl;
   f_html_template_ <<
     "static SandeshHttp sh(\"" << program_name_ << ".xml\", h_info);" << endl;
@@ -813,7 +813,7 @@ void t_cpp_generator::generate_consts(std::vector<t_const*> consts) {
     "#include <base/trace.h>" << endl <<
     "#include <sandesh/sandesh_types.h>" << endl <<
     "#include <sandesh/sandesh_constants.h>" << endl <<
-    "#include <sandesh/sandesh.h>" << endl << 
+    "#include <sandesh/sandesh.h>" << endl <<
     "#include <sandesh/sandesh_trace.h>" << endl << endl;
 #endif
   f_consts_impl <<
@@ -1049,7 +1049,7 @@ void t_cpp_generator::generate_cpp_sandesh(t_sandesh* tsandesh) {
     bool is_trace =
             ((t_base_type *)tsandesh->get_type())->is_sandesh_trace() ||
             ((t_base_type *)tsandesh->get_type())->is_sandesh_trace_object();
-    bool is_uve = 
+    bool is_uve =
             ((t_base_type *)tsandesh->get_type())->is_sandesh_uve();
     bool is_alarm =
             ((t_base_type *)tsandesh->get_type())->is_sandesh_alarm();
@@ -1151,7 +1151,7 @@ std::string t_cpp_generator::generate_sandesh_no_static_const_string_function(t_
               result += "lseqnum_++";
         }
     }
-	
+
   for (m_iter = members.begin(); m_iter != members.end(); ++m_iter) {
 		t_type* t = get_true_type((*m_iter)->get_type());
 		if (t->is_static_const_string()) {
@@ -1341,7 +1341,7 @@ std::string t_cpp_generator::generate_sandesh_async_creator(t_sandesh* tsandesh,
 void t_cpp_generator::generate_sandesh_async_create_fn(ofstream &out,
     t_sandesh *tsandesh) {
     std::string creator_func_name = "Create";
-    out << indent() << "static " << tsandesh->get_name() << "* " 
+    out << indent() << "static " << tsandesh->get_name() << "* "
         << creator_func_name << "(std::string file = \"\", int32_t line = 0) {"
         << endl;
     indent_up();
@@ -1679,7 +1679,7 @@ void t_cpp_generator::generate_sandesh_flow_creators(ofstream &out,
     generate_sandesh_static_logger(out, tsandesh, generate_sandesh_object);
 }
 
-std::string t_cpp_generator::generate_sandesh_trace_creator(t_sandesh *tsandesh, 
+std::string t_cpp_generator::generate_sandesh_trace_creator(t_sandesh *tsandesh,
         bool signature, bool expand_autogen, bool skip_autogen,
         std::string prefix, std::string suffix) {
     string result = "";
@@ -1705,7 +1705,7 @@ std::string t_cpp_generator::generate_sandesh_trace_creator(t_sandesh *tsandesh,
             }
         }
     }
-    
+
     for (m_iter = members.begin(); m_iter != members.end(); ++m_iter) {
         temp = "";
         t_type* t = get_true_type((*m_iter)->get_type());
@@ -1892,7 +1892,7 @@ void t_cpp_generator::generate_sandesh_base_init(
         out << "(\"" << tsandesh->get_name() << "\",lseqnum_++)";
     } else {
         out << "(\"" << tsandesh->get_name() << "\",seqno)";
-    }      
+    }
 }
 
 void t_cpp_generator::generate_sandesh_trace_seqnum_ctor(ofstream& out,
@@ -2158,7 +2158,7 @@ void t_cpp_generator::generate_sandesh_definition(ofstream& out,
         indent(out) << "SANDESH_REGISTER_DEC_TYPE(" << tsandesh->get_name() <<
                 ");" << endl;
         out << indent() << "virtual void HandleRequest() const;" << endl;
-        indent(out) << "virtual bool RequestFromHttp(" << 
+        indent(out) << "virtual bool RequestFromHttp(" <<
             "const std::string& ctx, const std::string& snh_query);" << endl;
 
         // Generate creator
@@ -2172,7 +2172,7 @@ void t_cpp_generator::generate_sandesh_definition(ofstream& out,
               ";" << endl;
         out << indent() << "snh->Dispatch(sconn);" << endl;
         indent_down();
-        indent(out) << "}" << endl << endl;        
+        indent(out) << "}" << endl << endl;
     } else if (is_response) {
         // Sandesh response
         // Generate default constructor
@@ -2185,7 +2185,7 @@ void t_cpp_generator::generate_sandesh_definition(ofstream& out,
         const vector<t_field*>& fields = tsandesh->get_members();
         vector<t_field*>::const_iterator f_iter = fields.begin();
         assert((*f_iter)->get_name() == "data");
-    
+
         bool is_proxy = false;
         std::map<std::string, std::string>::iterator ait;
         ait = ((*f_iter)->get_type())->annotations_.find("timeout");
@@ -2202,8 +2202,8 @@ void t_cpp_generator::generate_sandesh_definition(ofstream& out,
           std::map<std::string, std::string>::iterator pit;
           pit = ((*f_iter)->get_type())->annotations_.find("period");
           indent(out) << "static const uint64_t kProxyPeriod_us = " <<
-            pit->second.c_str() << "000000;" << endl; 
-            
+            pit->second.c_str() << "000000;" << endl;
+
         } else {
           indent(out) << "static void Send(const " << type_name((*f_iter)->get_type()) <<
             "& data, std::string table = \"\", uint64_t mono_usec=0);" << endl;
@@ -2225,7 +2225,7 @@ void t_cpp_generator::generate_sandesh_definition(ofstream& out,
     } else if (is_object) {
         generate_sandesh_objectlog_creators(out, tsandesh);
     } else if (is_trace) {
-        // Sandesh trace 
+        // Sandesh trace
         out << indent() << "virtual void SendTrace(" <<
             "const std::string& tcontext, bool more) {" << endl;
         indent_up();
@@ -2238,13 +2238,13 @@ void t_cpp_generator::generate_sandesh_definition(ofstream& out,
         indent(out) << "}" << endl << endl;
         // Generate Trace function and Macro
         string creator_func_name = "TraceMsg";
-        out << endl << indent() << "static void " << creator_func_name << 
+        out << endl << indent() << "static void " << creator_func_name <<
                 generate_sandesh_trace_creator(tsandesh, true, false, false, "", "") <<
                 ";" << endl << endl;
         string creator_macro_name = tsandesh->get_name() + "Trace";
         string creator_name_usc = underscore(creator_macro_name);
         string creator_name_uc = uppercase(creator_name_usc);
-        out << indent() << "#define " << creator_name_uc <<  
+        out << indent() << "#define " << creator_name_uc <<
                 generate_sandesh_trace_creator(tsandesh, false, false, true, "_", "") <<
                 "\\" << endl;
         indent_up();
@@ -2329,7 +2329,7 @@ void t_cpp_generator::generate_sandesh_definition(ofstream& out,
 
     // Create emplty constructor since objectlogs can have optional fields
     if (((t_base_type *)t)->is_sandesh_object()) {
-        out << endl << indent() << "explicit " << tsandesh->get_name() 
+        out << endl << indent() << "explicit " << tsandesh->get_name()
 	    << "(uint32_t seqno," " std::string file, int32_t line) : ";
 	generate_sandesh_base_init(out, tsandesh, false);
 	out << ", file(file), line(line) {" << endl;
@@ -2352,7 +2352,7 @@ void t_cpp_generator::generate_sandesh_definition(ofstream& out,
     out << indent() << "static const char *name_;" << endl;
 
     out << indent() << "void Log() const;" << endl;
-    
+
     out << indent() << "void ForcedLog() const;" << endl;
 
     out << indent() << "int32_t Read(" <<
@@ -2420,7 +2420,7 @@ void t_cpp_generator::cache_attr_info(t_struct* tstruct,
       assert((*m_iter)->annotations_.find("stats") == (*m_iter)->annotations_.end());
       assert((*m_iter)->annotations_.find("mstats") == (*m_iter)->annotations_.end());
       attrs.insert(std::make_pair((*m_iter)->get_name(),
-        MANDATORY)); 
+        MANDATORY));
       continue;
     }
     // DervivedStats attributes are not handled here
@@ -2430,7 +2430,7 @@ void t_cpp_generator::cache_attr_info(t_struct* tstruct,
     }
     // All raw attributes are Non-periodic
     if (jt!=(*m_iter)->annotations_.end()) {
-	attrs.insert(std::make_pair((*m_iter)->get_name(), HIDDEN)); 
+	attrs.insert(std::make_pair((*m_iter)->get_name(), HIDDEN));
     } else {
 	attrs.insert(std::make_pair((*m_iter)->get_name(), INLINE));
     }
@@ -2498,12 +2498,12 @@ void t_cpp_generator::derived_stats_info(t_struct* tstruct,
         } else {
             period = atoi(rawperiodattr.substr(0,ppos).c_str());
         }
-        
+
         rawfullattr = rawperiodattr.substr(ppos+1, string::npos);
       } else {
         rawfullattr = rawperiodattr;
       }
-        
+
       size_t cpos = rawfullattr.find('.');
       string rawattr;
       string compattr("");
@@ -2523,7 +2523,7 @@ void t_cpp_generator::derived_stats_info(t_struct* tstruct,
       } else {
         rawattr = rawfullattr;
       }
-         
+
       string rawtype;
       RawMetric rmt = RM_DIAL;
       vector<t_field*>::const_iterator s_iter;
@@ -2531,7 +2531,7 @@ void t_cpp_generator::derived_stats_info(t_struct* tstruct,
 	if (rawattr.compare((*s_iter)->get_name())==0) {
           map<string,string>::const_iterator cit =
               (*s_iter)->annotations_.find("metric");
-          if (cit != (*s_iter)->annotations_.end()) { 
+          if (cit != (*s_iter)->annotations_.end()) {
 	    if (cit->second.compare("agg") == 0) rmt = RM_AGG;
 	    else if (cit->second.compare("diff") == 0) rmt = RM_DIFF;
           }
@@ -2565,7 +2565,7 @@ void t_cpp_generator::derived_stats_info(t_struct* tstruct,
                       break;
                     }
                   }
-                    
+
                 } else {
                   rawtype = type_name(catype);
                 }
@@ -2578,7 +2578,7 @@ void t_cpp_generator::derived_stats_info(t_struct* tstruct,
       }
       assert(!rawtype.empty());
 
-      bool is_hidden = 
+      bool is_hidden =
         (*m_iter)->annotations_.find("hidden") != (*m_iter)->annotations_.end();
 
       CacheAttribute cat = INLINE;
@@ -2679,7 +2679,7 @@ void t_cpp_generator::generate_struct_definition(ofstream& out,
         t_base_type::t_base tbase = ((t_base_type*)t)->get_base();
         if (tbase == t_base_type::TYPE_STRING) proxy_support = true;
       }
-        
+
       if (first) {
         first = false;
         out <<
@@ -2831,27 +2831,27 @@ void t_cpp_generator::generate_struct_definition(ofstream& out,
   }
 #ifdef SANDESH
   for (ds_iter = dsinfo.begin(); ds_iter != dsinfo.end(); ++ds_iter) {
-  
+
     // val is rawtype,resulttype,algo,annotation,compattr,subcompattr
     if ((ds_iter->second.cat_ == PERIODIC) ||
         (ds_iter->second.cat_ == HIDDEN_PER)) {
       if (ds_iter->second.prealgo_.empty()) {
-        indent(out) << "boost::shared_ptr< ::contrail::sandesh::DerivedStatsPeriodicIf< ::contrail::sandesh::" << 
-          ds_iter->second.algo_ << ", " << 
+        indent(out) << "boost::shared_ptr< ::contrail::sandesh::DerivedStatsPeriodicIf< ::contrail::sandesh::" <<
+          ds_iter->second.algo_ << ", " <<
           ds_iter->second.rawtype_ << ", " <<
           ds_iter->second.resulttype_.substr(0, ds_iter->second.resulttype_.size() - 3) << ", " <<
-          ds_iter->second.resulttype_ << 
+          ds_iter->second.resulttype_ <<
           "> > __dsobj_" << ds_iter->first << ";" << endl;
       } else {
-        indent(out) << "boost::shared_ptr< ::contrail::sandesh::DerivedStatsPeriodicAnomalyIf< ::contrail::sandesh::" << 
-          ds_iter->second.algo_ << ", " << 
+        indent(out) << "boost::shared_ptr< ::contrail::sandesh::DerivedStatsPeriodicAnomalyIf< ::contrail::sandesh::" <<
+          ds_iter->second.algo_ << ", " <<
           ds_iter->second.rawtype_ << ", ::contrail::sandesh::" <<
           ds_iter->second.prealgo_ << ", " <<
-          ds_iter->second.resulttype_ << 
+          ds_iter->second.resulttype_ <<
           "> > __dsobj_" << ds_iter->first << ";" << endl;
       }
     } else {
-      indent(out) << "boost::shared_ptr< ::contrail::sandesh::DerivedStatsIf< ::contrail::sandesh::" << 
+      indent(out) << "boost::shared_ptr< ::contrail::sandesh::DerivedStatsIf< ::contrail::sandesh::" <<
         ds_iter->second.algo_ << ", " <<
         ds_iter->second.rawtype_ << ", " << ds_iter->second.resulttype_ <<
         "> > __dsobj_" << ds_iter->first << ";" << endl;
@@ -2915,7 +2915,7 @@ void t_cpp_generator::generate_struct_definition(ofstream& out,
 
 #ifdef SANDESH
     out << endl << indent() << type_name((*m_iter)->get_type(), false, true)
-	    << " get_"; 
+	    << " get_";
     out << (*m_iter)->get_name() << "() const {" << endl;
     out << indent() << indent() << "return " << (*m_iter)->get_name() << ";" << endl;
     out << indent() << "}" << endl;
@@ -3029,7 +3029,7 @@ void t_cpp_generator::generate_struct_definition(ofstream& out,
 #ifdef SANDESH
   out << indent() << "std::string log() const;" << endl;
   if (!pointers) {
-    out <<  indent() << 
+    out <<  indent() <<
       tstruct->get_name() << " operator+(const " << tstruct->get_name() <<
       "& right) const" << endl;
     scope_up(out);
@@ -3054,15 +3054,15 @@ void t_cpp_generator::generate_struct_definition(ofstream& out,
 	case t_base_type::TYPE_U32:
 	case t_base_type::TYPE_U64:
 	  if ((*m_iter)->get_req() != t_field::T_OPTIONAL) {
-	    out << 
-              indent() << "result." << sn << nn << "(get_" << nn << 
+	    out <<
+              indent() << "result." << sn << nn << "(get_" << nn <<
                 "() + right.get_" << nn << "());" << endl << endl;
           } else {
             out <<
 	      indent() << "if ((__isset." << nn << ") && (right.__isset." <<
                 nn << ")) result." << sn << nn << "(get_" << nn <<
                 "() + right.get_" << nn << "());" << endl <<
-              indent() << "else if (__isset." << nn << ") result." << sn << 
+              indent() << "else if (__isset." << nn << ") result." << sn <<
                 nn << "(get_" << nn << "());" << endl <<
               indent() << "else if (right.__isset." << nn << ") result." << sn <<
                 nn << "(right.get_" << nn << "());" << endl << endl;
@@ -3075,7 +3075,7 @@ void t_cpp_generator::generate_struct_definition(ofstream& out,
     indent(out) << "return result;" << endl;
     scope_down(out);
 
-    out <<  indent() << 
+    out <<  indent() <<
       tstruct->get_name() << " operator/(int div) const" << endl;
     scope_up(out);
     out << indent() << tstruct->get_name() << " result;" << endl;
@@ -3099,8 +3099,8 @@ void t_cpp_generator::generate_struct_definition(ofstream& out,
 	case t_base_type::TYPE_U32:
 	case t_base_type::TYPE_U64:
 	  if ((*m_iter)->get_req() != t_field::T_OPTIONAL) {
-	    out << 
-              indent() << "result." << sn << nn << "(get_" << nn << 
+	    out <<
+              indent() << "result." << sn << nn << "(get_" << nn <<
                 "() / div);" << endl << endl;
           } else {
             out <<
@@ -3115,7 +3115,7 @@ void t_cpp_generator::generate_struct_definition(ofstream& out,
     indent(out) << "return result;" << endl;
     scope_down(out);
 
-    out <<  indent() << 
+    out <<  indent() <<
       tstruct->get_name() << " operator-(const " << tstruct->get_name() <<
       "& right) const" << endl;
     scope_up(out);
@@ -3139,8 +3139,8 @@ void t_cpp_generator::generate_struct_definition(ofstream& out,
 	case t_base_type::TYPE_U32:
 	case t_base_type::TYPE_U64:
 	  if ((*m_iter)->get_req() != t_field::T_OPTIONAL) {
-	    out << 
-              indent() << "result." << sn <<  nn << "(get_" << nn << 
+	    out <<
+              indent() << "result." << sn <<  nn << "(get_" << nn <<
                 "() - right.get_" << nn << "());" << endl << endl;
           } else {
             out <<
@@ -3149,7 +3149,7 @@ void t_cpp_generator::generate_struct_definition(ofstream& out,
               indent() << "  result." << sn << nn << "(get_" << nn <<
                 "() - right.get_" << nn << "()); }" << endl <<
               indent() << "else if (__isset." << nn << ") result." << sn <<
-                nn << "(get_" << nn << "());" << endl; 
+                nn << "(get_" << nn << "());" << endl;
           }
         default:
           continue;
@@ -3162,7 +3162,7 @@ void t_cpp_generator::generate_struct_definition(ofstream& out,
   out << indent() << "size_t GetSize() const;" << endl;
   out << indent() << "std::string __listkey(void) {" << endl;
   out << indent() << "    std::string __result;" << endl;
-  bool first = true; 
+  bool first = true;
   vector<string>::iterator kit;
   for (kit = dskeys.begin(); kit != dskeys.end(); kit++) {
     if (!first) {
@@ -3186,7 +3186,7 @@ void t_cpp_generator::generate_struct_definition(ofstream& out,
       indent() << "template <>" << endl <<
       indent() << "struct SandeshStructDeleteTrait<" <<
 	tstruct->get_name() << "> {" << endl <<
-      indent() << "  static bool get(const " <<  
+      indent() << "  static bool get(const " <<
 	tstruct->get_name() << "& s) { return s.get_deleted(); }" <<
         endl <<
       indent() << "};" << endl;
@@ -3196,7 +3196,7 @@ void t_cpp_generator::generate_struct_definition(ofstream& out,
       indent() << "template <>" << endl <<
       indent() << "struct SandeshStructProxyTrait<" <<
 	tstruct->get_name() << "> {" << endl <<
-      indent() << "  static std::string get(const " <<  
+      indent() << "  static std::string get(const " <<
 	tstruct->get_name() << "& s) { return s.get_proxy(); }" <<
         endl <<
       indent() << "};" << endl;
@@ -3805,7 +3805,7 @@ void t_cpp_generator::generate_sandesh_http_reader(ofstream& out,
 
     indent(out) << program_name_ << "_marker = 0;" << endl;
     // Declare stack tmp variables
-    out << endl << 
+    out << endl <<
     indent() << "using std::string;"  << endl <<
     indent() << "boost::char_separator<char> sep(\"&\");"  << endl <<
     indent() << "boost::char_separator<char> varsep(\"=\");" << endl <<
@@ -3830,35 +3830,35 @@ void t_cpp_generator::generate_sandesh_http_reader(ofstream& out,
                    " var(tok, varsep);" << endl;
     indent(out) << "boost::tokenizer<boost::char_separator<char> >" <<
                    "::iterator it2 = var.begin();" << endl << endl;
- 
-    indent(out) << "string tok_new = (*it2).c_str();" << endl;   
+
+    indent(out) << "string tok_new = (*it2).c_str();" << endl;
     indent(out) << "if (it2 != var.end()&& ++it2 != var.end()) " << endl;
     scope_up(out);
 
 
     indent(out) << "char *unescaped = NULL;" << endl;
     indent(out) << "unescaped =  (char*) (malloc(sizeof(char)*1024));" <<endl;
-    
+
     indent(out) << "std::string tmpstr;" << endl;
-	
+
     for (f_iter = fields.begin(); f_iter != fields.end(); ++f_iter)
     {
         t_type *ftype = (*f_iter)->get_type();
-        if (ftype->is_base_type())  
+        if (ftype->is_base_type())
         {
             t_base_type *btype = static_cast<t_base_type *>(ftype);
             if (btype->is_string() || btype->is_xml())
-	    {  
+	    {
                 indent(out) << "entity_name=\""  << (*f_iter)->get_name() << "\";" <<  endl;
                 indent(out) << "if((tok_new.substr(0,(entity_name.length()))).compare(entity_name) == 0)" << endl;
                 scope_up(out);
                 indent(out) << "unescaped = curl_easy_unescape(cr, (*it2).c_str(), 0, NULL);" << endl;
                 indent(out) << "tmpstr=unescaped;" << endl;
-                indent(out) << (*f_iter)->get_name() << " = boost::lexical_cast<std::string>((tmpstr));" << endl; 
+                indent(out) << (*f_iter)->get_name() << " = boost::lexical_cast<std::string>((tmpstr));" << endl;
                 indent(out) << "curl_free(unescaped);" << endl;
                 // delete[] unescaped;
                 indent(out) << "continue;" << endl;
-                scope_down(out); 
+                scope_down(out);
             }
             else if (btype->is_uuid())
             {
@@ -3869,7 +3869,7 @@ void t_cpp_generator::generate_sandesh_http_reader(ofstream& out,
                 indent(out) << "ss << *it2;" << endl;
                 indent(out) << "ss >> " << (*f_iter)->get_name() << ";" << endl;
                 indent(out) << "continue;" << endl;
-                scope_down(out); 
+                scope_down(out);
             }
             else if (btype->is_ipaddr())
             {
@@ -3893,7 +3893,7 @@ void t_cpp_generator::generate_sandesh_http_reader(ofstream& out,
                 scope_down(out);
             }
         }
-        else 
+        else
         {
             // Ignore this field
             indent(out) << "++it2;" << endl;
@@ -3901,7 +3901,7 @@ void t_cpp_generator::generate_sandesh_http_reader(ofstream& out,
     }
     vector<t_field*>::const_iterator f_iter2 = fields.begin();
     if (f_iter2 != fields.end())
-    {   
+    {
         t_type *ftype = (*f_iter2)->get_type();
         if (ftype->is_base_type())
         {
@@ -3941,7 +3941,7 @@ void t_cpp_generator::generate_sandesh_http_reader(ofstream& out,
             }
         }
     }
-    indent(out) << "free(unescaped);" << endl;    
+    indent(out) << "free(unescaped);" << endl;
     scope_down(out);
     scope_down(out);
     scope_down(out);
@@ -3990,14 +3990,14 @@ void t_cpp_generator::generate_sandesh_updater(ofstream& out,
   const vector<t_field*>& sfields = ts->get_members();
   vector<t_field*>::const_iterator s_iter;
 
-  indent(out) << "bool " << tsandesh->get_name() << 
-    "::LoadUVE(SendType stype, uint32_t cycle) {" << endl; 
+  indent(out) << "bool " << tsandesh->get_name() <<
+    "::LoadUVE(SendType stype, uint32_t cycle) {" << endl;
   indent_up();
-  indent(out) << "(void)cycle;" << endl; 
-  indent(out) << "bool is_periodic_attr = false;" << endl << endl; 
+  indent(out) << "(void)cycle;" << endl;
+  indent(out) << "bool is_periodic_attr = false;" << endl << endl;
 
   for (s_iter = sfields.begin(); s_iter != sfields.end(); ++s_iter) {
-    string snm = (*s_iter)->get_name(); 
+    string snm = (*s_iter)->get_name();
     if (snm == "deleted") continue;
 
     // For non-derived stats, setting of attribute would have also set
@@ -4011,10 +4011,10 @@ void t_cpp_generator::generate_sandesh_updater(ofstream& out,
       indent(out) << "if (data.__isset." << snm << ") {" << endl;
       indent_up();
       if (cat == HIDDEN) {
-        indent(out) << "if (stype != ST_INTROSPECT) data.__isset." << 
+        indent(out) << "if (stype != ST_INTROSPECT) data.__isset." <<
           snm << " = false;" << endl;
       } else if (cat == INLINE) {
-        indent(out) << "if (stype == ST_PERIODIC) " << 
+        indent(out) << "if (stype == ST_PERIODIC) " <<
           "data.__isset." << snm << " = false;" << endl;
       } else assert(0);
       indent_down();
@@ -4024,7 +4024,7 @@ void t_cpp_generator::generate_sandesh_updater(ofstream& out,
       indent_up();
       CacheAttribute cat = ds_iter->second.cat_;
       if (cat == HIDDEN) {
-        indent(out) << "if (stype != ST_INTROSPECT) data.__isset." << 
+        indent(out) << "if (stype != ST_INTROSPECT) data.__isset." <<
           snm << " = false;" << endl;
       } else if (cat == HIDDEN_PER) {
         indent(out) << "if (stype == ST_PERIODIC) {" << endl;
@@ -4037,7 +4037,7 @@ void t_cpp_generator::generate_sandesh_updater(ofstream& out,
         indent(out) << "} else if (stype == ST_SYNC) data.__isset." <<
           snm << " = false;" << endl;
       } else if (cat == INLINE) {
-        indent(out) << "if (stype == ST_PERIODIC) " << 
+        indent(out) << "if (stype == ST_PERIODIC) " <<
           "data.__isset." << snm << " = false;" << endl;
       } else if (cat == PERIODIC) {
         indent(out) << "if (stype == ST_PERIODIC) {" << endl;
@@ -4053,13 +4053,13 @@ void t_cpp_generator::generate_sandesh_updater(ofstream& out,
           snm << ", data.__isset." << snm << ", true);" << endl;
 
         indent_down();
-        indent(out) << "} else data.__isset." << snm << " = false;" << endl; 
+        indent(out) << "} else data.__isset." << snm << " = false;" << endl;
 
         indent_down();
         indent(out) << "} else if (stype == ST_SYNC) data.__isset." <<
           snm << " = false;" << endl;
       } else assert(0);
-          
+
       indent(out) << "else data.__dsobj_" << snm << "->FillResult(data." <<
         snm << ", data.__isset." << snm << ", true);" <<endl;
 
@@ -4074,7 +4074,7 @@ void t_cpp_generator::generate_sandesh_updater(ofstream& out,
   indent(out) <<  "else return true;" << endl;
   indent_down();
   indent(out) <<  "}" << endl << endl;
- 
+
   indent(out) << "std::map<std::string, std::string> " << tsandesh->get_name() <<
     "::_DSConf(void) {" << endl;
   indent_up();
@@ -4082,7 +4082,7 @@ void t_cpp_generator::generate_sandesh_updater(ofstream& out,
   bool is_dsconf = false;
   for (map<string,DSInfo>::const_iterator ds_iter = dsinfo.begin();
        ds_iter != dsinfo.end(); ++ds_iter) {
-    if (!is_dsconf) 
+    if (!is_dsconf)
       indent(out) << "std::map<std::string, std::string> _dsconf = " <<
         "boost::assign::map_list_of" << endl;
     indent(out) << "(\"" << ds_iter->first << "\", \"" <<
@@ -4091,16 +4091,16 @@ void t_cpp_generator::generate_sandesh_updater(ofstream& out,
   }
   if (is_dsconf) indent(out) << ";" << endl;
   else indent(out) << "std::map<std::string, std::string> _dsconf;" << endl;
-  
+
   indent(out) << "return _dsconf;" << endl;
   indent_down();
-  indent(out) <<  "}" << endl << endl;  
- 
-  indent(out) << "void " << tsandesh->get_name() << 
-    "::_InitDerivedStats(" << dtype << 
+  indent(out) <<  "}" << endl << endl;
+
+  indent(out) << "void " << tsandesh->get_name() <<
+    "::_InitDerivedStats(" << dtype <<
     " & _data, const map<string,string> & _dsconf) {" << endl;
   indent_up();
-  
+
   for (map<string,DSInfo>::const_iterator ds_iter = dsinfo.begin();
        ds_iter != dsinfo.end(); ++ds_iter) {
 
@@ -4116,21 +4116,21 @@ void t_cpp_generator::generate_sandesh_updater(ofstream& out,
     indent(out) << "assert(_dci != _dsconf.end());" << endl;
 
     indent(out) << "_data.__dsobj_" << ds_iter->first << ".reset();" << endl;
-     
+
     if ((ds_iter->second.cat_ == PERIODIC) ||
         (ds_iter->second.cat_ == HIDDEN_PER)) {
 
       if (ds_iter->second.prealgo_.empty()) {
         indent(out) << "_data.__dsobj_" << ds_iter->first << " = boost::make_shared<" <<
           " ::contrail::sandesh::DerivedStatsPeriodicIf< ::contrail::sandesh::" <<
-	  ds_iter->second.algo_ << ", " << 
+	  ds_iter->second.algo_ << ", " <<
 	  ds_iter->second.rawtype_ << ", " <<
 	  ds_iter->second.resulttype_.substr(0, ds_iter->second.resulttype_.size() - 3) << ", " <<
 	  ds_iter->second.resulttype_ << "> >(_dci->second, is_agg);" << endl;
       } else {
         indent(out) << "_data.__dsobj_" << ds_iter->first << " = boost::make_shared<" <<
           " ::contrail::sandesh::DerivedStatsPeriodicAnomalyIf< ::contrail::sandesh::" <<
-          ds_iter->second.algo_ << ", " << 
+          ds_iter->second.algo_ << ", " <<
           ds_iter->second.rawtype_ << ", ::contrail::sandesh::" <<
           ds_iter->second.prealgo_ << ", " <<
           ds_iter->second.resulttype_ << "> >(_dci->second, is_agg);" << endl;
@@ -4143,24 +4143,24 @@ void t_cpp_generator::generate_sandesh_updater(ofstream& out,
 	"> >(_dci->second, is_agg);" << endl;
     }
     indent_down();
-    indent(out) << "}" << endl;         
+    indent(out) << "}" << endl;
   }
   indent_down();
   indent(out) << "}" << endl << endl;
 
-  indent(out) << "bool " << tsandesh->get_name() << 
+  indent(out) << "bool " << tsandesh->get_name() <<
     "::UpdateUVE(" <<  dtype <<
       " & _data, " << dtype <<
       " & tdata, uint64_t mono_usec, SandeshLevel::type Xlevel) {" << endl;
 
   indent_up();
-  
+
   indent(out) << "bool send = false;" << endl;
 
   for (s_iter = sfields.begin(); s_iter != sfields.end(); ++s_iter) {
-    string snm = (*s_iter)->get_name(); 
-    
-    // Only set those attributes that are NOT derived stats results 
+    string snm = (*s_iter)->get_name();
+
+    // Only set those attributes that are NOT derived stats results
     if (dsinfo.find(snm) == dsinfo.end()) {
       CacheAttribute cat = (cache_attrs.find(snm))->second;
       if ((*s_iter)->get_req() == t_field::T_OPTIONAL) {
@@ -4180,14 +4180,14 @@ void t_cpp_generator::generate_sandesh_updater(ofstream& out,
       }
       indent_up();
       indent(out) << "tdata.set_" << snm << "(_data.get_" <<
-        snm << "());" << endl; 
+        snm << "());" << endl;
       map<string,set<string> >::const_iterator r_iter = rawmap.find(snm);
       // Update all derivied stats of this raw attribute
       if (r_iter != rawmap.end()) {
         t_type* ratype = (*s_iter)->get_type();
         if (ratype->is_map()) {
             t_type* vtype = ((t_map*)ratype)->get_val_type();
-            indent(out) << "typedef " << type_name((*s_iter)->get_type()) << 
+            indent(out) << "typedef " << type_name((*s_iter)->get_type()) <<
               " _T_" << snm << ";" << endl;
             indent(out) << "std::map<string,bool> _delmap_" << snm
               << ";" << endl;
@@ -4195,20 +4195,20 @@ void t_cpp_generator::generate_sandesh_updater(ofstream& out,
               "::value_type& _tp, _data.get_" << snm << "())" << endl;
             indent(out) << "  _delmap_" << snm <<
               ".insert(make_pair(_tp.first, SandeshStructDeleteTrait<" <<
-              type_name(vtype) << ">::get(_tp.second)));" << endl; 
+              type_name(vtype) << ">::get(_tp.second)));" << endl;
         }
         set<string>::const_iterator d_iter;
         for (d_iter = r_iter->second.begin(); d_iter != r_iter->second.end(); ++d_iter) {
           map<string,DSInfo>::const_iterator c_iter = dsinfo.find(*d_iter);
           CacheAttribute dat = c_iter->second.cat_;
-          
+
           if (c_iter->second.compattr_.empty()) {
             if (!c_iter->second.is_map_) {
               indent(out) << "tdata.__dsobj_" << *d_iter <<
                 "->Update(_data.get_" << snm << "(), mono_usec);" << endl;
             } else {
               indent(out) << "tdata.__dsobj_" << *d_iter <<
-                "->Update(_data.get_" << snm << "(), _delmap_" << 
+                "->Update(_data.get_" << snm << "(), _delmap_" <<
                 snm << ", mono_usec);" << endl;
             }
           } else {
@@ -4222,7 +4222,7 @@ void t_cpp_generator::generate_sandesh_updater(ofstream& out,
               indent(out) << "tdata.__dsobj_" << *d_iter << "->Update(_data.get_" <<
                 snm << "()." << getexpr << ", mono_usec);" << endl;
             } else {
-              indent(out) << "std::map<string," << c_iter->second.rawtype_ << "> temp_" << 
+              indent(out) << "std::map<string," << c_iter->second.rawtype_ << "> temp_" <<
                 *d_iter << ";" << endl;
               indent(out) << "BOOST_FOREACH(const _T_" << snm <<
                 "::value_type& _tp, _data.get_" << snm << "()) {" << endl;
@@ -4233,7 +4233,7 @@ void t_cpp_generator::generate_sandesh_updater(ofstream& out,
               indent_down();
               indent(out) <<  "}" << endl;
               indent(out) << "tdata.__dsobj_" << *d_iter << "->Update(temp_" <<
-                *d_iter << ", _delmap_" << snm << ", mono_usec);" << endl; 
+                *d_iter << ", _delmap_" << snm << ", mono_usec);" << endl;
               indent(out) << "temp_" << *d_iter << ".clear();" << endl;
             }
           }
@@ -4542,7 +4542,7 @@ void t_cpp_generator::generate_sandesh_uve_creator(
       std::map<std::string, std::string>::iterator tmit;
       tmit = ((*f_iter)->get_type())->annotations_.find("timeout");
       if (tmit == ((*f_iter)->get_type())->annotations_.end()) {
-        indent(out) << ", " << atoi(ait->second.c_str()) << ", 0);" << endl;  
+        indent(out) << ", " << atoi(ait->second.c_str()) << ", 0);" << endl;
       } else {
         indent(out) << ", " << atoi(ait->second.c_str()) << ", " <<
           atoi(tmit->second.c_str()) << ");" << endl;
@@ -4584,7 +4584,7 @@ void t_cpp_generator::generate_sandesh_uve_creator(
     indent_down();
     indent(out) << "} else snh->Release();" << endl;
     indent_down();
-    indent(out) << "}" << endl << endl; 
+    indent(out) << "}" << endl << endl;
 
     if (is_proxy) {
       indent(out) << "void " << sname <<
@@ -4613,7 +4613,7 @@ void t_cpp_generator::generate_sandesh_uve_creator(
     indent(out) << "snh->set_level(Xlevel);" << endl;
     indent(out) << "snh->Dispatch();" << endl;
     indent_down();
-    indent(out) << "}" << endl; 
+    indent(out) << "}" << endl;
 
     indent_down();
     indent(out) << "}" << endl << endl;
@@ -5218,7 +5218,7 @@ void t_cpp_generator::generate_sandesh_loggers(ofstream& out,
 }
 
 /**
- * Generate trace for sandesh 
+ * Generate trace for sandesh
  *
  * @param out Stream to write to
  * @param tsandesh The sandesh
@@ -5230,7 +5230,7 @@ void t_cpp_generator::generate_sandesh_trace(ofstream& out,
             generate_sandesh_no_static_const_string_function(tsandesh, true, false, true) <<
             " {" << endl;
     indent_up();
-    out << indent() << "TraceSandeshType *trace = " << 
+    out << indent() << "TraceSandeshType *trace = " <<
             "TraceSandeshType::GetInstance();" << endl;
     out << indent() << "if (trace != NULL && trace->IsTraceOn() && trace_buf->IsTraceOn()) {" << endl;
     indent_up();
@@ -8829,4 +8829,3 @@ THRIFT_REGISTER_GENERATOR(cpp, "C++",
 "    dense:           Generate type specifications for the dense protocol.\n"
 "    include_prefix:  Use full include paths in generated files.\n"
 )
-
