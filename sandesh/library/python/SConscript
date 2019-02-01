@@ -100,7 +100,8 @@ protocol_modules = [
                     '__init__.py',
                     'TProtocol.py',
                     'TBinaryProtocol.py',
-                    'TXMLProtocol.py'
+                    'TXMLProtocol.py',
+                    'TJSONProtocol.py'
                    ]
 
 protocol_modules_rules = []
