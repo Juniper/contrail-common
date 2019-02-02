@@ -11,6 +11,7 @@
 #include <boost/bind.hpp>
 #include <boost/assign.hpp>
 
+#include <base/address_util.h>
 #include <sandesh/protocol/TXMLProtocol.h>
 #include <sandesh/sandesh_types.h>
 #include <sandesh/sandesh.h>
@@ -121,11 +122,18 @@ void SandeshServer::SessionShutdown() {
     TcpServer::Shutdown();
 }
 
-bool SandeshServer::Initialize(short port) {
+bool SandeshServer::Initialize(short port, const std::string &ip) {
     int count = 0;
 
+    boost::system::error_code ec;
+    boost::asio::ip::address ip_addr = AddressFromString(ip, &ec);
+    if (ec) {
+        SANDESH_LOG(ERROR, __func__ << ": Invalid server address: " <<
+                ip << " Error: " << ec);
+        return false;
+    }
     while (count++ < kMaxInitRetries) {
-        if (TcpServer::Initialize(port))
+        if (TcpServer::Initialize(port, ip_addr))
             break;
         sleep(1);
     }
