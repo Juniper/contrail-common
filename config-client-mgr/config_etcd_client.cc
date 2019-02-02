@@ -206,6 +206,7 @@ void ConfigEtcdClient::InitDatabase() {
     HandleEtcdConnectionStatus(false, true);
     while (true) {
         CONFIG_CLIENT_DEBUG(ConfigClientMgrDebug, "ETCD SM: Db Init");
+
         if (!eqlif_->Connect()) {
             CONFIG_CLIENT_DEBUG(ConfigEtcdInitErrorMessage,
                                 "Database initialization failed");

@@ -38,6 +38,7 @@ EtcdIf::EtcdIf(ConnectionConfig &connection_config)
         connection_config_.etcd_hosts.push_back(etcd_host);
         boost::system::error_code ec;
         boost::asio::ip::address etcd_addr;
+
         etcd_addr = AddressFromString(etcd_host, &ec);
         if (ec) {
             EQL_DEBUG(EtcdClientDebug, "Invalid IP address");
