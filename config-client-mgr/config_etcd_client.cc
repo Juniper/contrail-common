@@ -887,7 +887,9 @@ bool ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
 
             doc[key.c_str()].SetString("", a);
 
-        } else if (key.find("_refs") != string::npos && add_change) {
+        } else if (key.find("_refs") != string::npos &&
+                   key.find("back_refs") == string::npos &&
+                   add_change) {
 
             /**
               * For _refs, if attr is NULL,
@@ -994,8 +996,9 @@ bool ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
     refDoc.CopyFrom(doc, refDoc.GetAllocator());
     refDoc.Accept(writer1);
     string refString = sb1.GetString();
-    CONFIG_CLIENT_DEBUG(ConfigClientMgrDebug,
-        "ETCD SM: JSON Doc fed to CJP: " + refString);
+    string message = "ETCD SM: JSON Doc fed to CJP: ";
+    message += add_change ? "ADD/UPDATE " : "DELETE: ";
+    CONFIG_CLIENT_DEBUG(ConfigClientMgrDebug, message + refString);
 
     ConfigCass2JsonAdapter ccja(uuid, type_str, doc);
     client()->mgr()->config_json_parser()->Receive(ccja, add_change);
@@ -1140,7 +1143,6 @@ void ConfigEtcdPartition::ProcessUUIDUpdate(const string &uuid_key,
       */
     Value::ConstMemberIterator itr = updDoc.MemberBegin();
     while (itr != updDoc.MemberEnd()) {
-
         key = itr->name.GetString();
 
         /**
@@ -1187,18 +1189,62 @@ void ConfigEtcdPartition::ProcessUUIDUpdate(const string &uuid_key,
           * If cache has the field and if it has not been updated
           * remove from updDoc. Also, remove the field
           * from cacheDoc. Skip fq_name and obj_type.
-
           */
         if (!is_new && cacheDoc.HasMember(key.c_str()) &&
-            key.compare("type") != 0 &&
-            key.compare("fq_name") != 0) {
-            if (cacheDoc[key.c_str()] == updDoc[key.c_str()]) {
-                itr = updDoc.EraseMember(itr);
+                       key.compare("type") != 0 &&
+                       key.compare("fq_name") != 0) {
+            /**
+              * _refs need to be handled differently. Ref UUIDs missing
+              * in the incoming update will be removed from CacheDoc
+              * leaving only the ones that have been removed.
+              */
+            if (key.find("_refs") != string::npos &&
+                key.find("back_refs") == string::npos) {
+
+                // Get a pointer to the _refs JSON Value in updDoc
+                Value &vu = updDoc[key.c_str()];
+                assert(vu.IsArray());
+                Value::ConstValueIterator u_itr = vu.Begin();
+
+                // Get a pointer to the _refs JSON Value in cacheDoc
+                Value &vc = cacheDoc[key.c_str()];
+                assert(vc.IsArray());
+                Value::ConstValueIterator c_itr = vc.Begin();
+
+                // Walk ref in updateDoc and delete the UUIDs
+                // already seen in earlier updates, in the
+                // cacheDoc ref.
+                while (u_itr != vu.End()) {
+                    const string uuid = (*u_itr)["uuid"].GetString();
+
+                    while (c_itr != vc.End()) {
+                        const string c_uuid = (*c_itr)["uuid"].GetString();
+                        if (!c_uuid.compare(uuid)) {
+                            vc.Erase(c_itr);
+                            break;
+                        }
+                        ++c_itr;
+                    }
+                    ++u_itr;
+                }
+
+                // If ref becomes empty, remove it from cacheDoc
+                if (vc.Empty()) {
+                    cacheDoc.RemoveMember(key.c_str());
+                }
+                ++itr;
+            } else {
+                if (cacheDoc[key.c_str()] == updDoc[key.c_str()]) {
+                    itr = updDoc.EraseMember(itr);
+                } else {
+                    ++itr;
+                }
+                assert(cacheDoc.RemoveMember(key.c_str()));
             }
-            assert(cacheDoc.RemoveMember(key.c_str()));
-        } else {
-            if (itr != updDoc.MemberEnd()) itr++;
+            continue;
         }
+
+        if (itr != updDoc.MemberEnd()) ++itr;
     }
 
     /**
