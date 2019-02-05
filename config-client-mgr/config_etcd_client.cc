@@ -887,7 +887,9 @@ bool ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
 
             doc[key.c_str()].SetString("", a);
 
-        } else if (key.find("_refs") != string::npos && add_change) {
+        } else if (key.find("_refs") != string::npos &&
+                   key.find("back_refs") == string::npos &&
+                   add_change) {
 
             /**
               * For _refs, if attr is NULL,
@@ -994,8 +996,9 @@ bool ConfigEtcdPartition::GenerateAndPushJson(const string &uuid,
     refDoc.CopyFrom(doc, refDoc.GetAllocator());
     refDoc.Accept(writer1);
     string refString = sb1.GetString();
-    CONFIG_CLIENT_DEBUG(ConfigClientMgrDebug,
-        "ETCD SM: JSON Doc fed to CJP: " + refString);
+    string message = "ETCD SM: JSON Doc fed to CJP: ";
+    message += add_change ? "ADD/UPDATE " : "DELETE: ";
+    CONFIG_CLIENT_DEBUG(ConfigClientMgrDebug, message + refString);
 
     ConfigCass2JsonAdapter ccja(uuid, type_str, doc);
     client()->mgr()->config_json_parser()->Receive(ccja, add_change);
