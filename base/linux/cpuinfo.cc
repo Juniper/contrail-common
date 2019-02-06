@@ -2,16 +2,6 @@
  * Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
  */
 
-#if defined(__APPLE__)
-#include <sys/types.h>
-#include <sys/sysctl.h>
-#include <mach/mach.h>
-#include <mach/task.h>
-#elif defined(_WIN32)
-#include <thread>
-#include <posix_stdlib.h>
-#endif
-
 #include "sys/times.h"
 #include <cstdlib>
 #include <base/cpuinfo.h>
@@ -32,13 +22,6 @@ static uint32_t NumCpus() {
         return count;
     }
 
-#if defined(__APPLE__)
-    size_t len = sizeof(count);
-    sysctlbyname("hw.logicalcpu", &count, &len, NULL, 0);
-    return count;
-#elif defined(_WIN32)
-    return count = std::thread::hardware_concurrency();
-#else
     std::ifstream file("/proc/cpuinfo");
     std::string content((std::istreambuf_iterator<char>(file)),
                    std::istreambuf_iterator<char>());
@@ -49,7 +32,6 @@ static uint32_t NumCpus() {
         make_find_iterator(content, first_finder("model name", is_iequal()));
         it!=string_find_iterator(); ++it, count++);
     return count;
-#endif
 }
 
 static void LoadAvg(CpuLoad &load) {
@@ -64,23 +46,6 @@ static void LoadAvg(CpuLoad &load) {
 }
 
 static void ProcessMemInfo(ProcessMemInfo &info) {
-#if defined(__APPLE__)
-    struct task_basic_info t_info;
-    mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
-    if (KERN_SUCCESS != task_info(mach_task_self(),
-                                  TASK_BASIC_INFO,
-                                  (task_info_t)&t_info,
-                                  &t_info_count)) {
-        return;
-    }
-    info.res = t_info.resident_size;
-    info.virt = t_info.virtual_size;
-    // XXX Peak virt not availabe, just fill in virt
-    info.peakvirt = t_info.virtual_size;
-    return;
-#elif defined(_WIN32)
-    // TODO(WINDOWS) JW-1121
-#else
     std::ifstream file("/proc/self/status");
     bool vmsize = false;
     bool peak = false;
@@ -105,13 +70,9 @@ static void ProcessMemInfo(ProcessMemInfo &info) {
         if (rss && vmsize && peak)
             break;
     }
-#endif
 }
 
 static void SystemMemInfo(SystemMemInfo &info) {
-#if defined(_WIN32)
-    // TODO(WINDOWS) JW-1121
-#else
     std::ifstream file("/proc/meminfo");
     std::string tmp;
     // MemTotal:       132010576 kB
@@ -124,7 +85,6 @@ static void SystemMemInfo(SystemMemInfo &info) {
     file >> tmp; file >> info.cached;
     // Used = Total - Free
     info.used = info.total - info.free;
-#endif
 }
 
 static clock_t snapshot, prev_sys_cpu, prev_user_cpu;
