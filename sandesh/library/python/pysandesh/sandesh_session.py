@@ -10,17 +10,73 @@ import socket
 import sys
 from functools import partial
 from transport import TTransport
-from protocol import TXMLProtocol
+from protocol import TXMLProtocol, TJSONProtocol
 from work_queue import WorkQueue, WaterMark
 from ssl_session import SslSession
 from sandesh_logger import SandeshLogger
-from gen_py.sandesh.ttypes import SandeshLevel, SandeshTxDropReason
+from gen_py.sandesh.ttypes import SandeshLevel, SandeshType, SandeshTxDropReason
 
 _XML_SANDESH_OPEN = '<sandesh length="0000000000">'
 _XML_SANDESH_OPEN_ATTR_LEN = '<sandesh length="'
 _XML_SANDESH_OPEN_END = '">'
 _XML_SANDESH_CLOSE = '</sandesh>'
 
+
+class StatsClient(object):
+
+    def __init__(self, session, stats_collector):
+        self._logger = session._logger
+        if not ':' in stats_collector:
+            self._stats_server = stats_collector
+            self._socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+        else:
+            remote_endpoint = stats_collector.rsplit(':',1)
+            if len(remote_endpoint) != 2:
+                self._logger.error('INVALID STATS COLLECTOR CONFIGURATION')
+            self._stats_server = (remote_endpoint[0], int(remote_endpoint[1]))
+            self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._is_connected = False
+
+    def initiate(self):
+        try:
+            self._socket.connect(self._stats_server)
+            self._is_connected = True
+        except Exception as e:
+            self._logger.error('Error connecting to stats server: ' + str(e))
+
+    def close(self):
+        self._is_connected = False
+        self._socket.close()
+
+    def send_msg(self, sandesh):
+        transport = TTransport.TMemoryBuffer()
+        protocol_factory = TJSONProtocol.TJSONProtocolFactory()
+        protocol = protocol_factory.getProtocol(transport)
+        # write the sandesh
+        if sandesh.write(protocol) < 0:
+            self._logger.error('Write Json failed')
+            return -1
+        # get the message
+        msg = transport.getvalue()
+        if not msg:
+            self._logger.error('Write Json failed')
+            return -1
+        # send the message
+        self.send_buf(msg)
+        return 0
+
+    def send_buf(self, buf):
+        if not self._is_connected:
+            self.initiate()
+            if not self._is_connected:
+                return
+        try:
+            ret = self._socket.sendall(buf)
+        except Exception as e:
+            self._is_connected = False
+            self._logger.error('Error Sending data to external collector: ' +
+                               str(e))
+        return
 
 class SandeshReader(object):
 
@@ -283,6 +339,7 @@ class SandeshSession(SslSession):
         self._event_handler = event_handler
         self._reader = SandeshReader(self, sandesh_msg_handler)
         self._writer = SandeshWriter(self)
+        self._stats_client = None
         self._send_queue = SandeshSendQueue(self._send_sandesh,
                                             self._is_ready_to_send_sandesh)
         self._send_level = SandeshLevel.INVALID
@@ -319,6 +376,9 @@ class SandeshSession(SslSession):
         self._send_queue.set_high_watermarks(high_wm)
         self._send_queue.set_low_watermarks(low_wm)
     # end set_send_queue_watermarks
+
+    def set_stats_collector(self, stats_collector):
+        self._stats_client = StatsClient(self, stats_collector)
 
     def sandesh_instance(self):
         return self._sandesh_instance
@@ -417,6 +477,8 @@ class SandeshSession(SslSession):
                 SandeshLogger.get_py_logger_level(sandesh.level()),
                 sandesh.log())
         self._writer.send_msg(sandesh, more)
+        if self._stats_client and  sandesh.type() == SandeshType.UVE:
+            self._stats_client.send_msg(sandesh)
     # end _send_sandesh
 
     def _is_ready_to_send_sandesh(self):

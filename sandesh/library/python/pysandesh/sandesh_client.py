@@ -65,8 +65,9 @@ class SandeshClient(object):
     # Public functions
 
     def initiate(self, collectors):
+        stats_collector = self._sandesh_instance.config().stats_collector
         self._connection = SandeshConnection(self._sandesh_instance, self,
-                                             collectors)
+                                             collectors, stats_collector)
     #end initiate
 
     def session_close_interval_msec(self):
