@@ -35,7 +35,7 @@ class ZookeeperClientImpl {
     std::string Name() const;
 
  private:
-    static const int kSessionTimeoutMSec_ = 10000;
+    static const int kSessionTimeoutMSec_ = 60000;
 
     std::string hostname_;
     std::string servers_;
