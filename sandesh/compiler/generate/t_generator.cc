@@ -61,8 +61,8 @@ void t_generator::generate_program() {
   vector<t_sandesh*> sandeshs = program_->get_sandeshs();
   vector<t_sandesh*>::iterator s_iter;
   for (s_iter = sandeshs.begin(); s_iter != sandeshs.end(); ++s_iter) {
-	  sandesh_name_ = get_sandesh_name(*s_iter);
-	  generate_sandesh(*s_iter);
+    sandesh_name_ = get_sandesh_name(*s_iter);
+    generate_sandesh(*s_iter);
   }
   // Generate sandesh info
   generate_sandesh_info();
