@@ -62,7 +62,7 @@ class SandeshStateMachine(object):
             if collector_addr is None:
                 collector_addr = ''
             ConnectionState.update(conn_type = ConnectionType.COLLECTOR,
-                name = '',
+                name = 'Collector',
                 status = status,
                 server_addrs = [collector_addr],
                 message = '%s to %s on %s' % (e.src, e.dst, e.event))
@@ -157,7 +157,7 @@ class SandeshStateMachine(object):
                                        'dst'  : State._CONNECT
                                       },
 
-                                      # _DISCONNECT 
+                                      # _DISCONNECT
                                       {'name' : Event._EV_COLLECTOR_CHANGE,
                                        'src'  : State._DISCONNECT,
                                        'dst'  : State._CONNECT
@@ -246,12 +246,12 @@ class SandeshStateMachine(object):
     #end initialize
 
     def session(self):
-        return self._session 
-    #end session 
+        return self._session
+    #end session
 
     def state(self):
         return self._fsm.current
-    #end state 
+    #end state
 
     def shutdown(self):
         self._disable = True
@@ -292,7 +292,7 @@ class SandeshStateMachine(object):
     def on_session_event(self, session, event):
         if session is not self._session:
             self._logger.error("Ignore session event [%d] received for old session" % (event))
-            return 
+            return
         if SandeshSession.SESSION_ESTABLISHED == event:
             self._logger.info("Session Event: TCP Connected")
             self.enqueue_event(Event(event = Event._EV_TCP_CONNECTED,
@@ -311,12 +311,12 @@ class SandeshStateMachine(object):
 
     def on_sandesh_ctrl_msg_receive(self, session, sandesh_ctrl, collector):
         if sandesh_ctrl.success == True:
-            self.enqueue_event(Event(event = Event._EV_SANDESH_CTRL_MESSAGE_RECV, 
+            self.enqueue_event(Event(event = Event._EV_SANDESH_CTRL_MESSAGE_RECV,
                                      session = session,
                                      msg = sandesh_ctrl,
                                      source = collector))
         else:
-            # Negotiation with the Collector failed, reset the 
+            # Negotiation with the Collector failed, reset the
             # connection and retry after sometime.
             self._logger.error("Negotiation with the Collector %s failed." % (collector))
             self._session.close()
@@ -336,7 +336,7 @@ class SandeshStateMachine(object):
         self._session = SandeshSession(self._connection.sandesh_instance(),
                                        server,
                                        self.on_session_event,
-                                       self._connection._receive_sandesh_msg) 
+                                       self._connection._receive_sandesh_msg)
     #end _create_session
 
     def _delete_session(self):
@@ -344,7 +344,7 @@ class SandeshStateMachine(object):
             self._session.close()
             self._session = None
             self._collector_name = None
-    #end _delete_session 
+    #end _delete_session
 
     def _get_next_collector(self):
         if self._collector_index is -1:
@@ -381,7 +381,7 @@ class SandeshStateMachine(object):
     def _start_connect_timer(self):
         if self._connect_timer is None:
             self._connect_timer = gevent.spawn_later(self._CONNECT_TIME,
-                                        self._connect_timer_expiry_handler, 
+                                        self._connect_timer_expiry_handler,
                                         self._session)
     #end _start_connect_timer
 
