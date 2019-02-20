@@ -76,7 +76,7 @@ struct ContextPush {
     C * operator()(ParseContext *context, P *obj) {
         C *child_obj = new C;
         context->Push(child_obj);
-	return child_obj;
+        return child_obj;
     }
 };
 template <typename P>
@@ -105,9 +105,9 @@ template<typename T, typename ChildContextType>
 struct StoreContext {
     template <typename C>
     void operator()(C *obj, ParseObject *context_obj) {
-    	ChildContextType *child_obj =
-    			dynamic_cast<ChildContextType *>(context_obj);
-    	assert(child_obj);
+        ChildContextType *child_obj =
+            dynamic_cast<ChildContextType *>(context_obj);
+        assert(child_obj);
         T::insert(obj, child_obj);
     }
 };
@@ -122,8 +122,7 @@ struct StoreContext<void, ChildContextType> {
 template <typename Parent, typename T, typename ChildContextType>
 struct ContextPop {
     void operator()(ParseContext *context, T *obj) {
-        StoreContext<typename Parent::ContextStorer,
-        			ChildContextType> storer;
+        StoreContext<typename Parent::ContextStorer, ChildContextType> storer;
         storer(obj, context->Pop());
     }
 };
@@ -181,31 +180,31 @@ struct DescendentParser {
     template <typename T>
     static int Parse(const uint8_t *data, size_t size, ParseContext *context,
                      T *obj) {
-    	// If the child defines ContextType, this changes the type of the
-    	// top of stack element and causes us to push a new context into the
-    	// stack.
-    	// Context push and pop is only relevant if the child doesn't
-    	// define a context swap. If it does, the swap operation will
-    	// replace the existing stack frame data object.
+        // If the child defines ContextType, this changes the type of the
+        // top of stack element and causes us to push a new context into the
+        // stack.
+        // Context push and pop is only relevant if the child doesn't
+        // define a context swap. If it does, the swap operation will
+        // replace the existing stack frame data object.
         typedef typename Child::ContextType opt_ctx_t;
 
         typedef typename boost::mpl::if_<
-        		boost::is_same<opt_ctx_t, void>,
-        		T, opt_ctx_t>::type ctx_t;
+                boost::is_same<opt_ctx_t, void>,
+                T, opt_ctx_t>::type ctx_t;
 
         typedef typename boost::mpl::if_<
-    			boost::is_same<typename Child::ContextSwap, void>,
-    			DescendentContextPush<Child, T, typename Child::ContextType>,
-    			DescendentContextSwap<Child> >::type context_op_t;
+                boost::is_same<typename Child::ContextSwap, void>,
+                DescendentContextPush<Child, T, typename Child::ContextType>,
+                DescendentContextSwap<Child> >::type context_op_t;
 
         ctx_t *child_obj = context_op_t()(context, obj);
 
         int result = Child::Parse(data, size, context, child_obj);
         if (result < 0) return result;
         typedef typename boost::mpl::if_<
-    			boost::is_same<typename Child::ContextSwap, void>,
-    			opt_ctx_t,
-    			void>::type push_ctx_t;
+                boost::is_same<typename Child::ContextSwap, void>,
+                opt_ctx_t,
+                void>::type push_ctx_t;
         typedef typename boost::mpl::if_<
                         boost::is_same<push_ctx_t, void>,
                         void, T>::type pctx_t;
@@ -334,7 +333,7 @@ struct NopComparer {
     }
 };
 
-template <typename Setter, typename T>    
+template <typename Setter, typename T>
 struct VarLengthSizeValue {
     static int get(const T *msg) {
         return Setter::size(msg);
@@ -380,7 +379,7 @@ struct ContextIterator {
     template <typename Obj>
     ContextIterator(const Obj *obj)
     : iter(accessor.begin(obj)) {
-        
+
     }
 
     ValueType * Next() {
@@ -417,7 +416,7 @@ template <>
 struct SaveOffset<void> {
     void operator()(EncodeContext *ctx) { }
 };
-    
+
 }  // detail
 
 

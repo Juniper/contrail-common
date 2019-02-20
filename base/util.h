@@ -13,8 +13,8 @@
 #include <boost/function.hpp>
 
 #define DISALLOW_COPY_AND_ASSIGN(_Class) \
-	_Class(const _Class &);				\
-	_Class& operator=(const _Class &)
+    _Class(const _Class &);              \
+    _Class& operator=(const _Class &)
 
 
 #ifdef NDEBUG
