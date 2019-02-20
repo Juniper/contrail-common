@@ -133,7 +133,7 @@ public:
 
     static void set_disable(bool disable) { disable_ = disable; }
 
-    std::string FormAmqpUri() const;
+    std::string FormAmqpUri(bool hide_auth_info) const;
     void EnqueueUUIDRequest(std::string oper, std::string obj_type,
                        std::string uuid_str);
     bool ProcessMessage(const std::string &json_message);
