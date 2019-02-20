@@ -127,10 +127,11 @@ void ConfigAmqpClient::EnqueueUUIDRequest(string oper, string obj_type,
     }
 }
 
-string ConfigAmqpClient::FormAmqpUri() const {
-    string uri = string("amqp://" + rabbitmq_user() + ":" +
-                        rabbitmq_password() + "@" + rabbitmq_ip() + ":" +
-                        rabbitmq_port());
+string ConfigAmqpClient::FormAmqpUri(bool hide_auth_info) const {
+    const string user = hide_auth_info ? "********" : rabbitmq_user();
+    const string password = hide_auth_info ? "********" : rabbitmq_password();
+    string uri = string("amqp://" + user + ":" +
+                        password + "@" + rabbitmq_ip() + ":" + rabbitmq_port());
     if (!rabbitmq_vhost().empty()) {
         if (rabbitmq_vhost().compare("/") != 0) {
             uri += "/" + rabbitmq_vhost();
@@ -172,7 +173,7 @@ void ConfigAmqpClient::RabbitMQReader::ConnectToRabbitMQ(bool queue_delete) {
                                 "RabbitMQ SM: Skipped connect due to reinit");
             return;
         }
-        string uri = amqpclient_->FormAmqpUri();
+        string uri = amqpclient_->FormAmqpUri(false);
         try {
             if (amqpclient_->rabbitmq_use_ssl()) {
                 int port = boost::lexical_cast<int>(
@@ -250,7 +251,7 @@ void ConfigAmqpClient::GetConnectionInfo(ConfigAmqpConnInfo &conn_info) const {
     conn_info.connection_status = connection_status_;
     conn_info.connection_status_change_at =
         UTCUsecToString(connection_status_change_at_);
-    conn_info.url = FormAmqpUri();
+    conn_info.url = FormAmqpUri(true);
 }
 
 bool ConfigAmqpClient::ProcessMessage(const string &json_message) {
