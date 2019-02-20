@@ -167,7 +167,9 @@ private:
             bool add_change,
             UUIDCacheEntry *cache);
     void RemoveObjReqEntry(string &uuid);
-
+    void FixRefsInUpdate(Document &updDoc,
+                         Document &cacheDoc,
+                         const string &key);
     UUIDProcessWorkQType obj_process_queue_;
     UUIDProcessSet uuid_process_set_;
     UUIDCacheMap uuid_cache_map_;
