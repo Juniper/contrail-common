@@ -36,16 +36,19 @@ class UtilTest : public ::testing::Test {
 
 TEST_F(UtilTest, UTCCorrectness) {
     uint64_t utc_clock_gettime[5], utc_gettimeofday[5], utc_boost[5];
+    const uint64_t max_usec_diff = 1000;
     for (int i = 0; i < 5; i++) {
-        utc_clock_gettime[i] = UTCTimestampUsec(); 
+        utc_clock_gettime[i] = UTCTimestampUsec();
         utc_gettimeofday[i] = UTCgettimeofday();
         utc_boost[i] = UTCboost();
     }
     for (int i = 0; i < 5; i++) {
-        EXPECT_TRUE( (utc_clock_gettime[i]-utc_gettimeofday[i]) < 1000 ||
-                    (utc_gettimeofday[i]-utc_clock_gettime[i]) < 1000);
-        EXPECT_TRUE( (utc_gettimeofday[i]-utc_boost[i]) < 1000 ||
-                    (utc_boost[i]-utc_gettimeofday[i]) < 1000);
+        uint64_t min = std::min(utc_clock_gettime[i]-utc_gettimeofday[i],
+                                utc_gettimeofday[i]-utc_clock_gettime[i]);
+        EXPECT_LT(min, max_usec_diff);
+        min = std::min(utc_gettimeofday[i]-utc_boost[i],
+                       utc_boost[i]-utc_gettimeofday[i]);
+        EXPECT_LT(min, max_usec_diff);
     }
 }
 

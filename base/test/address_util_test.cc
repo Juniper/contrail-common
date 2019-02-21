@@ -11,6 +11,28 @@
 #include <stdexcept>
 #include <stdio.h>
 #include <string>
+#include <boost/algorithm/string.hpp>
+
+#ifdef WIN32
+
+#define popen windows_popen_wrapper
+#define pclose _pclose
+
+/* From boost's builtins.c*/
+static FILE *
+windows_popen_wrapper(const char *command,
+                      const char *mode) {
+    bool isQuoteNeeded = command[0] == '"';
+    std::string quoted_command;
+    if (isQuoteNeeded) {
+        quoted_command.push_back('"');
+        quoted_command.append(command);
+        quoted_command.push_back('"');
+    }
+
+    return _popen(isQuoteNeeded ? quoted_command.c_str() : command, mode);
+}
+#endif // WIN32
 
 using namespace std;
 
@@ -52,10 +74,16 @@ TEST_F(AddressUtilsTest, AddressToStringTest) {
     EXPECT_EQ(0, address.to_string().compare("127.0.0.1"));
 }
 
+
 TEST_F(AddressUtilsTest, ResolveCanonicalNameTest) {
-    string hostname = exec("hostname -f");
+#ifdef WIN32
+    const char *cmd = "echo %COMPUTERNAME%.%USERDNSDOMAIN%";
+#else
+    const char *cmd = "hostname -f";
+#endif
+    string hostname = exec(cmd);
     string hostname_2 = ResolveCanonicalName();
-    EXPECT_EQ(hostname, hostname_2);
+    EXPECT_EQ(boost::algorithm::to_lower_copy(hostname), hostname_2);
 }
 
 TEST_F(AddressUtilsTest, IPv6SubnetTest) {
