@@ -1842,7 +1842,6 @@ TEST_F(BitSetTest, Contains6b) {
     }
 }
 
-
 // Verify results for empty bitset.
 TEST_F(BitSetTest, String1) {
     BitSet bitset, expected;
