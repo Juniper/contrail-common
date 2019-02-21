@@ -80,7 +80,7 @@ public:
         ValueType *value = values_[index];
         values_[index] = NULL;
         delete value;
-        for (ssize_t i = values_.size() - 1; i >= 0; i--) {
+        for (int64_t i = values_.size() - 1; i >= 0; i--) {
             if (values_[i] != NULL) {
                 break;
             }
