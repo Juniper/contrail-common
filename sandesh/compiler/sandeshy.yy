@@ -785,7 +785,7 @@ Struct:
         delete $7;
       }
     }
-    
+
 XsdAll:
   tok_xsd_all
     {
@@ -844,7 +844,7 @@ Sandesh:
 
       if (($1 != g_type_sandesh_request) &&
           ($1 != g_type_sandesh_response) &&
-	  ($1 != g_type_sandesh_object)) {
+          ($1 != g_type_sandesh_object)) {
           if ($5->exist_opt_field()) {
               yyerror("optional field not supported in sandesh");
               exit(1);
@@ -867,7 +867,7 @@ Sandesh:
         delete $7;
       }
     }
-    
+
 SandeshType:
   tok_system
     {
@@ -978,7 +978,7 @@ FunctionList:
       pdebug("FunctionList -> ");
       $$ = new t_service(g_program);
     }
-    
+
 Function:
   CaptureDocText Oneway AbcFunction StaticFunction FunctionType tok_identifier '(' FieldList ')' Throws CommaOrSemicolonOptional
     {
@@ -1068,7 +1068,7 @@ SFieldList:
       y_field_val = -1;
       $$ = new t_sandesh(g_program);
     }
-    
+
 Field:
   CaptureDocText FieldIdentifier FieldRequiredness FieldType tok_identifier FieldValue XsdOptional XsdNillable XsdAttributes TypeAnnotations CommaOrSemicolonOptional
     {
@@ -1101,7 +1101,7 @@ Field:
       }
     }
 |
- CaptureDocText FieldIdentifier tok_literal CommaOrSemicolonOptional 
+ CaptureDocText FieldIdentifier tok_literal CommaOrSemicolonOptional
     {
       pdebug("Field -> static string");
       if ($2.auto_assigned) {
@@ -1324,7 +1324,7 @@ tok_string
     {
       pdebug("BaseType -> tok_xml");
       $$ = g_type_xml;
-    }    
+    }
 | tok_uuid_t
     {
       pdebug("BaseType -> tok_uuid_t");

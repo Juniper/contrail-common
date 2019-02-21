@@ -21,13 +21,13 @@
  */
 
 /**
- * sandesh - a lightweight cross-language message generator 
+ * sandesh - a lightweight cross-language message generator
  * based on thrift
  *
- * This file contains the main compiler engine for sandesh, 
- * which invokes the scanner/parser to build the thrift object tree. 
- * The interface generation code for each language lives in a file 
- * by the language name under the generate/ folder, and all parse 
+ * This file contains the main compiler engine for sandesh,
+ * which invokes the scanner/parser to build the thrift object tree.
+ * The interface generation code for each language lives in a file
+ * by the language name under the generate/ folder, and all parse
  * structures live in parse/
  *
  */
@@ -639,7 +639,7 @@ void dump_docstrings(t_program* program) {
     for (f_iter = fields.begin(); f_iter != fields.end(); ++f_iter) {
        t_field* fp  = *f_iter;
        if (fp->has_doc()) {
-         printf("fields %s:\n%s\n", 
+         printf("fields %s:\n%s\n",
                  fp->get_name().c_str(), fp->get_doc().c_str());
        }
     }
@@ -889,8 +889,8 @@ void validate_const_rec(std::string name, t_type* type, t_const_value* value) {
       }
     }
     if (!found) {
-      throw "type error: const " + name + " was declared as type " 
-        + type->get_name() + " which is an enum, but " 
+      throw "type error: const " + name + " was declared as type "
+        + type->get_name() + " which is an enum, but "
         + value->get_identifier() + " is not a valid value for that enum";
     }
   } else if (type->is_struct() || type->is_xception()) {
@@ -1213,8 +1213,8 @@ int main(int argc, char** argv) {
         g_incl_searchpath.push_back(arg);
       } else if ((strcmp(arg, "-o") == 0) || (strcmp(arg, "-out") == 0)) {
         out_path_is_absolute = (strcmp(arg, "-out") == 0) ? true : false;
-		  
-		arg = argv[++i];
+
+        arg = argv[++i];
         if (arg == NULL) {
           fprintf(stderr, "-o: missing output directory\n");
           usage();
