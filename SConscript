@@ -71,12 +71,8 @@ BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/zookeeper',
     '#src/contrail-common/zookeeper/zookeeper_client.h')
 BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/base',
     '#src/contrail-common/base/address.h')
-BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/base',
-    '#src/contrail-common/base/address_util.h')
 BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/net',
     '#src/contrail-common/base/address.h')
-BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/net',
-    '#src/contrail-common/base/address_util.h')
 
 BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/database',
     '#src/contrail-common/database/gendb_if.h')
