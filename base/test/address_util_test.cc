@@ -2,8 +2,7 @@
  * Copyright (c) 2018 Juniper Networks, Inc. All rights reserved.
  */
 
-#include "net/address.h"
-
+#include "base/address.h"
 #include "base/address_util.h"
 #include "base/logging.h"
 #include "testing/gunit.h"

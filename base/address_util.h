@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "net/address.h"
+#include <base/address.h>
 
 namespace boost {
 namespace asio {
