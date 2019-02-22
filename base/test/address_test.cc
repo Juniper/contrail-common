@@ -2,7 +2,7 @@
  * Copyright (c) 2015 Juniper Networks, Inc. All rights reserved.
  */
 
-#include "net/address.h"
+#include "base/address.h"
 
 #include "base/logging.h"
 #include "testing/gunit.h"

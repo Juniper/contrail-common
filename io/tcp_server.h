@@ -16,9 +16,9 @@
 #include <boost/scoped_ptr.hpp>
 
 #include "base/util.h"
+#include "base/address.h"
 #include "io/server_manager.h"
 #include "io/io_utils.h"
-#include "net/address.h"
 
 class EventManager;
 class TcpSession;
