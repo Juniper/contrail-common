@@ -7,6 +7,7 @@
 #include <boost/assign.hpp>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
+#include <tbb/mutex.h>
 
 #include "base/task.h"
 #include "base/logging.h"
@@ -26,6 +27,7 @@ class ExampleType {
 
     void Consume() {
         CHECK_CONCURRENCY("test::consumer");
+        tbb::mutex::scoped_lock lock(mutex_);
         count_--;
     }
 
@@ -33,6 +35,7 @@ class ExampleType {
 
   private:
     int count_;
+    tbb::mutex mutex_;
 };
 
 class Executer : public Task {
@@ -89,6 +92,7 @@ class TestEnvironment : public ::testing::Environment {
   public:
     virtual ~TestEnvironment() { }
     virtual void SetUp() {
+        ConcurrencyChecker::enable_ = true;
         TaskScheduler *scheduler = TaskScheduler::GetInstance();
         TaskPolicy po_exclusive =
                 list_of(TaskExclusion(scheduler->GetTaskId("test::producer")))
