@@ -14,19 +14,20 @@ using boost::asio::io_service;
 
 SandeshTraceBufferPtr IOTraceBuf(SandeshTraceBufferCreate(IO_TRACE_BUF, 1000));
 
-EventManager::EventManager() {
-    shutdown_ = false;
+EventManager::EventManager() : shutdown_(false), running_(false) {
 }
 
 void EventManager::Shutdown() {
     shutdown_ = true;
     io_service_.stop();
+    running_ = false;
 }
 
 void EventManager::Run() {
     using apache::thrift::TException;
 
     assert(mutex_.try_lock());
+    running_ = true;
     io_service::work work(io_service_);
     do {
         if (shutdown_) break;
@@ -60,6 +61,7 @@ void EventManager::Run() {
 size_t EventManager::RunOnce() {
     assert(mutex_.try_lock());
     if (shutdown_) return 0;
+    running_ = true;
     boost::system::error_code err;
     size_t res = io_service_.run_one(err);
     if (res == 0)
@@ -71,10 +73,15 @@ size_t EventManager::RunOnce() {
 size_t EventManager::Poll() {
     assert(mutex_.try_lock());
     if (shutdown_) return 0;
+    running_ = true;
     boost::system::error_code err;
     size_t res = io_service_.poll(err);
     if (res == 0)
         io_service_.reset();
     mutex_.unlock();
     return res;
+}
+
+bool EventManager::IsRunning() const {
+    return running_;
 }

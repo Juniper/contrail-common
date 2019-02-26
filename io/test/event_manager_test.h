@@ -38,6 +38,9 @@ public:
     void Join() {
         thread_->join();
      }
+     bool IsRunning() const {
+         return running_;
+     }
 private:
     boost::scoped_ptr<boost::thread> thread_;
     tbb::atomic<bool> running_;
