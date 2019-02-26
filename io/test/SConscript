@@ -5,7 +5,7 @@
 # -*- mode: python; -*-
 
 Import('BuildEnv')
-import sys
+import platform
 
 env = BuildEnv.Clone()
 env.CppDisableExceptions()
@@ -21,8 +21,11 @@ env.Prepend(LIBS = ['gunit', 'task_test', 'io', 'sandesh', 'http',
                     'http_parser', 'curl',
                     'boost_program_options', 'pugixml', 'ssl', 'crypto'])
 
-if sys.platform != 'darwin':
+if platform.system() not in ['Windows', 'Darwin']:
     env.Append(LIBS = ['rt'])
+
+if platform.system() == 'Windows':
+    env.Append(LIBS = ['advapi32', 'gdi32', 'user32'])
 
 event_manager_test = env.UnitTest('event_manager_test',
                                   ['event_manager_test.cc'],
@@ -83,9 +86,11 @@ test_suite = [
     tcp_server_test,
     tcp_stress_test,
     udp_io_test,
-    usock_io_test,
-    process_signal_test,
 ]
+
+if platform.system() != "Windows":
+    test_suite += [process_signal_test,
+                   usock_io_test,]
 
 flaky_test_suite = [
 ]
