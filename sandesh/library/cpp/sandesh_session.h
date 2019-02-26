@@ -253,7 +253,7 @@ private:
 
     // Session statistics
     SandeshSessionStats sstats_;
- 
+
     DISALLOW_COPY_AND_ASSIGN(SandeshSession);
 };
 

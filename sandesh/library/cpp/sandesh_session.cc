@@ -149,8 +149,8 @@ void SandeshWriter::SendMsg(Sandesh *sandesh, bool more) {
 
     if (send_buf()) {
         if (more) {
-            // There are more messages in the send_queue_. 
-            // Try to package as many sandesh messages as possible 
+            // There are more messages in the send_queue_.
+            // Try to package as many sandesh messages as possible
             // (== kEncodeBufferSize) before transporting to the
             // receiver.
             SendMsgMore(btrans);
@@ -165,9 +165,9 @@ void SandeshWriter::SendMsg(Sandesh *sandesh, bool more) {
     sandesh->Release();
 }
 
-// Package as many sandesh messages as possible [not more than 
-// kEncodeBufferSize] before transporting it to the receiver. 
-// 
+// Package as many sandesh messages as possible [not more than
+// kEncodeBufferSize] before transporting it to the receiver.
+//
 // send_buf_ => unsent data (partial/complete message).
 // buf => new message
 // buf_len => buf's len
@@ -210,16 +210,16 @@ void SandeshWriter::SendMsgMore(boost::shared_ptr<TMemoryBuffer>
         } else {
             // We have room to accommodate more data.
             // Save this message.
-            // Note: The memcpy here can be avoided by passing send_buf_ 
-            // to TMemoryBuffer so that the message is encoded in 
-            // send_buf_ itself. 
+            // Note: The memcpy here can be avoided by passing send_buf_
+            // to TMemoryBuffer so that the message is encoded in
+            // send_buf_ itself.
             set_send_buf(buf, buf_len);
         }
     }
 }
 
-// sandesh->send_queue_ is empty. 
-// Flush unsent data (if any) and this message. 
+// sandesh->send_queue_ is empty.
+// Flush unsent data (if any) and this message.
 void SandeshWriter::SendMsgAll(boost::shared_ptr<TMemoryBuffer> send_buffer) {
     uint8_t *buf;
     uint32_t buf_len;
@@ -232,7 +232,7 @@ void SandeshWriter::SendMsgAll(boost::shared_ptr<TMemoryBuffer> send_buffer) {
         if (bulk_msg_len <= kDefaultSendSize) {
             uint8_t *buffer;
             // We have enough room to send all the pending data in one message.
-            boost::shared_ptr<TMemoryBuffer> bulk_msg(new 
+            boost::shared_ptr<TMemoryBuffer> bulk_msg(new
                     TMemoryBuffer(bulk_msg_len));
             buffer = bulk_msg->getWritePtr(bulk_msg_len);
             memcpy(buffer, send_buf(), send_buf_offset());
@@ -245,7 +245,7 @@ void SandeshWriter::SendMsgAll(boost::shared_ptr<TMemoryBuffer> send_buffer) {
         } else {
             uint8_t *buffer;
             // We don't have enough space to accommodate all the
-            // pending data in one message. 
+            // pending data in one message.
             boost::shared_ptr<TMemoryBuffer> old_buf(new
                     TMemoryBuffer(send_buf_offset()));
             buffer = old_buf->getWritePtr(send_buf_offset());
@@ -253,7 +253,7 @@ void SandeshWriter::SendMsgAll(boost::shared_ptr<TMemoryBuffer> send_buffer) {
                    send_buf_offset());
             old_buf->wroteBytes(send_buf_offset());
             // Take care of the unsent data in send_buf_ first.
-            // Note that we could have accomodated part of buf [last message] 
+            // Note that we could have accomodated part of buf [last message]
             // here. But, not doing so to avoid additional memcpy() :)
             SendInternal(old_buf);
             // Cleanup send_buf_
@@ -282,12 +282,14 @@ SandeshSession::SandeshSession(SslServer *client, SslSocket *socket,
         int task_instance, int writer_task_id, int reader_task_id) :
     SslSession(client, socket),
     instance_(task_instance),
-    writer_(new SandeshWriter(this)), 
+    writer_(new SandeshWriter(this)),
     reader_(new SandeshReader(this)),
     send_queue_(new Sandesh::SandeshQueue(writer_task_id,
             task_instance,
             boost::bind(&SandeshSession::SendMsg, this, _1),
             kQueueSize)),
+    stats_client_(NULL),
+    connection_(NULL),
     keepalive_idle_time_(kSessionKeepaliveIdleTime),
     keepalive_interval_(kSessionKeepaliveInterval),
     keepalive_probes_(kSessionKeepaliveProbes),
@@ -542,8 +544,8 @@ bool SandeshReader::ExtractMsgLength(size_t &msg_length, int *result) {
 
     stringToInteger(length.c_str(), msg_length);
     if (msg_length == 0) {
-	*result = -3;
-	return false;
+        *result = -3;
+        return false;
     }
     return true;
 }
