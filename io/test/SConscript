@@ -21,8 +21,11 @@ env.Prepend(LIBS = ['gunit', 'task_test', 'io', 'sandesh', 'http',
                     'http_parser', 'curl',
                     'boost_program_options', 'pugixml', 'ssl', 'crypto'])
 
-if sys.platform != 'darwin':
+if platform.system() not in ['Windows', 'Darwin']:
     env.Append(LIBS = ['rt'])
+
+if platform.system() == "Windows":
+    env.Append(LIBS = ['advapi32', 'gdi32', 'user32'])
 
 event_manager_test = env.UnitTest('event_manager_test',
                                   ['event_manager_test.cc'],
