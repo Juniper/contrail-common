@@ -10,6 +10,7 @@
 
 #include "testing/gunit.h"
 
+#include <vector>
 #include <boost/bind.hpp>
 
 #include <io/event_manager.h>
@@ -34,7 +35,7 @@ enum SendAction {
     SEND = 3,
 };
 
-SendAction send_action = SEND; 
+SendAction send_action = SEND;
 
 class SandeshSessionTest : public SandeshSession {
 public:
@@ -91,7 +92,7 @@ public:
         *buf = boost::asio::buffer_cast<uint8_t *>(send_buf_list_[index]);
         *len = buffer_size(send_buf_list_[index]);
     }
-    
+
 protected:
     virtual void OnRead(Buffer buffer) {
         reader_->OnRead(buffer);
@@ -136,7 +137,7 @@ private:
 class SandeshTest : public Sandesh {
     virtual void Release() {}
     virtual int32_t Read(
-        boost::shared_ptr<contrail::sandesh::protocol::TProtocol> iprot) { 
+        boost::shared_ptr<contrail::sandesh::protocol::TProtocol> iprot) {
         return 0;
     }
     virtual int32_t Write(
@@ -231,11 +232,11 @@ static void CreateFakeMessage(uint8_t *data, size_t length, int error = 0) {
     char prev = ss.fill('0');
     ss.width(10);
     if (error == 1) {
-	ss << (length/2);
+        ss << (length / 2);
     } else if (error == 2) {
-	ss << ("\xff\xff\xff\xff");
+        ss << ("\xff\xff\xff\xff");
     } else {
-	ss << (length);
+        ss << (length);
     }
     ss.fill(prev);
     memcpy(data + offset, FakeMessageBegin.c_str(), FakeMessageBegin.size());
@@ -359,8 +360,8 @@ TEST_F(SandeshSendMsgUnitTest, SendMsgMore) {
     }
 
     int send_cnt = exp_at_each_it[ARRAYLEN(msg_info) - 1].send_cnt;
-    SendMsgExpectedAtEnd exp_at_end[send_cnt];
-    
+    vector<SendMsgExpectedAtEnd> exp_at_end(send_cnt);
+
     // Fill send_buf and send_buf_len expected @ the end of the test
     exp_at_end[0].send_buf = new uint8_t[max_size];
     memcpy(exp_at_end[0].send_buf, msg_info[0].buf, msg_info[0].msg_size);
@@ -368,9 +369,9 @@ TEST_F(SandeshSendMsgUnitTest, SendMsgMore) {
 
     exp_at_end[1].send_buf = new uint8_t[3*(max_size/4)];
     // copy msg_info[1].buf => max_size/2 bytes
-    memcpy(exp_at_end[1].send_buf, msg_info[1].buf, msg_info[1].msg_size); 
+    memcpy(exp_at_end[1].send_buf, msg_info[1].buf, msg_info[1].msg_size);
     // copy msg_info[2].buf => max_size/4 bytes
-    memcpy(exp_at_end[1].send_buf + msg_info[1].msg_size, msg_info[2].buf, 
+    memcpy(exp_at_end[1].send_buf + msg_info[1].msg_size, msg_info[2].buf,
            msg_info[2].msg_size);
     exp_at_end[1].send_buf_len = 3*(max_size/4);
 
@@ -409,7 +410,7 @@ TEST_F(SandeshSendMsgUnitTest, SendMsgMore) {
 
 TEST_F(SandeshSendMsgUnitTest, SendMsgAll) {
     uint32_t max_size = SandeshWriter::kDefaultSendSize;
-    
+
     SendMsgInfo msg_info[] = { {max_size, NULL, true},
                                {max_size/2, NULL, false}, // store this msg in send_buf_
                                {max_size/2, NULL, true},  // send send_buf_ + this msg (max_size)
@@ -418,7 +419,7 @@ TEST_F(SandeshSendMsgUnitTest, SendMsgAll) {
                                {max_size/2, NULL, false}, // store this msg in send_buf_
                                {3*(max_size/4), NULL, true}   // send msg in send_buf_ followed by this msg
     };
-   
+
     SendMsgExpectedAtEachIt exp_at_each_it[] = { {1, 0},
                                                  {1, max_size/2},
                                                  {2, 0},
@@ -429,16 +430,16 @@ TEST_F(SandeshSendMsgUnitTest, SendMsgAll) {
     };
 
     EXPECT_EQ(ARRAYLEN(msg_info), ARRAYLEN(exp_at_each_it));
-    
+
     // Create Fake sandesh message
     for (size_t i = 0; i < ARRAYLEN(msg_info); i++) {
         ASSERT_LE(msg_info[i].msg_size, max_size);
         msg_info[i].buf = new uint8_t[msg_info[i].msg_size];
         CreateFakeMessage(msg_info[i].buf, msg_info[i].msg_size);
     }
-    
+
     int send_cnt = exp_at_each_it[ARRAYLEN(msg_info) - 1].send_cnt;
-    SendMsgExpectedAtEnd exp_at_end[send_cnt];
+    vector<SendMsgExpectedAtEnd> exp_at_end(send_cnt);
 
     exp_at_end[0].send_buf= new uint8_t[max_size];
     memcpy(exp_at_end[0].send_buf, msg_info[0].buf, msg_info[0].msg_size);
@@ -448,7 +449,7 @@ TEST_F(SandeshSendMsgUnitTest, SendMsgAll) {
     // copy msg_info[1].buf => max_size/2 bytes
     memcpy(exp_at_end[1].send_buf, msg_info[1].buf, msg_info[1].msg_size);
     // copy msg_info[2].buf => max_size/2 bytes
-    memcpy(exp_at_end[1].send_buf + msg_info[1].msg_size, 
+    memcpy(exp_at_end[1].send_buf + msg_info[1].msg_size,
            msg_info[2].buf, msg_info[2].msg_size);
     exp_at_end[1].send_buf_len = max_size;
 
@@ -456,7 +457,7 @@ TEST_F(SandeshSendMsgUnitTest, SendMsgAll) {
     // copy msg_info[3].buf => max_size/4 bytes
     memcpy(exp_at_end[2].send_buf, msg_info[3].buf, msg_info[3].msg_size);
     // copy msg_info[4].buf => max_size/4 bytes
-    memcpy(exp_at_end[2].send_buf + msg_info[3].msg_size, 
+    memcpy(exp_at_end[2].send_buf + msg_info[3].msg_size,
            msg_info[4].buf, msg_info[4].msg_size);
     exp_at_end[2].send_buf_len = max_size/2;
 
@@ -468,7 +469,7 @@ TEST_F(SandeshSendMsgUnitTest, SendMsgAll) {
     exp_at_end[4].send_buf = new uint8_t[max_size];
     memcpy(exp_at_end[4].send_buf, msg_info[6].buf, msg_info[6].msg_size);
     exp_at_end[4].send_buf_len = 3*(max_size/4);
-    
+
     for (size_t i = 0; i < ARRAYLEN(msg_info); i++) {
         if (true == msg_info[i].action) {
             session_->SendMessage(msg_info[i].buf,
@@ -493,7 +494,7 @@ TEST_F(SandeshSendMsgUnitTest, SendMsgAll) {
 }
 
 TEST_F(SandeshSendMsgUnitTest, AsyncSend) {
-    SendMsgInfo msg_info[] = { {1234}, 
+    SendMsgInfo msg_info[] = { {1234},
                                {3456},
                                {90},
                                {3456}
@@ -512,39 +513,39 @@ TEST_F(SandeshSendMsgUnitTest, AsyncSend) {
                          msg_info[cnt].msg_size, false);
     EXPECT_EQ(1, session_->send_count());
     EXPECT_EQ(0, send_buf_offset());
-    EXPECT_EQ(0, session_->writer()->SendReady());
+    EXPECT_EQ(false, session_->writer()->SendReady());
 
     cnt++; // 1
     session_->SendMessage(msg_info[cnt].buf,
                          msg_info[cnt].msg_size, false);
     EXPECT_EQ(2, session_->send_count());
     EXPECT_EQ(0, send_buf_offset());
-    EXPECT_EQ(0, session_->writer()->SendReady());
+    EXPECT_EQ(false, session_->writer()->SendReady());
 
     send_action = PARTIAL_SEND;
     session_->WriteReady(ec);
     EXPECT_EQ(2, session_->send_count());
-    EXPECT_EQ(1, session_->writer()->SendReady());
+    EXPECT_EQ(false, session_->writer()->SendReady());
 
     cnt++; // 2
     session_->SendMessage(msg_info[cnt].buf,
                          msg_info[cnt].msg_size, false);
     EXPECT_EQ(3, session_->send_count());
     EXPECT_EQ(0, send_buf_offset());
-    EXPECT_EQ(0, session_->writer()->SendReady());
+    EXPECT_EQ(false, session_->writer()->SendReady());
 
     cnt++; // 3
     session_->SendMessage(msg_info[cnt].buf,
                          msg_info[cnt].msg_size, false);
     EXPECT_EQ(4, session_->send_count());
     EXPECT_EQ(0, send_buf_offset());
-    EXPECT_EQ(0, session_->writer()->SendReady());
+    EXPECT_EQ(false, session_->writer()->SendReady());
 
     send_action = SEND;
     session_->WriteReady(ec);
     EXPECT_EQ(4, session_->send_count());
     EXPECT_EQ(0, send_buf_offset());
-    EXPECT_EQ(1, session_->writer()->SendReady());
+    EXPECT_EQ(true, session_->writer()->SendReady());
 
     for (int i = 0; i < session_->send_count(); i++) {
         uint8_t *send_buf = NULL;
