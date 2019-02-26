@@ -7,6 +7,7 @@
 #include <boost/assign.hpp>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
+#include <tbb/mutex.h>
 
 #include "base/task.h"
 #include "base/logging.h"
@@ -26,6 +27,7 @@ class ExampleType {
 
     void Consume() {
         CHECK_CONCURRENCY("test::consumer");
+        tbb::mutex::scoped_lock lock(mutex_);
         count_--;
     }
 
@@ -33,6 +35,7 @@ class ExampleType {
 
   private:
     int count_;
+    tbb::mutex mutex_;
 };
 
 class Executer : public Task {
@@ -78,11 +81,13 @@ TEST_F(TaskAnnotationsTest, Correct) {
 typedef TaskAnnotationsTest TaskAnnotationsDeathTest;
 
 TEST_F(TaskAnnotationsDeathTest, Failure) {
-    ASSERT_DEATH({
-    Produce("test::consumer");
-    task_util::WaitForIdle();
-    EXPECT_EQ(1, var_.count());
-        }, "");
+    if (ConcurrencyChecker::enable_) {
+        ASSERT_DEATH({
+        Produce("test::consumer");
+        task_util::WaitForIdle();
+        EXPECT_EQ(1, var_.count());
+            }, "");
+    }
 }
 
 class TestEnvironment : public ::testing::Environment {
