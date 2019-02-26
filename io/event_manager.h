@@ -36,12 +36,15 @@ public:
 
     void Shutdown();
 
+    bool IsRunning() const;
+
     boost::asio::io_service *io_service() { return &io_service_; }
 
 private:
     boost::asio::io_service io_service_;
     bool shutdown_;
     tbb::spin_mutex mutex_;
+    bool running_;
 
     DISALLOW_COPY_AND_ASSIGN(EventManager);
 };
