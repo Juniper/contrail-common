@@ -136,7 +136,7 @@ protected:
     SandeshServerStateMachineTest() :
         server_(new SandeshServerMock(&evm_)),
         timer_(TimerManager::CreateTimer(*evm_.io_service(), "Dummy timer")),
-        connection_(new SandeshServerConnection(server_, dummy_, 
+        connection_(new SandeshServerConnection(server_, dummy_,
             Task::kTaskInstanceAny,
             TaskScheduler::GetInstance()->GetTaskId("sandesh::Test::StateMachine"))) {
         task_util::WaitForIdle();
@@ -357,16 +357,10 @@ protected:
     SandeshConnection *connection_;
 };
 
-typedef boost::function<void(void)> EvGen;
-struct EvGenComp {
-    bool operator()(const EvGen &lhs, const EvGen &rhs) const {
-        return &lhs < &rhs;
-    }
-};
-
 TEST_F(SandeshServerStateMachineTest, Matrix) {
-    boost::asio::io_service::work work(*evm_.io_service());
-    typedef std::map<EvGen, ssm::SsmState, EvGenComp> Transitions;
+    typedef boost::function<void(void)> EvGen;
+    typedef boost::tuple<EvGen, ssm::SsmState> Transition;
+    typedef std::vector<Transition> Transitions;
 
 #define SERVER_SSM_TRANSITION(F, E) \
     ((EvGen) boost::bind(&SandeshServerStateMachineTest_Matrix_Test::F, this), E)
@@ -374,20 +368,22 @@ TEST_F(SandeshServerStateMachineTest, Matrix) {
     ((EvGen) boost::bind(&SandeshServerStateMachineTest_Matrix_Test::F, this, \
             (SandeshSessionMock *) NULL), E)
 
-    Transitions idle = map_list_of
+    boost::asio::io_service::work work(*evm_.io_service());
+
+    Transitions idle = tuple_list_of
             SERVER_SSM_TRANSITION(EvTcpPassiveOpen, ssm::IDLE)
             SERVER_SSM_TRANSITION(EvAdminUp, ssm::ACTIVE);
 
-    Transitions active = map_list_of
+    Transitions active = tuple_list_of
             SERVER_SSM_TRANSITION(EvStop, ssm::IDLE)
             SERVER_SSM_TRANSITION(EvAdminDown, ssm::IDLE)
             SERVER_SSM_TRANSITION(EvTcpPassiveOpen, ssm::SERVER_INIT)
             SERVER_SSM_TRANSITION2(EvTcpClose, ssm::IDLE);
 
-    Transitions none = map_list_of
+    Transitions none = tuple_list_of
             SERVER_SSM_TRANSITION(EvStop, ssm::IDLE);
 
-    Transitions server_init = map_list_of
+    Transitions server_init = tuple_list_of
             SERVER_SSM_TRANSITION2(EvTcpClose, ssm::IDLE)
             SERVER_SSM_TRANSITION2(EvSandeshMessageRecv, ssm::SERVER_INIT)
             SERVER_SSM_TRANSITION2(EvTcpClose, ssm::IDLE);
@@ -405,10 +401,10 @@ TEST_F(SandeshServerStateMachineTest, Matrix) {
         for (Transitions::iterator j = matrix[i].begin();
                 j != matrix[i].end(); j++) {
             LOG(DEBUG, "Starting test " << count++ << " in state " << i
-                    << " expecting " << j->second << " *********************");
+                    << " expecting " << j->get<1>() << " *********************");
             GetToState(i);
-            j->first();
-            RunToState(j->second);
+            j->get<0>()();
+            RunToState(j->get<1>());
         }
     }
 }
