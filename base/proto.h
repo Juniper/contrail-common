@@ -188,7 +188,7 @@ struct ElementBase {
     typedef NoMatch ContextMatch;
     typedef void Setter;
     typedef void EncodingCallback;
-    typedef void ContextSwap;		// swap a context with another one
+    typedef void ContextSwap;           // swap a context with another one
     typedef void SizeSetter;            // set the size of the element
 };
 
@@ -497,7 +497,7 @@ private:
                         EncoderSetter<U, ctx_t>
                     >::type encoder;
                     return encoder()(opt, context, ctx, data, size);
-            	}
+                }
                 return 0;
             }
         };

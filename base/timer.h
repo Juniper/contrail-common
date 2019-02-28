@@ -53,7 +53,7 @@ class TimerImpl;
 
 class Timer {
 private:
-	// Task used to fire the timer
+    // Task used to fire the timer
     class TimerTask;
 
 public:

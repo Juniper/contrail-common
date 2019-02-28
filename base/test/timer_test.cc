@@ -55,7 +55,7 @@ public:
 
     virtual void SetUp() {
         thread_.reset(new ServerThread(evm_.get()));
-        thread_->Start();		// Must be called after initialization
+        thread_->Start();   // Must be called after initialization
         timer_count_ = 0;
     }
 
@@ -268,22 +268,22 @@ bool TimerSleepyCb() {
 }
 
 TEST_F(TimerUT, cancel_fired_2) {
-    // Start a timer which on expiry only sleeps to keep the TBB thread 
+    // Start a timer which on expiry only sleeps to keep the TBB thread
     // occupied
     TimerTest *sleepytimer = new TimerTest(*evm_->io_service(), "sleepy-timer");
     sleepytimer->Start(1, TimerSleepyCb);
 
     // 1. Start another timer
-    // 2. Cancel the timer after the timer is expired and before the timer task 
-    //    is invoked. Since the TBB thread is occupied with sleepy timer 
+    // 2. Cancel the timer after the timer is expired and before the timer task
+    //    is invoked. Since the TBB thread is occupied with sleepy timer
     //    callback, this timer callback will never be invoked
     // 3. Restart the timer
     TimerTest *timer1 = new TimerTest(*evm_->io_service(), "cancel-fired-2");
     timer_count_ = 1;
     timer1->Start(1, PeriodicTimerCb);
     // Wait for it to fire
-    // Let the timer task get spawned before cancelling. 
-    // Since TBB is running with one thread(TBB_THREAD_COUNT=1), 
+    // Let the timer task get spawned before cancelling.
+    // Since TBB is running with one thread(TBB_THREAD_COUNT=1),
     // the timer task will not execute for this timer
     usleep(5000);
     timer1->Cancel();

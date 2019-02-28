@@ -22,13 +22,13 @@ TEST_F(IndexMapTest, Basic) {
     int *value;
     std::string key;
     for (int pos = 0; pos <= 63; pos++) {
-	key = "entry" + boost::lexical_cast<std::string>(pos);
+        key = "entry" + boost::lexical_cast<std::string>(pos);
         value = new int(pos);
         indexmap.Insert(key, value);
     }
     EXPECT_EQ(indexmap.count(), indexmap.size());
     for (int pos = 0; pos <= 63; pos++) {
-	key = "entry" + boost::lexical_cast<std::string>(pos);
+        key = "entry" + boost::lexical_cast<std::string>(pos);
         indexmap.Remove(key, pos);
     }
 }
@@ -38,13 +38,13 @@ TEST_F(IndexMapTest, RemoveWithoutRleasingIndex) {
     int *value;
     std::string key;
     for (int pos = 0; pos <= 63; pos++) {
-	key = "entry" + boost::lexical_cast<std::string>(pos);
+        key = "entry" + boost::lexical_cast<std::string>(pos);
         value = new int(pos);
         indexmap.Insert(key, value);
     }
     EXPECT_EQ(indexmap.count(), indexmap.size());
     for (int pos = 0; pos <= 63; pos++) {
-	key = "entry" + boost::lexical_cast<std::string>(pos);
+        key = "entry" + boost::lexical_cast<std::string>(pos);
         indexmap.Remove(key, pos, false);
     }
     EXPECT_EQ(64, indexmap.size());
