@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
  */
- 
+
 /*
  * sandesh_buffer_test.sandesh
  *
@@ -26,4 +26,5 @@ buffer sandesh BufferTest {
 }
 
 buffer sandesh BufferUpdateTest {
+    1: i32                          dummyElem;
 }
