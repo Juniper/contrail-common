@@ -50,9 +50,6 @@ bool ConfigCass2JsonAdapter::assert_on_parse_error_ =
             Category::CONFIG_CLIENT, c.key, c.value, type_, uuid_);            \
         CONFIG_CLIENT_TRACE(ConfigurationMalformed ## t ## Warning ## Trace,   \
             c.key, c.value, type_, uuid_);                                     \
-        cout << "CONFIG_PARSE_ERROR " << __FILE__ << ":" << __LINE__ << " ";   \
-        cout << type_ << " " << c.key << " " << c.value << " ";                \
-        cout << uuid_ << endl;                                                 \
         if (assert_on_parse_error_)                                            \
             assert(false);                                                     \
         return;                                                                \

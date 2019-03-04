@@ -129,6 +129,15 @@ bool STLKeyExists(const Collection &col, const T &key) {
 }
 
 template <typename T>
+const T *ReplaceElem(const T *s, const T &old_elem, const T &new_elem) {
+    for (const T *p = s; *p; p++) {
+        if (*p == old_elem)
+            *const_cast<T *>(p) = new_elem;
+    }
+    return s;
+}
+
+template <typename T>
 class custom_ptr {
 public:
     custom_ptr(boost::function<void(T *)> deleter, T *ptr = 0)
