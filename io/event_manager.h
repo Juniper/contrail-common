@@ -36,12 +36,23 @@ public:
 
     void Shutdown();
 
+    // Information whether mutex is already acquired
+    bool IsRunning() const;
+
     boost::asio::io_service *io_service() { return &io_service_; }
 
 private:
+    // Atomic mutex lock operation and changing the running_ flag
+    void Lock();
+
+    // Atomic mutex unlock operation and changing the running_ flag
+    void Unlock();
+
     boost::asio::io_service io_service_;
     bool shutdown_;
-    tbb::spin_mutex mutex_;
+    tbb::spin_mutex io_mutex_;
+    bool running_;
+    tbb::spin_mutex guard_running_;
 
     DISALLOW_COPY_AND_ASSIGN(EventManager);
 };
