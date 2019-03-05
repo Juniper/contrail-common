@@ -31,8 +31,10 @@ public:
     }
 
     virtual bool Run() {
-        if (server_->GetServerState() == OK) {
+        tbb::mutex::scoped_lock lock(server_->state_guard_);
+        if (server_->state_ == OK) {
             server_->OnRead(buffer_, remote_endpoint_);
+            server_->DeallocateBuffer(buffer_);
         }
         return true;
     }
@@ -82,14 +84,21 @@ void UdpServer::SetName(udp::endpoint ep) {
 }
 
 UdpServer::~UdpServer() {
-    assert(state_ == Uninitialized || state_ == SocketOpenFailed ||
-           state_ == SocketBindFailed);
-    assert(pbuf_.empty());
+    {
+        tbb::mutex::scoped_lock lock(state_guard_);
+        assert(state_ == Uninitialized || state_ == SocketOpenFailed ||
+            state_ == SocketBindFailed);
+    }
+    {
+        tbb::mutex::scoped_lock lock(pbuf_guard_);
+        assert(pbuf_.empty());
+    }
 }
 
 void UdpServer::Shutdown() {
+    tbb::mutex::scoped_lock lock(state_guard_);
     {
-        tbb::mutex::scoped_lock lock(mutex_);
+        tbb::mutex::scoped_lock lock(pbuf_guard_);
         while (!pbuf_.empty()) {
             delete[] pbuf_.back();
             pbuf_.pop_back();
@@ -97,6 +106,11 @@ void UdpServer::Shutdown() {
     }
     if (socket_.is_open()) {
         boost::system::error_code ec;
+        socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+        if (ec) {
+            UDP_SERVER_LOG_ERROR(this, UDP_DIR_NA,
+                "ERROR shutdown UDP socket: " << ec);
+        }
         socket_.close(ec);
         if (ec) {
             UDP_SERVER_LOG_ERROR(this, UDP_DIR_NA,
@@ -155,7 +169,7 @@ bool UdpServer::Initialize(udp::endpoint local_endpoint) {
 mutable_buffer UdpServer::AllocateBuffer(std::size_t s) {
     uint8_t *p = new uint8_t[s];
     {
-        tbb::mutex::scoped_lock lock(mutex_);
+        tbb::mutex::scoped_lock lock(pbuf_guard_);
         pbuf_.push_back(p);
     }
     return mutable_buffer(p, s);
@@ -168,7 +182,7 @@ mutable_buffer UdpServer::AllocateBuffer() {
 void UdpServer::DeallocateBuffer(const const_buffer &buffer) {
     const uint8_t *p = buffer_cast<const uint8_t *>(buffer);
     {
-        tbb::mutex::scoped_lock lock(mutex_);
+        tbb::mutex::scoped_lock lock(pbuf_guard_);
         std::vector<uint8_t *>::iterator f = std::find(pbuf_.begin(),
             pbuf_.end(), p);
         if (f != pbuf_.end())
@@ -178,13 +192,13 @@ void UdpServer::DeallocateBuffer(const const_buffer &buffer) {
 }
 
 void UdpServer::StartSend(udp::endpoint ep, std::size_t bytes_to_send,
-    const_buffer buffer) {
+        const_buffer buffer) {
     if (state_ == OK) {
         socket_.async_send_to(boost::asio::buffer(buffer), ep,
             boost::bind(&UdpServer::HandleSendInternal, UdpServerPtr(this),
-                buffer, ep,
-                boost::asio::placeholders::bytes_transferred,
-                boost::asio::placeholders::error));
+            buffer, ep,
+            boost::asio::placeholders::bytes_transferred,
+            boost::asio::placeholders::error));
     } else {
         stats_.write_errors++;
         UDP_SERVER_LOG_ERROR(this, UDP_DIR_NA,
@@ -194,8 +208,9 @@ void UdpServer::StartSend(udp::endpoint ep, std::size_t bytes_to_send,
 }
 
 void UdpServer::HandleSendInternal(const const_buffer send_buffer,
-    udp::endpoint remote_endpoint, std::size_t bytes_transferred,
-    const boost::system::error_code& error) {
+        udp::endpoint remote_endpoint, std::size_t bytes_transferred,
+        const boost::system::error_code& error) {
+    tbb::mutex::scoped_lock lock(state_guard_);
     if (state_ != OK) {
         stats_.write_errors++;
         UDP_SERVER_LOG_ERROR(this, UDP_DIR_OUT,
@@ -220,8 +235,7 @@ void UdpServer::HandleSendInternal(const const_buffer send_buffer,
 void UdpServer::StartReceive() {
     if (state_ == OK) {
         mutable_buffer b(AllocateBuffer());
-        const_buffer buffer(buffer_cast<const uint8_t*>(b),
-                            buffer_size(b));
+        const_buffer buffer(buffer_cast<const uint8_t*>(b), buffer_size(b));
         socket_.async_receive_from(mutable_buffers_1(b),
             remote_endpoint_, boost::bind(&UdpServer::HandleReceiveInternal,
             UdpServerPtr(this), buffer,
@@ -236,6 +250,7 @@ void UdpServer::StartReceive() {
 
 void UdpServer::HandleReceiveInternal(const_buffer recv_buffer,
     std::size_t bytes_transferred, const boost::system::error_code& error) {
+    tbb::mutex::scoped_lock lock(state_guard_);
     if (state_ != OK) {
         stats_.read_errors++;
         UDP_SERVER_LOG_ERROR(this, UDP_DIR_IN,
@@ -248,14 +263,13 @@ void UdpServer::HandleReceiveInternal(const_buffer recv_buffer,
             "Read FAILED due to error: " << error.value() << " : " <<
             error.message());
         DeallocateBuffer(recv_buffer);
-        StartReceive();
-        return;
+    } else {
+        // Update read statistics.
+        stats_.read_calls++;
+        stats_.read_bytes += bytes_transferred;
+        // Call the handler
+        HandleReceive(recv_buffer, remote_endpoint_, bytes_transferred, error);
     }
-    // Update read statistics.
-    stats_.read_calls++;
-    stats_.read_bytes += bytes_transferred;
-    // Call the handler
-    HandleReceive(recv_buffer, remote_endpoint_, bytes_transferred, error);
     StartReceive();
 }
 
@@ -275,7 +289,6 @@ void UdpServer::OnRead(const const_buffer &recv_buffer,
     const udp::endpoint &remote_endpoint) {
     UDP_SERVER_LOG_ERROR(this, UDP_DIR_IN, "Receive UDP: " <<
         "Default implementation of OnRead does NOT process received message");
-    DeallocateBuffer(recv_buffer);
 }
 
 void UdpServer::HandleSend(boost::asio::const_buffer send_buffer,
@@ -284,11 +297,12 @@ void UdpServer::HandleSend(boost::asio::const_buffer send_buffer,
     DeallocateBuffer(send_buffer);
 }
 
-udp::endpoint UdpServer::GetLocalEndpoint(boost::system::error_code *error) {
+udp::endpoint UdpServer::GetLocalEndpoint(boost::system::error_code *error)
+        const {
     return socket_.local_endpoint(*error);
 }
 
-std::string UdpServer::GetLocalEndpointAddress() {
+std::string UdpServer::GetLocalEndpointAddress() const {
     boost::system::error_code error;
     udp::endpoint ep = GetLocalEndpoint(&error);
     if (error.value())
@@ -296,7 +310,7 @@ std::string UdpServer::GetLocalEndpointAddress() {
     return ep.address().to_string();
 }
 
-int UdpServer::GetLocalEndpointPort() {
+int UdpServer::GetLocalEndpointPort() const {
     boost::system::error_code error;
     udp::endpoint ep = GetLocalEndpoint(&error);
     if (error.value())
