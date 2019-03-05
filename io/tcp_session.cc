@@ -47,6 +47,7 @@ using boost::asio::error::network_unreachable;
 using boost::asio::error::no_buffer_space;
 using boost::asio::placeholders::error;
 using boost::asio::placeholders::bytes_transferred;
+using boost::asio::ip::tcp;
 
 int TcpSession::reader_task_id_ = -1;
 
@@ -299,6 +300,11 @@ void TcpSession::CloseInternal(const error_code &ec,
 
     if (socket() != NULL && !closed_) {
         error_code error;
+        socket()->shutdown(tcp::socket::shutdown_both, error);
+        if (error) {
+            TCP_SESSION_LOG_ERROR(this, TCP_DIR_OUT,
+                "Shutdown failed due to error: " << error.message());
+        }
         socket()->close(error);
     }
     closed_ = true;
