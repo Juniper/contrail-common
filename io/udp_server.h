@@ -43,11 +43,11 @@ public:
             boost::asio::const_buffer buffer);
     void StartReceive();
     // state
-    ServerState GetServerState() { return state_; }
+    ServerState GetServerState() const { return state_; }
     boost::asio::ip::udp::endpoint GetLocalEndpoint(
-        boost::system::error_code *error);
-    std::string GetLocalEndpointAddress();
-    int GetLocalEndpointPort();
+        boost::system::error_code *error) const;
+    std::string GetLocalEndpointAddress() const;
+    int GetLocalEndpointPort() const;
     // buffers
     boost::asio::mutable_buffer AllocateBuffer();
     boost::asio::mutable_buffer AllocateBuffer(std::size_t s);
@@ -91,7 +91,7 @@ private:
     class Reader;
     friend void intrusive_ptr_add_ref(UdpServer *server);
     friend void intrusive_ptr_release(UdpServer *server);
-    virtual void SetName(boost::asio::ip::udp::endpoint ep);
+    void SetName(boost::asio::ip::udp::endpoint ep);
     void HandleReceiveInternal(
             boost::asio::const_buffer recv_buffer,
             std::size_t bytes_transferred,
@@ -104,11 +104,11 @@ private:
     static int reader_task_id_;
     boost::asio::ip::udp::socket socket_;
     int buffer_size_;
-    ServerState state_;
+    tbb::atomic<ServerState> state_;
     EventManager *evm_;
     std::string name_;
     boost::asio::ip::udp::endpoint remote_endpoint_;
-    tbb::mutex mutex_;
+    mutable tbb::mutex mutex_;
     std::vector<uint8_t *> pbuf_;
     tbb::atomic<int> refcount_;
     io::SocketStats stats_;

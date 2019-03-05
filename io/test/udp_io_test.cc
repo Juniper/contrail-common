@@ -4,9 +4,6 @@
 
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
-#include <boost/lexical_cast.hpp>
-#include <pthread.h>
 
 #include "testing/gunit.h"
 #include "base/task.h"
@@ -20,7 +17,11 @@ namespace {
 
 using boost::asio::buffer_cast;
 using boost::asio::mutable_buffer;
+using boost::asio::const_buffer;
+using boost::asio::io_service;
+using boost::asio::buffer;
 using boost::asio::ip::udp;
+using boost::system::error_code;
 
 class EchoServer: public UdpServer {
 public:
@@ -30,9 +31,9 @@ public:
 
     ~EchoServer() { }
 
-    void HandleReceive(const boost::asio::const_buffer &recv_buffer,
+    void HandleReceive(const const_buffer &recv_buffer,
             udp::endpoint remote_endpoint, std::size_t bytes_transferred,
-            const boost::system::error_code& error) {
+            const error_code& error) {
         UDP_UT_LOG_DEBUG("EchoServer rx " << bytes_transferred << "(" <<
             error << ") from " << remote_endpoint);
         if (!error || error == boost::asio::error::message_size) {
@@ -43,7 +44,7 @@ public:
             rx_count_ += bytes_transferred;
 
             std::ostringstream s;
-            boost::system::error_code e;
+            error_code e;
             s << "Got [" << bytes_transferred << "]<" << GetLocalEndpoint(&e)
               << "<-" << remote_endpoint << ">\"";
             {
@@ -66,9 +67,9 @@ public:
         }
     }
 
-    void HandleSend(boost::asio::const_buffer send_buffer,
+    void HandleSend(const_buffer send_buffer,
             udp::endpoint remote_endpoint, std::size_t bytes_transferred,
-            const boost::system::error_code& error) {
+            const error_code& error) {
         tx_count_ += bytes_transferred;
         UDP_UT_LOG_DEBUG("EchoServer sent " << bytes_transferred << "(" <<
             error << ")\n");
@@ -85,9 +86,9 @@ private:
 
 class EchoClient : public UdpServer {
 public:
-    explicit EchoClient(boost::asio::io_service *io_service,
+    explicit EchoClient(io_service *ios,
             int buffer_size = kDefaultBufferSize) :
-        UdpServer(io_service, buffer_size),
+        UdpServer(ios, buffer_size),
         tx_count_(0), rx_count_(0), client_rx_done_(false) {
     }
 
@@ -103,22 +104,22 @@ public:
 
     void Send(const std::string &snd, std::string ipaddress,
         unsigned short port) {
-        boost::system::error_code ec;
+        error_code ec;
         Send(snd, udp::endpoint(boost::asio::ip::address::from_string(
                         ipaddress, ec), port));
     }
 
-    void HandleSend(boost::asio::const_buffer send_buffer,
+    void HandleSend(const_buffer send_buffer,
             udp::endpoint remote_endpoint, std::size_t bytes_transferred,
-            const boost::system::error_code& error) {
+            const error_code& error) {
         tx_count_ += bytes_transferred;
         UDP_UT_LOG_DEBUG("EchoClient sent " << bytes_transferred << "(" <<
             error << ")\n");
     }
 
-    void HandleReceive(const boost::asio::const_buffer &recv_buffer,
+    void HandleReceive(const const_buffer &recv_buffer,
             udp::endpoint remote_endpoint, std::size_t bytes_transferred,
-            const boost::system::error_code& error) {
+            const error_code& error) {
         rx_count_ += bytes_transferred;
         std::string b;
         const uint8_t *p = buffer_cast<const uint8_t *>(recv_buffer);
@@ -187,10 +188,10 @@ protected:
         UDP_UT_LOG_DEBUG("UDP branch test teardown: " << _test_run);
     }
     void TestCreation() {
-        boost::asio::io_service io_service;
-        UdpServer *s = new UdpServer(&io_service);
+        io_service ios;
+        UdpServer *s = new UdpServer(&ios);
         mutable_buffer b = s->AllocateBuffer();
-        boost::system::error_code ec;
+        error_code ec;
         udp::endpoint ep(boost::asio::ip::address::from_string(
                         "127.0.0.1", ec), 5555);
         s->StartSend(ep, (size_t)10, b);  // fail
@@ -212,9 +213,9 @@ private:
 TEST_F(EchoServerTest, Basic) {
     server_->Initialize(0);
     task_util::WaitForIdle();
-    thread_->Start();
+    thread_->Start();  // Must be called after initialization
     server_->StartReceive();
-    boost::system::error_code ec;
+    error_code ec;
     udp::endpoint server_endpoint = server_->GetLocalEndpoint(&ec);
     EXPECT_TRUE(ec == 0);
     UDP_UT_LOG_DEBUG("UDP Server: " << server_endpoint);
@@ -246,7 +247,7 @@ public:
 
     ~UdpRecvServerTest() { }
 
-    void OnRead(const boost::asio::const_buffer &recv_buffer,
+    void OnRead(const const_buffer &recv_buffer,
                 const udp::endpoint &remote_endpoint) {
         UDP_UT_LOG_DEBUG("Received " << boost::asio::buffer_size(recv_buffer)
             << " bytes from " << remote_endpoint);
@@ -264,51 +265,60 @@ private:
 
 class UdpLocalClient {
 public:
-    explicit UdpLocalClient(int port) :
-        dst_port_(port),
-        socket_(-1) {
+    explicit UdpLocalClient(EventManager *evm, int port) :
+            port_(port),
+            socket_(*(evm->io_service())) {
     }
+
     ~UdpLocalClient() {
-        if (socket_ != -1) {
-            close(socket_);
+        if (socket_.is_open()) {
+            Close();
         }
     }
+
     bool Connect() {
-        socket_ = socket(AF_INET, SOCK_DGRAM, 0);
-        assert(socket_ != -1);
-        struct sockaddr_in sin;
-        memset(&sin, 0, sizeof(sin));
-        sin.sin_family = AF_INET;
-#ifdef __APPLE__
-        sin.sin_len = sizeof(struct sockaddr_in);
-#endif
-        sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-        sin.sin_port = htons(dst_port_);
-        int res = connect(socket_, (sockaddr *) &sin,
-                          sizeof(struct sockaddr_in));
-        return (res != -1);
+        error_code ec;
+        udp::endpoint ep(boost::asio::ip::address::from_string(
+                         "127.0.0.1", ec), port_);
+        EXPECT_TRUE(!ec);
+        socket_.connect(ep, ec);
+        EXPECT_TRUE(!ec);
+        return true;
     }
-    int Send(const u_int8_t *data, size_t len) {
-        return send(socket_, data, len, 0);
+
+    int Send(const char *data, size_t len) {
+        size_t res = socket_.send(buffer(data, len));
+        EXPECT_GT(res, 0);
+        return res;
     }
-    int Recv(u_int8_t *buffer, size_t len) {
-        return recv(socket_, buffer, len, 0);
+
+    int Recv(char *data, size_t len) {
+        error_code ec;
+        size_t res = socket_.receive(buffer(data, len), 0, ec);
+        EXPECT_TRUE(!ec);
+        return res;
     }
+
     void Close() {
-        int res = shutdown(socket_, SHUT_RDWR);
-        assert(res == 0);
+        error_code ec;
+        socket_.shutdown(udp::socket::shutdown_both, ec);
+        EXPECT_TRUE(!ec);
+        socket_.close(ec);
+        EXPECT_TRUE(!ec);
     }
+
 private:
-    int dst_port_;
-    int socket_;
+    int port_;
+    udp::socket socket_;
 };
 
 class UdpRecvTest : public ::testing::Test {
 protected:
-    UdpRecvTest() :
-        evm_(new EventManager()) {
+    UdpRecvTest() {
     }
+
     virtual void SetUp() {
+        evm_.reset(new EventManager());
         server_ = new UdpRecvServerTest(evm_.get());
         thread_.reset(new ServerThread(evm_.get()));
     }
@@ -334,18 +344,19 @@ TEST_F(UdpRecvTest, Basic) {
     server_->Initialize(0);
     server_->StartReceive();
     task_util::WaitForIdle();
-    thread_->Start();           // Must be called after initialization
-    boost::system::error_code ec;
-    boost::asio::ip::udp::endpoint ep = server_->GetLocalEndpoint(&ec);
+    thread_->Start();  // Must be called after initialization
+    error_code ec;
+    udp::endpoint ep = server_->GetLocalEndpoint(&ec);
+    EXPECT_TRUE(!ec);
     ASSERT_LT(0, ep.port());
     UDP_UT_LOG_DEBUG("Server port: " << ep.port());
-    UdpLocalClient client(ep.port());
+    UdpLocalClient client(evm_.get(), ep.port());
     TASK_UTIL_EXPECT_TRUE(client.Connect());
-    const char msg[] = "Test Message";
-    int len = client.Send((const u_int8_t *) msg, sizeof(msg));
-    TASK_UTIL_EXPECT_EQ((int) sizeof(msg), len);
-    len += client.Send((const u_int8_t *) msg, sizeof(msg));
-    TASK_UTIL_EXPECT_EQ((int) 2 * sizeof(msg), len);
+    string msg = "Test Message";
+    int len = client.Send(msg.c_str(), msg.length());
+    TASK_UTIL_EXPECT_EQ((int) msg.length(), len);
+    len += client.Send(msg.c_str(), msg.length());
+    TASK_UTIL_EXPECT_EQ((int) 2 * msg.length(), len);
     TASK_UTIL_EXPECT_EQ(2, server_->GetNumRecvMsg());
     SocketIOStats rx_stats;
     server_->GetRxSocketStats(&rx_stats);
