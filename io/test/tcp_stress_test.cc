@@ -226,9 +226,9 @@ protected:
             server_[i]->Initialize(0);
             task_util::WaitForIdle();
         }
-        thread_->Start();		// Must be called after initialization
-        std::cout << "Num Servers " << max_num_servers_ 
-            << " Num Connections " << max_num_connections_ 
+        thread_->Start();  // Must be called after initialization
+        std::cout << "Num Servers " << max_num_servers_
+            << " Num Connections " << max_num_connections_
             << " Maximum packet size " << max_packet_size_
             << " Is blocking " << blocking_ << std::endl;
         for (int i = 0; i < max_num_connections_; i++) {
@@ -236,7 +236,7 @@ protected:
             uint32_t client = 0;
 
             do {
-                do { 
+                do {
                     server = rand() % max_num_servers_;
                     client = rand() % max_num_servers_;
                 } while (server == client);
