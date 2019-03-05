@@ -27,17 +27,21 @@ public:
         running_ = false;
         tbb_scheduler_->terminate();
     }
+
     static void *ThreadRun(void *objp) {
         ServerThread *obj = reinterpret_cast<ServerThread *>(objp);
         obj->Run();
         return NULL;
     }
+
     void Start() {
         thread_.reset(new boost::thread(&ServerThread::Run, this));
     }
+
     void Join() {
         thread_->join();
-     }
+    }
+
 private:
     boost::scoped_ptr<boost::thread> thread_;
     tbb::atomic<bool> running_;
