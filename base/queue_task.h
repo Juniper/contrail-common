@@ -510,14 +510,6 @@ private:
         return done;
     }
 
-    void GetWaterMarkIndexes(int *hwater_index, int *lwater_index) const {
-        watermarks_.GetWaterMarkIndexes(hwater_index, lwater_index);
-    }
-
-    void SetWaterMarkIndexes(int hwater_index, int lwater_index) {
-        watermarks_.SetWaterMarkIndexes(hwater_index, lwater_index);
-    }
-
     Queue queue_;
     tbb::atomic<size_t> count_;
     tbb::mutex mutex_;
