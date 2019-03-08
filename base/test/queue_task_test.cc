@@ -100,15 +100,13 @@ public:
     }
 
     virtual void TearDown() {
+        task_util::WaitForIdle();
         TaskScheduler::GetInstance()->ClearTaskStats(wq_task_id_);
     }
 
     bool Dequeue(int entry) {
         dequeues_++;
         return true;
-    }
-    void WorkQueueWaterMarkIndexes(int *hwater_index, int *lwater_index) {
-        work_queue_.GetWaterMarkIndexes(hwater_index, lwater_index);
     }
     bool IsWorkQueueRunning() {
         return work_queue_.running_;
@@ -141,16 +139,8 @@ public:
         }
         wm_callback_running_ = false;
     }
-    bool VerifyWaterMarkIndexes() {
-        int hwater_index, lwater_index;
-        work_queue_.GetWaterMarkIndexes(&hwater_index, &lwater_index);
-        return (hwater_index == -1 && lwater_index == -1) ||
-               (hwater_index + 1 == lwater_index);
-    }
     void WaterMarkCallbackVerifyIndexes(size_t wm_count,
         WaterMarkTestCbType::type wm_cb) {
-        bool success(VerifyWaterMarkIndexes());
-        EXPECT_TRUE(success);
         wm_cb_type_ = wm_cb;
         wm_cb_qsize_ = wm_count;
     }
@@ -355,17 +345,15 @@ TEST_F(QueueTaskTest, WaterMarkTest) {
         boost::bind(&WaterMarkTestCb, _1, &wm_cb_qsize_,
             &wm_cb_count_, WaterMarkTestCbType::LWM3, &wm_cb_type_));
     WaterMarkInfos lwm;
-    lwm.push_back(lwm1);
-    lwm.push_back(lwm2);
-    lwm.push_back(lwm3);
+    lwm.insert(lwm1);
+    lwm.insert(lwm2);
+    lwm.insert(lwm3);
     work_queue_.SetLowWaterMark(lwm);
-    int hwater_index, lwater_index;
+
     EXPECT_EQ(WaterMarkTestCbType::INVALID, wm_cb_type_);
     EXPECT_EQ(0, wm_cb_qsize_);
     EXPECT_EQ(0, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(-1, hwater_index);
-    EXPECT_EQ(-1, lwater_index);
+
     // Enqueue 4 entries
     // Check that no new high water mark cb is called
     EnqueueEntries(4);
@@ -373,79 +361,63 @@ TEST_F(QueueTaskTest, WaterMarkTest) {
     EXPECT_EQ(0, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::INVALID, wm_cb_type_);
     EXPECT_EQ(0, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(-1, hwater_index);
-    EXPECT_EQ(-1, lwater_index);
+
     // Dequeue 1 entry
-    // Check that lwm2 cb is called
+    // Check that no new low water mark cb is called
     DequeueEntries(1);
     EXPECT_EQ(3, work_queue_.Length());
-    EXPECT_EQ(3, wm_cb_qsize_);
-    EXPECT_EQ(WaterMarkTestCbType::LWM2, wm_cb_type_);
-    EXPECT_EQ(1, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(0, hwater_index);
-    EXPECT_EQ(1, lwater_index);
+    EXPECT_EQ(0, wm_cb_qsize_);
+    EXPECT_EQ(WaterMarkTestCbType::INVALID, wm_cb_type_);
+    EXPECT_EQ(0, wm_cb_count_);
+
     // Dequeue 1 entry
     // Check that lwm3 cb is called
     DequeueEntries(1);
     EXPECT_EQ(2, work_queue_.Length());
     EXPECT_EQ(2, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::LWM3, wm_cb_type_);
-    EXPECT_EQ(2, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(-1, hwater_index);
-    EXPECT_EQ(0, lwater_index);
+    EXPECT_EQ(1, wm_cb_count_);
+
     // Dequeue 2 entries
     // Check that no new low water mark cb is called
     DequeueEntries(2);
     EXPECT_EQ(0, work_queue_.Length());
     EXPECT_EQ(2, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::LWM3, wm_cb_type_);
-    EXPECT_EQ(2, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(-1, hwater_index);
-    EXPECT_EQ(0, lwater_index);
+    EXPECT_EQ(1, wm_cb_count_);
+
     // Enqueue 5 entries
     // Check that hwm1 cb is called
     EnqueueEntries(5);
     EXPECT_EQ(5, work_queue_.Length());
     EXPECT_EQ(5, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::HWM1, wm_cb_type_);
-    EXPECT_EQ(3, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(0, hwater_index);
-    EXPECT_EQ(1, lwater_index);
+    EXPECT_EQ(2, wm_cb_count_);
+
     // Enqueue 2 entries
     // Check that no new high water mark cb is called
     EnqueueEntries(2);
     EXPECT_EQ(7, work_queue_.Length());
     EXPECT_EQ(5, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::HWM1, wm_cb_type_);
-    EXPECT_EQ(3, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(0, hwater_index);
-    EXPECT_EQ(1, lwater_index);
+    EXPECT_EQ(2, wm_cb_count_);
+
     // Enqueue 11 entries
     // Check that hwm2, hwm3 cb is called
     EnqueueEntries(11);
     EXPECT_EQ(18, work_queue_.Length());
     EXPECT_EQ(17, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::HWM3, wm_cb_type_);
-    EXPECT_EQ(5, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(2, hwater_index);
-    EXPECT_EQ(3, lwater_index);
+    EXPECT_EQ(4, wm_cb_count_);
+
     // Dequeue 6 entries
     // Check that lwm1 cb is called
     DequeueEntries(6);
     EXPECT_EQ(12, work_queue_.Length());
     EXPECT_EQ(14, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::LWM1, wm_cb_type_);
-    EXPECT_EQ(6, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(1, hwater_index);
-    EXPECT_EQ(2, lwater_index);
+    EXPECT_EQ(5, wm_cb_count_);
+
     // Refill the queue
     // Enqueue 5 entries
     // Check that hwm3 cb is called
@@ -453,30 +425,24 @@ TEST_F(QueueTaskTest, WaterMarkTest) {
     EXPECT_EQ(17, work_queue_.Length());
     EXPECT_EQ(17, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::HWM3, wm_cb_type_);
-    EXPECT_EQ(7, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(2, hwater_index);
-    EXPECT_EQ(3, lwater_index);
+    EXPECT_EQ(6, wm_cb_count_);
+
     // Dequeue 1 entry
     // Check that no new low water cb is called
     DequeueEntries(1);
     EXPECT_EQ(16, work_queue_.Length());
     EXPECT_EQ(17, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::HWM3, wm_cb_type_);
-    EXPECT_EQ(7, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(2, hwater_index);
-    EXPECT_EQ(3, lwater_index);
+    EXPECT_EQ(6, wm_cb_count_);
+
     // Dequeue 8 entries
     // Check that lwm1, lwm2 cb is called
     DequeueEntries(8);
     EXPECT_EQ(8, work_queue_.Length());
     EXPECT_EQ(8, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::LWM2, wm_cb_type_);
-    EXPECT_EQ(9, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(0, hwater_index);
-    EXPECT_EQ(1, lwater_index);
+    EXPECT_EQ(8, wm_cb_count_);
+
     // Refill the queue
     // Enqueue 3 entries
     // Check that hwm2 cb is called
@@ -484,60 +450,48 @@ TEST_F(QueueTaskTest, WaterMarkTest) {
     EXPECT_EQ(11, work_queue_.Length());
     EXPECT_EQ(11, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::HWM2, wm_cb_type_);
-    EXPECT_EQ(10, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(1, hwater_index);
-    EXPECT_EQ(2, lwater_index);
+    EXPECT_EQ(9, wm_cb_count_);
+
     // Dequeue 1 entry
     // Check that no new low water mark cb is called
     DequeueEntries(1);
     EXPECT_EQ(10, work_queue_.Length());
     EXPECT_EQ(11, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::HWM2, wm_cb_type_);
-    EXPECT_EQ(10, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(1, hwater_index);
-    EXPECT_EQ(2, lwater_index);
+    EXPECT_EQ(9, wm_cb_count_);
+
     // Dequeue 3 entries
     // Check that lwm2 cb is called
     DequeueEntries(3);
     EXPECT_EQ(7, work_queue_.Length());
     EXPECT_EQ(8, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::LWM2, wm_cb_type_);
-    EXPECT_EQ(11, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(0, hwater_index);
-    EXPECT_EQ(1, lwater_index);
+    EXPECT_EQ(10, wm_cb_count_);
+
     // Enqueue 1 entry
     // Check that no new high water mark cb is called
     EnqueueEntries(1);
     EXPECT_EQ(8, work_queue_.Length());
     EXPECT_EQ(8, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::LWM2, wm_cb_type_);
-    EXPECT_EQ(11, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(0, hwater_index);
-    EXPECT_EQ(1, lwater_index);
+    EXPECT_EQ(10, wm_cb_count_);
+
     // Dequeue 7 entries
     // Check that lwm3 is called
     DequeueEntries(7);
     EXPECT_EQ(1, work_queue_.Length());
     EXPECT_EQ(2, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::LWM3, wm_cb_type_);
-    EXPECT_EQ(12, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(-1, hwater_index);
-    EXPECT_EQ(0, lwater_index);
+    EXPECT_EQ(11, wm_cb_count_);
+
     // Dequeue 1 entry
     // Check that no new low water mark cb is called
     DequeueEntries(1);
     EXPECT_EQ(0, work_queue_.Length());
     EXPECT_EQ(2, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::LWM3, wm_cb_type_);
-    EXPECT_EQ(12, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(-1, hwater_index);
-    EXPECT_EQ(0, lwater_index);
+    EXPECT_EQ(11, wm_cb_count_);
+
     // Refill the queue
     // Enqueue 4 entries
     // Check that hwm1 is called
@@ -545,20 +499,16 @@ TEST_F(QueueTaskTest, WaterMarkTest) {
     EXPECT_EQ(5, work_queue_.Length());
     EXPECT_EQ(5, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::HWM1, wm_cb_type_);
-    EXPECT_EQ(13, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(0, hwater_index);
-    EXPECT_EQ(1, lwater_index);
+    EXPECT_EQ(12, wm_cb_count_);
+
     // Empty the queue
     // Check that lwm3 is called
     DequeueEntries(5);
     EXPECT_EQ(0, work_queue_.Length());
     EXPECT_EQ(2, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::LWM3, wm_cb_type_);
-    EXPECT_EQ(14, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(-1, hwater_index);
-    EXPECT_EQ(0, lwater_index);
+    EXPECT_EQ(13, wm_cb_count_);
+
     // Refill the queue
     // Enqueue 4 entries
     // Check that hwm1 is called
@@ -566,49 +516,40 @@ TEST_F(QueueTaskTest, WaterMarkTest) {
     EXPECT_EQ(5, work_queue_.Length());
     EXPECT_EQ(5, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::HWM1, wm_cb_type_);
-    EXPECT_EQ(15, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(0, hwater_index);
-    EXPECT_EQ(1, lwater_index);
+    EXPECT_EQ(14, wm_cb_count_);
+
     // Dequeue 2 entries
     // Check that no new low water mark cb is called
     DequeueEntries(2);
     EXPECT_EQ(3, work_queue_.Length());
     EXPECT_EQ(5, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::HWM1, wm_cb_type_);
-    EXPECT_EQ(15, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(0, hwater_index);
-    EXPECT_EQ(1, lwater_index);
+    EXPECT_EQ(14, wm_cb_count_);
+
     // Enqueue 1 entry
     // Check that no new high water cb is called
     EnqueueEntries(1);
     EXPECT_EQ(4, work_queue_.Length());
     EXPECT_EQ(5, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::HWM1, wm_cb_type_);
-    EXPECT_EQ(15, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(-1, hwater_index);
-    EXPECT_EQ(1, lwater_index);
+    EXPECT_EQ(14, wm_cb_count_);
+
     // Dequeue 3 entries
     // Check that lwm3 is called
     DequeueEntries(3);
     EXPECT_EQ(1, work_queue_.Length());
     EXPECT_EQ(2, wm_cb_qsize_);
     EXPECT_EQ(WaterMarkTestCbType::LWM3, wm_cb_type_);
-    EXPECT_EQ(16, wm_cb_count_);
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(-1, hwater_index);
-    EXPECT_EQ(0, lwater_index);
+    EXPECT_EQ(15, wm_cb_count_);
 }
 
 TEST_F(QueueTaskTest, WaterMarkParallelTest) {
     // Setup high watermarks
     WaterMarkInfos vhwm;
-    WaterMarkInfo hwm(0,
+    WaterMarkInfo hwm(1,
         boost::bind(&QueueTaskTest::WaterMarkCallbackSleep1Sec,
                     this, _1, true, 1));
-    vhwm.push_back(hwm);
+    vhwm.insert(hwm);
     work_queue_.SetHighWaterMark(vhwm);
     // Enqueue so that watermark callback gets called
     TaskScheduler *scheduler = TaskScheduler::GetInstance();
@@ -623,9 +564,6 @@ TEST_F(QueueTaskTest, WaterMarkParallelTest) {
     work_queue_.ResetHighWaterMark();
     // Wait till the watermark callback is finished
     TASK_UTIL_EXPECT_FALSE(wm_callback_running_);
-#ifdef _WIN32
-    task_util::WaitForIdle(1);
-#endif
 }
 
 TEST_F(QueueTaskTest, OnExitParallelTest) {
@@ -760,14 +698,11 @@ TEST_F(QueueTaskTest, ProcessWaterMarksParallelTest) {
         boost::bind(&QueueTaskTest::WaterMarkCallbackVerifyIndexes, this, _1,
             WaterMarkTestCbType::LWM3));
     WaterMarkInfos lwm;
-    lwm.push_back(lwm1);
-    lwm.push_back(lwm2);
-    lwm.push_back(lwm3);
+    lwm.insert(lwm1);
+    lwm.insert(lwm2);
+    lwm.insert(lwm3);
     work_queue_.SetLowWaterMark(lwm);
-    int hwater_index, lwater_index;
-    WorkQueueWaterMarkIndexes(&hwater_index, &lwater_index);
-    EXPECT_EQ(-1, hwater_index);
-    EXPECT_EQ(-1, lwater_index);
+
     TaskScheduler *scheduler(TaskScheduler::GetInstance());
     EnqueueTask *etask(new EnqueueTask(&work_queue_,
                 scheduler->GetTaskId(
@@ -775,7 +710,6 @@ TEST_F(QueueTaskTest, ProcessWaterMarksParallelTest) {
                 100000));
     scheduler->Enqueue(etask);
     task_util::WaitForIdle();
-    TASK_UTIL_EXPECT_TRUE(VerifyWaterMarkIndexes());
     EXPECT_TRUE((wm_cb_type_ == WaterMarkTestCbType::LWM3 &&
                  wm_cb_qsize_ == 5000) ||
                 (wm_cb_type_ == WaterMarkTestCbType::INVALID &&
@@ -981,9 +915,9 @@ TEST_F(QueueTaskWaterMarkTest, Basic) {
         boost::bind(&WaterMarkTestCb, _1, &wm_cb_qsize_,
             &wm_cb_count_, WaterMarkTestCbType::LWM3, &wm_cb_type_));
     WaterMarkInfos lwm;
-    lwm.push_back(lwm1);
-    lwm.push_back(lwm2);
-    lwm.push_back(lwm3);
+    lwm.insert(lwm1);
+    lwm.insert(lwm2);
+    lwm.insert(lwm3);
     work_queue_.SetLowWaterMark(lwm);
     EXPECT_EQ(WaterMarkTestCbType::INVALID, wm_cb_type_);
     EXPECT_EQ(0, wm_cb_qsize_);
@@ -1200,12 +1134,12 @@ TEST_F(QueueTaskWaterMarkTest, Duplicates) {
     WaterMarkInfo lwm5(6 * 1024, NULL);
     WaterMarkInfo lwm6(2 * 1024, NULL);
     WaterMarkInfos lwm;
-    lwm.push_back(lwm1);
-    lwm.push_back(lwm2);
-    lwm.push_back(lwm3);
-    lwm.push_back(lwm4);
-    lwm.push_back(lwm5);
-    lwm.push_back(lwm6);
+    lwm.insert(lwm1);
+    lwm.insert(lwm2);
+    lwm.insert(lwm3);
+    lwm.insert(lwm4);
+    lwm.insert(lwm5);
+    lwm.insert(lwm6);
     work_queue_.SetLowWaterMark(lwm);
     // Verify that no duplicates exist and the watermarks are sorted
     WaterMarkInfos expected_lwms = boost::assign::list_of

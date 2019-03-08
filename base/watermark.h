@@ -9,6 +9,10 @@
 #ifndef BASE_WATERMARK_H_
 #define BASE_WATERMARK_H_
 
+#include <set>
+#include <boost/function.hpp>
+#include <base/util.h>
+
 // WaterMarkInfo
 typedef boost::function<void (size_t)> WaterMarkCallback;
 
@@ -33,12 +37,13 @@ inline bool operator==(const WaterMarkInfo& lhs, const WaterMarkInfo& rhs) {
     return lhs.count_ == rhs.count_;
 }
 
-typedef std::vector<WaterMarkInfo> WaterMarkInfos;
+typedef std::set<WaterMarkInfo> WaterMarkInfos;
 
 class WaterMarkTuple {
 public:
     WaterMarkTuple();
     ~WaterMarkTuple();
+
     void SetHighWaterMark(const WaterMarkInfos &high_water);
     void SetHighWaterMark(const WaterMarkInfo& hwm_info);
     void ResetHighWaterMark();
@@ -47,22 +52,17 @@ public:
     void SetLowWaterMark(const WaterMarkInfo& lwm_info);
     void ResetLowWaterMark();
     WaterMarkInfos GetLowWaterMark() const;
-    void GetWaterMarkIndexes(int *hwater_index, int *lwater_index) const;
-    void SetWaterMarkIndexes(int hwater_index, int lwater_index);
     void ProcessWaterMarks(size_t in_count, size_t curr_count);
     bool AreWaterMarksSet() const;
     void ProcessHighWaterMarks(size_t count);
     void ProcessLowWaterMarks(size_t count);
 
 private:
-    // Watermarks
-    // Sorted in ascending order
+    void ResetWaterMarksHistory();
+
     WaterMarkInfos high_water_;
     WaterMarkInfos low_water_;
-    int hwater_index_;
-    int lwater_index_;
-    tbb::atomic<bool> hwater_mark_set_;
-    tbb::atomic<bool> lwater_mark_set_;
+    size_t last_count_;
 
     DISALLOW_COPY_AND_ASSIGN(WaterMarkTuple);
 };
