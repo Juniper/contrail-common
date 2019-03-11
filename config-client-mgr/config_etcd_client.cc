@@ -605,6 +605,7 @@ void ConfigEtcdPartition::AddUUIDToProcessList(const string &oper,
         if ((oper == "DELETE") &&
             (ret.first->second->oper == "CREATE")) {
             uuid_process_set_.erase(ret.first);
+            client()->PurgeFQNameCache(uuid);
         } else {
             delete req;
             ret.first->second->oper = oper;
@@ -1032,7 +1033,7 @@ void ConfigEtcdPartition::ProcessUUIDDelete(
       */
     UUIDCacheMap::iterator uuid_iter = uuid_cache_map_.find(uuid_key);
     if (uuid_iter == uuid_cache_map_.end()) {
-        assert(false);
+        return;
     }
     UUIDCacheEntry *cache = uuid_iter->second;
 
