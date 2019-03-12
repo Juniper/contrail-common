@@ -322,7 +322,7 @@ class CqlIfImpl {
     EventManager *evm_;
     interface::CassLibrary *cci_;
     impl::CassClusterPtr cluster_;
-    impl::CassSessionPtr session_;
+    CassSession *session_;
     impl::CassSessionPtr schema_session_;
     tbb::atomic<SessionState::type> session_state_;
     tbb::atomic<SessionState::type> schema_session_state_;
