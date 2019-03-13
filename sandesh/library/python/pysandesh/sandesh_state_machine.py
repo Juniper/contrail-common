@@ -62,7 +62,7 @@ class SandeshStateMachine(object):
             if collector_addr is None:
                 collector_addr = ''
             ConnectionState.update(conn_type = ConnectionType.COLLECTOR,
-                name = '',
+                name = 'Collector',
                 status = status,
                 server_addrs = [collector_addr],
                 message = '%s to %s on %s' % (e.src, e.dst, e.event))
