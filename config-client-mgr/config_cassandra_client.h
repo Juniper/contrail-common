@@ -79,6 +79,7 @@ class ConfigCassandraPartition {
      private:
         friend class ConfigCassandraPartitionTest;
         friend class ConfigCassandraPartitionTest2;
+        friend class ConfigCassandraClientPartitionTest;
 
         bool CassReadRetryTimerExpired(const std::string uuid);
         void CassReadRetryTimerErrorHandler();
