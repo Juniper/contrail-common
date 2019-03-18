@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
  */
-#include "net/address_util.h"
+#include "base/address_util.h"
 
 #include <endian.h>
 #include <boost/algorithm/string.hpp>

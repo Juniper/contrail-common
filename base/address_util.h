@@ -1,8 +1,8 @@
 /*
  * Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
  */
-#ifndef NET_ADDRESS_UTIL_H__
-#define NET_ADDRESS_UTIL_H__
+#ifndef BASE_ADDRESS_UTIL_H__
+#define BASE_ADDRESS_UTIL_H__
 
 #include <string>
 #include <vector>
@@ -15,13 +15,13 @@ class io_service;
 }
 }
 
-/* 
+/*
  * Returns true if the given IPv4 address is member of the IPv4 subnet
  * indicated by IPv4 address and prefix length. Otherwise returns false.
  */
 bool IsIp4SubnetMember(const Ip4Address &ip, const Ip4Address &prefix_ip,
                        uint16_t plen);
-/* 
+/*
  * Returns true if the given IPv6 address is member of the IPv6 subnet
  * indicated by IPv6 address and prefix length. Otherwise returns false.
  */
@@ -85,4 +85,4 @@ std::string GetHostIp(boost::asio::io_service *io_service,
  */
 std::string GetVNFromRoutingInstance(const std::string &vn);
 
-#endif
+#endif // BASE_ADDRESS_UTIL_H__
