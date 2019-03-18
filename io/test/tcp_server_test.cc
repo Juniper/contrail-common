@@ -91,47 +91,42 @@ EchoSession::EchoSession(EchoServer *server, Socket *socket)
 }
 
 class TcpLocalClient {
-  public:
-    explicit TcpLocalClient(int port) : dst_port_(port), socket_(-1) {
-    }
-    ~TcpLocalClient() {
-        if (socket_ != -1) {
-            close(socket_);
-        }
-    }
-    bool Connect(std::string server_ip="") {
-        socket_ = socket(AF_INET, SOCK_STREAM, 0);
-        assert(socket_ != -1);
-        struct sockaddr_in sin;
-        memset(&sin, 0, sizeof(sin));
-        sin.sin_family = AF_INET;
-#ifdef __APPLE__
-        sin.sin_len = sizeof(struct sockaddr_in);
-#endif
-        if (server_ip.empty()) {
-            sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-        } else {
-            sin.sin_addr.s_addr = inet_addr(server_ip.c_str());
-        }
-        sin.sin_port = htons(dst_port_);
-        int res = connect(socket_, (sockaddr *) &sin,
-                          sizeof(struct sockaddr_in));
-        return (res != -1);
+public:
+    explicit TcpLocalClient(int port) : dst_port_(port), socket_(io_service_) {
     }
 
-    int Send(const u_int8_t *data, size_t len) {
-        return send(socket_, data, len, 0);
+    ~TcpLocalClient() {
+        socket_.close();
     }
-    int Recv(u_int8_t *buffer, size_t len) {
-        return recv(socket_, buffer, len, 0);
+
+    void Connect(std::string server_ip="") {
+        tcp::endpoint endpoint;
+        if (server_ip.empty()) {
+            endpoint.address(address_v4::loopback());
+        } else {
+            endpoint.address(address::from_string(server_ip));
+        }
+        endpoint.port(dst_port_);
+        socket_.open(tcp::v4());
+        socket_.connect(endpoint);
     }
+
+    int Send(const char *data, size_t len) {
+        return socket_.send(boost::asio::buffer(data, len));
+    }
+
+    int Recv(char *buffer, size_t len) {
+        return socket_.read_some(boost::asio::buffer(buffer, len));
+    }
+
     void Close() {
-        int res = shutdown(socket_, SHUT_RDWR);
-        assert(res == 0);
+        socket_.shutdown(tcp::socket::shutdown_both);
     }
-  private:
+
+private:
     int dst_port_;
-    int socket_;
+    boost::asio::io_service io_service_;
+    tcp::socket socket_;
 };
 
 class EchoServerTest : public ::testing::Test {
@@ -214,12 +209,12 @@ TEST_F(EchoServerTest, Basic) {
     ASSERT_LT(0, port);
     TCP_UT_LOG_DEBUG("Server port: " << port);
     TcpLocalClient client(port);
-    TASK_UTIL_EXPECT_TRUE(client.Connect());
+    client.Connect();
     const char msg[] = "Test Message";
-    int len = client.Send((const u_int8_t *) msg, sizeof(msg));
+    int len = client.Send(msg, sizeof(msg));
     TASK_UTIL_EXPECT_EQ((int) sizeof(msg), len);
 
-    u_int8_t data[1024];
+    char data[1024];
     int rlen = client.Recv(data, sizeof(data));
     TASK_UTIL_EXPECT_EQ(len, rlen);
     TASK_UTIL_EXPECT_EQ(0, memcmp(data, msg, rlen));
@@ -236,12 +231,12 @@ TEST_F(EchoServerTest, Basic_InterfaceIp) {
     ASSERT_LT(0, port);
     TCP_UT_LOG_DEBUG("Server port: " << port);
     TcpLocalClient client(port);
-    TASK_UTIL_EXPECT_TRUE(client.Connect(server_ip));
+    client.Connect(server_ip);
     const char msg[] = "Test Message";
-    int len = client.Send((const u_int8_t *) msg, sizeof(msg));
+    int len = client.Send(msg, sizeof(msg));
     TASK_UTIL_EXPECT_EQ((int) sizeof(msg), len);
 
-    u_int8_t data[1024];
+    char data[1024];
     int rlen = client.Recv(data, sizeof(data));
     TASK_UTIL_EXPECT_EQ(len, rlen);
     TASK_UTIL_EXPECT_EQ(0, memcmp(data, msg, rlen));
@@ -261,10 +256,12 @@ TEST_F(EchoServerTest, Connect) {
     session->set_observer(boost::bind(&EchoServerTest::OnEvent, this, _1, _2));
     boost::asio::ip::tcp::endpoint endpoint;
     boost::system::error_code ec;
-    endpoint.address(boost::asio::ip::address::from_string("240.0.0.1", ec));
+    // per RFC 5737 203.0.113.0/24 shouldn't route to anything
+    endpoint.address(address::from_string("203.0.113.1", ec));
     endpoint.port(179);
     client->Connect(session, endpoint);
-    StartConnectTimer(session, 1);
+    // we don't actually need to wait here
+    StartConnectTimer(session, 0);
     TASK_UTIL_EXPECT_TRUE(session->IsClosed());
     TASK_UTIL_EXPECT_FALSE(session->IsEstablished());
     TASK_UTIL_EXPECT_EQ(0, connect_success_);
@@ -280,7 +277,7 @@ TEST_F(EchoServerTest, Connect) {
     endpoint.address(boost::asio::ip::address::from_string("127.0.0.1", ec));
     endpoint.port(179);
     client->Connect(session, endpoint);
-    StartConnectTimer(session, 1);
+    StartConnectTimer(session, 10);
     TASK_UTIL_EXPECT_TRUE(session->IsClosed());
     TASK_UTIL_EXPECT_FALSE(session->IsEstablished());
     TASK_UTIL_EXPECT_EQ(0, connect_success_);
