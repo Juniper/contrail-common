@@ -150,7 +150,7 @@ static void CompareAbc(abc *actual, abc *expected) {
     CompareAbcInner(actual->nested, expected->nested);
 }
 
-static bool CompareAbcSandesh(abc_sandesh *actual, abc_sandesh *expected) {
+static void CompareAbcSandesh(abc_sandesh *actual, abc_sandesh *expected) {
     CompareAbc(actual->elem, expected->elem);
     EXPECT_EQ(actual->rwinfo_size, expected->rwinfo_size);
     for (int i = 0; i < actual->rwinfo_size; i++) {
