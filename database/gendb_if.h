@@ -15,9 +15,10 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/tuple/tuple.hpp>
-#include <database/gendb_types.h>
-#include <net/address.h>
 #include <boost/asio/ip/tcp.hpp>
+
+#include <base/address.h>
+#include <database/gendb_types.h>
 
 namespace GenDb {
 
