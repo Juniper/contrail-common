@@ -20,6 +20,7 @@
 
 #include "base/logging.h"
 #include "base/util.h"
+#include "base/test/task_test_util.h"
 
 #include <sandesh/protocol/TXMLProtocol.h>
 #include <sandesh/protocol/TBinaryProtocol.h>
@@ -109,6 +110,7 @@ protected:
     }
 
     virtual void TearDown() {
+        task_util::WaitForIdle();
     }
 
     bool DequeueEvent(SandeshElement element) {
