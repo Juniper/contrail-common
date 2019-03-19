@@ -168,7 +168,7 @@ protected:
 TEST_F(EchoServerTest, Basic) {
     server_->Initialize(0);
     task_util::WaitForIdle();
-    thread_->Start();		// Must be called after initialization
+    thread_->Start();  // Must be called after initialization
     int port = server_->GetPort();
     ASSERT_LT(0, port);
     TCP_UT_LOG_DEBUG("Server port: " << port);
@@ -258,7 +258,7 @@ TEST_F(EchoServerTest, Basic) {
 TEST_F(EchoServerTest, ReadInterrupt) {
     server_->Initialize(0);
     task_util::WaitForIdle();
-    thread_->Start();		// Must be called after initialization
+    thread_->Start(); // Must be called after initialization
     int port = server_->GetPort();
     ASSERT_LT(0, port);
     TCP_UT_LOG_DEBUG("Server port: " << port);
