@@ -1836,7 +1836,7 @@ CqlIfImpl::CqlIfImpl(EventManager *evm,
     evm_(evm),
     cci_(cci),
     cluster_(cci_->CassClusterNew(), cci_),
-    session_(cci_->CassSessionNew(), cci_),
+    session_(cci_->CassSessionNew()),
     schema_session_(cci_->CassSessionNew(), cci_),
     keyspace_(),
     io_thread_count_(2) {
@@ -1921,7 +1921,7 @@ bool CqlIfImpl::UseKeyspaceSync(const std::string &keyspace,
             keyspace);
         return false;
     }
-    bool success(impl::ExecuteQuerySync(cci_, session_.get(), buf,
+    bool success(impl::ExecuteQuerySync(cci_, session_, buf,
         consistency));
     if (!success) {
         return false;
@@ -2013,7 +2013,7 @@ bool CqlIfImpl::IsTablePresent(const std::string &table) {
     if (session_state_ != SessionState::CONNECTED) {
         return false;
     }
-    return impl::IsCassTableMetaPresent(cci_, session_.get(), keyspace_,
+    return impl::IsCassTableMetaPresent(cci_, session_, keyspace_,
         table);
 }
 
@@ -2022,7 +2022,7 @@ int CqlIfImpl::IsTableStatic(const std::string &table) {
         return false;
     }
     size_t ck_count;
-    if (!impl::GetCassTableClusteringKeyCount(cci_, session_.get(),
+    if (!impl::GetCassTableClusteringKeyCount(cci_, session_,
         keyspace_, table, &ck_count)) {
         return -1;
     }
@@ -2041,16 +2041,16 @@ bool CqlIfImpl::SelectFromTableAsync(const std::string &cfname,
     }
     std::string query(impl::PartitionKey2CassSelectFromTable(cfname,rkey));
     if (IsTableStatic(cfname) == 1) {
-        return impl::StaticCfGetResultAsync(cci_, session_.get(),
+        return impl::StaticCfGetResultAsync(cci_, session_,
             query.c_str(), consistency, cb, cfname.c_str(), rkey);
     } else if (IsTableStatic(cfname) == 0) {
         size_t rk_count;
-        assert(impl::GetCassTablePartitionKeyCount(cci_, session_.get(),
+        assert(impl::GetCassTablePartitionKeyCount(cci_, session_,
             keyspace_, cfname, &rk_count));
         size_t ck_count;
-        assert(impl::GetCassTableClusteringKeyCount(cci_, session_.get(),
+        assert(impl::GetCassTableClusteringKeyCount(cci_, session_,
             keyspace_, cfname, &ck_count));
-        return impl::DynamicCfGetResultAsync(cci_, session_.get(),
+        return impl::DynamicCfGetResultAsync(cci_, session_,
             query.c_str(), consistency, cb, rk_count, ck_count,
             cfname, rkey);
    } else {
@@ -2072,12 +2072,12 @@ bool CqlIfImpl::SelectFromTableClusteringKeyRangeAndIndexValueAsync(
         rkey, ck_range, where_vec, read_vec));
     assert(IsTableDynamic(cfname));
     size_t rk_count;
-    assert(impl::GetCassTablePartitionKeyCount(cci_, session_.get(),
+    assert(impl::GetCassTablePartitionKeyCount(cci_, session_,
         keyspace_, cfname, &rk_count));
     size_t ck_count;
-    assert(impl::GetCassTableClusteringKeyCount(cci_, session_.get(),
+    assert(impl::GetCassTableClusteringKeyCount(cci_, session_,
         keyspace_, cfname, &ck_count));
-    return impl::DynamicCfGetResultAsync(cci_, session_.get(),
+    return impl::DynamicCfGetResultAsync(cci_, session_,
         query.c_str(), consistency, cb, rk_count, ck_count, cfname.c_str(),
         rkey);
 }
@@ -2094,12 +2094,12 @@ bool CqlIfImpl::SelectFromTableClusteringKeyRangeAsync(
         rkey, ck_range));
     assert(IsTableDynamic(cfname));
     size_t rk_count;
-    assert(impl::GetCassTablePartitionKeyCount(cci_, session_.get(),
+    assert(impl::GetCassTablePartitionKeyCount(cci_, session_,
         keyspace_, cfname, &rk_count));
     size_t ck_count;
-    assert(impl::GetCassTableClusteringKeyCount(cci_, session_.get(),
+    assert(impl::GetCassTableClusteringKeyCount(cci_, session_,
         keyspace_, cfname, &ck_count));
-    return impl::DynamicCfGetResultAsync(cci_, session_.get(),
+    return impl::DynamicCfGetResultAsync(cci_, session_,
         query.c_str(), consistency, cb, rk_count, ck_count, cfname.c_str(),
         rkey);
 }
@@ -2141,16 +2141,16 @@ bool CqlIfImpl::SelectFromTableSync(const std::string &cfname,
     std::string query(impl::PartitionKey2CassSelectFromTable(cfname,
         rkey));
     if (IsTableStatic(cfname) == 1) {
-        return impl::StaticCfGetResultSync(cci_, session_.get(),
+        return impl::StaticCfGetResultSync(cci_, session_,
             query.c_str(), consistency, out);
     } else if (IsTableStatic(cfname) == 0){
         size_t rk_count;
-        assert(impl::GetCassTablePartitionKeyCount(cci_, session_.get(),
+        assert(impl::GetCassTablePartitionKeyCount(cci_, session_,
             keyspace_, cfname, &rk_count));
         size_t ck_count;
-        assert(impl::GetCassTableClusteringKeyCount(cci_, session_.get(),
+        assert(impl::GetCassTableClusteringKeyCount(cci_, session_,
             keyspace_, cfname, &ck_count));
-        return impl::DynamicCfGetResultSync(cci_, session_.get(),
+        return impl::DynamicCfGetResultSync(cci_, session_,
             query.c_str(), rk_count, ck_count, consistency, out);
     } else {
         return false;
@@ -2164,16 +2164,16 @@ bool CqlIfImpl::SelectFromTableSync(const std::string &cfname,
     }
     std::string query(impl::CassSelectFromTable(cfname));
     size_t rk_count;
-    assert(impl::GetCassTablePartitionKeyCount(cci_, session_.get(),
+    assert(impl::GetCassTablePartitionKeyCount(cci_, session_,
         keyspace_, cfname, &rk_count));
     if (IsTableStatic(cfname) == 1) {
-        return impl::StaticCfGetResultSync(cci_, session_.get(),
+        return impl::StaticCfGetResultSync(cci_, session_,
             query.c_str(), rk_count, consistency, out);
     } else if (IsTableStatic(cfname) == 0){
         size_t ck_count;
-        assert(impl::GetCassTableClusteringKeyCount(cci_, session_.get(),
+        assert(impl::GetCassTableClusteringKeyCount(cci_, session_,
             keyspace_, cfname, &ck_count));
-        return impl::DynamicCfGetResultSync(cci_, session_.get(),
+        return impl::DynamicCfGetResultSync(cci_, session_,
             query.c_str(), rk_count, ck_count, consistency, out);
     } else {
         return false;
@@ -2193,7 +2193,7 @@ bool CqlIfImpl::SelectFromTableClusteringKeyRangeFieldNamesSync(const std::strin
         impl::PartitionKeyAndClusteringKeyRange2CassSelectFromTable(cfname,
         rkey, ck_range, read_vec));
     assert(IsTableDynamic(cfname));
-    return impl::DynamicCfGetResultSync(cci_, session_.get(),
+    return impl::DynamicCfGetResultSync(cci_, session_,
         query.c_str(), read_vec, consistency, out);
 }
 
@@ -2209,7 +2209,7 @@ bool CqlIfImpl::SelectFromTableClusteringKeyRangeFieldNamesSync(const std::strin
         impl::PartitionKeyAndClusteringKeyRange2CassSelectFromTable(cfname,
         rkeys, ck_range, read_vec));
     assert(IsTableDynamic(cfname));
-    return impl::DynamicCfGetResultSync(cci_, session_.get(),
+    return impl::DynamicCfGetResultSync(cci_, session_,
         query.c_str(), read_vec, consistency, out);
 }
 
@@ -2226,12 +2226,12 @@ bool CqlIfImpl::SelectFromTableClusteringKeyRangeSync(const std::string &cfname,
         rkey, ck_range));
     assert(IsTableDynamic(cfname));
     size_t rk_count;
-    assert(impl::GetCassTablePartitionKeyCount(cci_, session_.get(),
+    assert(impl::GetCassTablePartitionKeyCount(cci_, session_,
         keyspace_, cfname, &rk_count));
     size_t ck_count;
-    assert(impl::GetCassTableClusteringKeyCount(cci_, session_.get(),
+    assert(impl::GetCassTableClusteringKeyCount(cci_, session_,
         keyspace_, cfname, &ck_count));
-    return impl::DynamicCfGetResultSync(cci_, session_.get(),
+    return impl::DynamicCfGetResultSync(cci_, session_,
         query.c_str(), rk_count, ck_count, consistency, out);
 }
 
@@ -2259,21 +2259,29 @@ bool CqlIfImpl::ConnectSchemaSync() {
 }
 
 bool CqlIfImpl::ConnectSync() {
-    impl::CassFuturePtr future(cci_->CassSessionConnect(session_.get(),
+    if (!session_) {
+        session_ = cci_->CassSessionNew();
+    }
+    impl::CassFuturePtr future(cci_->CassSessionConnect(session_,
         cluster_.get()), cci_);
     bool success(impl::SyncFutureWait(cci_, future.get()));
     if (success) {
         session_state_ = SessionState::CONNECTED;
         CQLIF_INFO_TRACE("ConnectSync Done");
     } else {
-        CQLIF_ERR_TRACE("ConnectSync FAILED");
+        cci_->CassSessionFree(session_);
+	session_ = NULL;
+	CQLIF_ERR_TRACE("ConnectSync FAILED");
     }
     return success;
 }
 
 bool CqlIfImpl::DisconnectSync() {
+    if (!session_) { 
+        return true;
+    }
     // Close all session and pending queries
-    impl::CassFuturePtr future(cci_->CassSessionClose(session_.get()), cci_);
+    impl::CassFuturePtr future(cci_->CassSessionClose(session_), cci_);
     bool success(impl::SyncFutureWait(cci_, future.get()));
     if (success) {
         session_state_ = SessionState::DISCONNECTED;
@@ -2303,7 +2311,7 @@ bool CqlIfImpl::GetMetrics(Metrics *metrics) const {
         return false;
     }
     CassMetrics cass_metrics;
-    cci_->CassSessionGetMetrics(session_.get(), &cass_metrics);
+    cci_->CassSessionGetMetrics(session_, &cass_metrics);
     // Requests
     metrics->requests.min = cass_metrics.requests.min;
     metrics->requests.max = cass_metrics.requests.max;
@@ -2361,10 +2369,10 @@ bool CqlIfImpl::InsertIntoTableInternal(std::auto_ptr<GenDb::ColList> v_columns,
         return false;
     }
     if (sync) {
-        return impl::ExecuteQuerySync(cci_, session_.get(), query.c_str(),
+        return impl::ExecuteQuerySync(cci_, session_, query.c_str(),
             consistency);
     } else {
-        impl::ExecuteQueryAsync(cci_, session_.get(), query.c_str(),
+        impl::ExecuteQueryAsync(cci_, session_, query.c_str(),
             consistency, cb);
         return true;
     }
@@ -2429,11 +2437,11 @@ bool CqlIfImpl::InsertIntoTablePrepareInternal(
         return false;
     }
     if (sync) {
-        return impl::ExecuteQueryStatementSync(cci_, session_.get(),
+        return impl::ExecuteQueryStatementSync(cci_, session_,
             qstatement.get(), consistency);
     } else {
         std::string qid("Prepare: " + v_columns->cfname_);
-        impl::ExecuteQueryStatementAsync(cci_, session_.get(), qid.c_str(),
+        impl::ExecuteQueryStatementAsync(cci_, session_, qid.c_str(),
             qstatement.get(), consistency, cb);
         return true;
     }
