@@ -10,6 +10,12 @@
 #include <stdexcept>
 #include <stdio.h>
 #include <string>
+#include <boost/algorithm/string.hpp>
+
+#ifdef _WIN32
+#define popen _popen
+#define pclose _pclose
+#endif // _WIN32
 
 using namespace std;
 
@@ -51,10 +57,16 @@ TEST_F(AddressUtilsTest, AddressToStringTest) {
     EXPECT_EQ(0, address.to_string().compare("127.0.0.1"));
 }
 
+
 TEST_F(AddressUtilsTest, ResolveCanonicalNameTest) {
-    string hostname = exec("hostname -f");
+#ifdef _WIN32
+    const char *cmd = "echo %COMPUTERNAME%.%USERDNSDOMAIN%";
+#else
+    const char *cmd = "hostname -f";
+#endif // _WIN32
+    string hostname = exec(cmd);
     string hostname_2 = ResolveCanonicalName();
-    EXPECT_EQ(hostname, hostname_2);
+    EXPECT_EQ(boost::algorithm::to_lower_copy(hostname), hostname_2);
 }
 
 TEST_F(AddressUtilsTest, IPv6SubnetTest) {
