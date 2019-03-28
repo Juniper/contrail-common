@@ -57,16 +57,19 @@ TEST_F(AddressUtilsTest, AddressToStringTest) {
     EXPECT_EQ(0, address.to_string().compare("127.0.0.1"));
 }
 
+string GetFqdn() {
+#ifdef _WIN32
+    return (getenv("COMPUTERNAME") ? string(getenv("COMPUTERNAME")) : "") +
+        "." + (getenv("USERDNSDOMAIN") ? getenv("USERDNSDOMAIN") : "");
+#else
+    return exec("hostname -f");
+#endif
+}
 
 TEST_F(AddressUtilsTest, ResolveCanonicalNameTest) {
-#ifdef _WIN32
-    const char *cmd = "echo %COMPUTERNAME%.%USERDNSDOMAIN%";
-#else
-    const char *cmd = "hostname -f";
-#endif // _WIN32
-    string hostname = exec(cmd);
-    string hostname_2 = ResolveCanonicalName();
-    EXPECT_EQ(boost::algorithm::to_lower_copy(hostname), hostname_2);
+    string hostname_sys = GetFqdn();
+    string hostname = ResolveCanonicalName();
+    EXPECT_EQ(boost::algorithm::to_lower_copy(hostname_sys), hostname);
 }
 
 TEST_F(AddressUtilsTest, IPv6SubnetTest) {
