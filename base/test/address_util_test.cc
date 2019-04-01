@@ -59,13 +59,10 @@ TEST_F(AddressUtilsTest, AddressToStringTest) {
 
 string GetFqdn() {
 #ifdef _WIN32
-    const char *comp = getenv("COMPUTERNAME");
-    const char *dns = getenv("USERDNSDOMAIN");
-    string hostname;
-    if (comp)
-        hostname += comp;
+    string hostname(getenv("COMPUTERNAME"));
+    auto dns = getenv("USERDNSDOMAIN");
     if (dns) {
-        hostname += "."
+        hostname += '.';
         hostname += dns;
     }
     return hostname;
