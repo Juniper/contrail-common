@@ -39,19 +39,25 @@ public:
     virtual void Shutdown();
 
     // tx-rx
+    // Assumes mutex is locked or called from the main thread
     void StartSend(boost::asio::ip::udp::endpoint ep, std::size_t bytes_to_send,
             boost::asio::const_buffer buffer);
+    // Assumes mutex is locked or called from the main thread
     void StartReceive();
     // state
-    ServerState GetServerState() { return state_; }
+    ServerState GetServerState() const { return state_; }
     boost::asio::ip::udp::endpoint GetLocalEndpoint(
-        boost::system::error_code *error);
-    std::string GetLocalEndpointAddress();
-    int GetLocalEndpointPort();
+        boost::system::error_code *error) const;
+    std::string GetLocalEndpointAddress() const;
+    int GetLocalEndpointPort() const;
+
     // buffers
+    // Assumes mutex is locked or called from the main thread
     boost::asio::mutable_buffer AllocateBuffer();
     boost::asio::mutable_buffer AllocateBuffer(std::size_t s);
+    // Assumes mutex is locked or called from the main thread
     void DeallocateBuffer(const boost::asio::const_buffer &buffer);
+
     // statistics
     const io::SocketStats &GetSocketStats() const { return stats_; }
     void GetRxSocketStats(SocketIOStats *socket_stats) const;
@@ -61,13 +67,17 @@ protected:
     EventManager *event_manager() { return evm_; }
     virtual bool DisableSandeshLogMessages() { return false; }
     virtual std::string ToString() { return name_; }
+
+    // Assumes mutex is locked, deallocates the buffer
     virtual void HandleReceive(
             const boost::asio::const_buffer &recv_buffer,
             boost::asio::ip::udp::endpoint remote_endpoint,
             std::size_t bytes_transferred,
             const boost::system::error_code& error);
+
     virtual void OnRead(const boost::asio::const_buffer &recv_buffer,
         const boost::asio::ip::udp::endpoint &remote_endpoint);
+
     virtual int reader_task_id() const {
         return reader_task_id_;
     }
@@ -82,6 +92,8 @@ protected:
     //      there is one ReaderTask per remote endpoint
     virtual int reader_task_instance(
         const boost::asio::ip::udp::endpoint &remote_endpoint) const;
+
+    // Assumes mutex is locked, deallocates the buffer
     virtual void HandleSend(boost::asio::const_buffer send_buffer,
             boost::asio::ip::udp::endpoint remote_endpoint,
             std::size_t bytes_transferred,
@@ -91,11 +103,15 @@ private:
     class Reader;
     friend void intrusive_ptr_add_ref(UdpServer *server);
     friend void intrusive_ptr_release(UdpServer *server);
-    virtual void SetName(boost::asio::ip::udp::endpoint ep);
+    void SetName(boost::asio::ip::udp::endpoint ep);
+
+    // Locks the mutex
     void HandleReceiveInternal(
             boost::asio::const_buffer recv_buffer,
             std::size_t bytes_transferred,
             const boost::system::error_code& error);
+
+    // Locks the mutex
     void HandleSendInternal(boost::asio::const_buffer send_buffer,
             boost::asio::ip::udp::endpoint remote_endpoint,
             std::size_t bytes_transferred,
@@ -108,7 +124,8 @@ private:
     EventManager *evm_;
     std::string name_;
     boost::asio::ip::udp::endpoint remote_endpoint_;
-    tbb::mutex mutex_;
+    tbb::mutex state_guard_;
+    tbb::mutex pbuf_guard_;
     std::vector<uint8_t *> pbuf_;
     tbb::atomic<int> refcount_;
     io::SocketStats stats_;
