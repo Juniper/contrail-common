@@ -6,14 +6,14 @@ import sys
 import platform
 
 subdirs = [
-           'base',
-           'io',
-           'http',
-           'database',
-           'libpartition',
-           'zookeeper',
-           'config-client-mgr',
-          ]
+    'base',
+    'io',
+    'http',
+    'database',
+    'libpartition',
+    'zookeeper',
+    'config-client-mgr',
+]
 
 include = ['#src/contrail-common', '#/build/include']
 
@@ -34,8 +34,12 @@ else:
 
 common.Append(LIBPATH = libpath)
 common.Prepend(LIBS = libs)
-if sys.platform != 'win32':
+
+if sys.platform == 'win32':
+    common.Append(CCFLAGS = '/W2 /WX')
+else:
     common.Append(CCFLAGS = '-Wall -Werror -Wsign-compare')
+
 if not sys.platform.startswith('darwin'):
     if platform.system().startswith('Linux'):
         if not platform.linux_distribution()[0].startswith('XenServer'):
@@ -122,7 +126,3 @@ for dir in subdirs:
                         exports='BuildEnv',
                         variant_dir=BuildEnv['TOP'] + '/' + dir,
                         duplicate=0)
-
-# Local Variables:
-# mode: python
-# End:
