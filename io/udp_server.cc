@@ -98,7 +98,7 @@ UdpServer::~UdpServer() {
 void UdpServer::Shutdown() {
     tbb::mutex::scoped_lock lock(state_guard_);
     {
-        tbb::mutex::scoped_lock lock(pbuf_guard_);
+        tbb::mutex::scoped_lock lock_pbuf(pbuf_guard_);
         while (!pbuf_.empty()) {
             delete[] pbuf_.back();
             pbuf_.pop_back();
