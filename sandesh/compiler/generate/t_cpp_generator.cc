@@ -99,8 +99,8 @@ class t_cpp_generator : public t_oop_generator {
   }
 #ifdef SANDESH
   void generate_sandesh(t_sandesh* tsandesh) {
-	  generate_cpp_sandesh(tsandesh);
-   }
+    generate_cpp_sandesh(tsandesh);
+  }
   void generate_cpp_sandesh(t_sandesh* tsandesh);
   void generate_sandesh_definition   (std::ofstream& out, t_sandesh* tsandesh);
   void generate_sandesh_fingerprint   (std::ofstream& out, t_sandesh* tsandesh, bool is_definition);
@@ -1347,7 +1347,7 @@ void t_cpp_generator::generate_sandesh_async_create_fn(ofstream &out,
     indent_up();
     out << indent() << tsandesh->get_name() <<
         " * snh = new " << tsandesh->get_name() << "(lseqnum_++, file, line);"
-	<< endl;
+        << endl;
     out << indent() << "return snh;" << endl;
     indent_down();
     indent(out) << "}" << endl << endl;
@@ -1755,10 +1755,10 @@ void t_cpp_generator::generate_sandesh_member_init_list(ofstream& out,
         if (t->is_static_const_string()) {
             continue;
         }
-	if(((t_base_type *)tsandesh->get_type())->is_sandesh_object() &&
-		((*m_iter)->get_req() == t_field::T_OPTIONAL)) {
-	    continue;
-	}
+        if(((t_base_type *)tsandesh->get_type())->is_sandesh_object() &&
+            ((*m_iter)->get_req() == t_field::T_OPTIONAL)) {
+            continue;
+        }
         string dval;
         if (t->is_enum()) {
             dval += "(" + type_name(t) + ")";
@@ -2330,10 +2330,10 @@ void t_cpp_generator::generate_sandesh_definition(ofstream& out,
     // Create emplty constructor since objectlogs can have optional fields
     if (((t_base_type *)t)->is_sandesh_object()) {
         out << endl << indent() << "explicit " << tsandesh->get_name()
-	    << "(uint32_t seqno," " std::string file, int32_t line) : ";
-	generate_sandesh_base_init(out, tsandesh, false);
-	out << ", file(file), line(line) {" << endl;
-	indent_up();
+            << "(uint32_t seqno," " std::string file, int32_t line) : ";
+        generate_sandesh_base_init(out, tsandesh, false);
+        out << ", file(file), line(line) {" << endl;
+        indent_up();
         generate_sandesh_hints(out, tsandesh);
         scope_down(out);
     }
@@ -2425,14 +2425,14 @@ void t_cpp_generator::cache_attr_info(t_struct* tstruct,
     }
     // DervivedStats attributes are not handled here
     if (((*m_iter)->annotations_.find("stats") != (*m_iter)->annotations_.end()) ||
-	((*m_iter)->annotations_.find("mstats") != (*m_iter)->annotations_.end())) {
+      ((*m_iter)->annotations_.find("mstats") != (*m_iter)->annotations_.end())) {
       continue;
     }
     // All raw attributes are Non-periodic
     if (jt!=(*m_iter)->annotations_.end()) {
-	attrs.insert(std::make_pair((*m_iter)->get_name(), HIDDEN));
+      attrs.insert(std::make_pair((*m_iter)->get_name(), HIDDEN));
     } else {
-	attrs.insert(std::make_pair((*m_iter)->get_name(), INLINE));
+      attrs.insert(std::make_pair((*m_iter)->get_name(), INLINE));
     }
   }
 }
@@ -2671,7 +2671,7 @@ void t_cpp_generator::generate_struct_definition(ofstream& out,
       t_type* t = get_true_type((*m_iter)->get_type());
       if (t->is_base_type() &&
           ((*m_iter)->get_name().compare("deleted") == 0)) {
-	t_base_type::t_base tbase = ((t_base_type*)t)->get_base();
+        t_base_type::t_base tbase = ((t_base_type*)t)->get_base();
         if (tbase == t_base_type::TYPE_BOOL) del_support = true;
       }
       if (t->is_base_type() &&
@@ -2915,7 +2915,7 @@ void t_cpp_generator::generate_struct_definition(ofstream& out,
 
 #ifdef SANDESH
     out << endl << indent() << type_name((*m_iter)->get_type(), false, true)
-	    << " get_";
+      << " get_";
     out << (*m_iter)->get_name() << "() const {" << endl;
     out << indent() << indent() << "return " << (*m_iter)->get_name() << ";" << endl;
     out << indent() << "}" << endl;
@@ -2935,26 +2935,26 @@ void t_cpp_generator::generate_struct_definition(ofstream& out,
       if (type->is_base_type()) {
         t_base_type::t_base tbase = ((t_base_type*)type)->get_base();
         switch (tbase) {
-	case t_base_type::TYPE_BYTE:
-	case t_base_type::TYPE_I16:
-	case t_base_type::TYPE_I32:
-	case t_base_type::TYPE_I64:
-	case t_base_type::TYPE_U16:
-	case t_base_type::TYPE_U32:
-	case t_base_type::TYPE_U64:
-	case t_base_type::TYPE_BOOL:
-	  if ((*m_iter)->get_req() != t_field::T_OPTIONAL) {
-	    out <<
-	      indent() << "if (!((long)" << (*m_iter)->get_name()
-		       << " == rhs))" << endl <<
-	      indent() << "  return false;" << endl;
-	  } else {
-	    out <<
-	      indent() << "if (__isset." << (*m_iter)->get_name()
-		       << " && !((long)"
-		       << (*m_iter)->get_name() << " == rhs))" << endl <<
-	      indent() << "  return false;" << endl;
-	  }
+        case t_base_type::TYPE_BYTE:
+        case t_base_type::TYPE_I16:
+        case t_base_type::TYPE_I32:
+        case t_base_type::TYPE_I64:
+        case t_base_type::TYPE_U16:
+        case t_base_type::TYPE_U32:
+        case t_base_type::TYPE_U64:
+        case t_base_type::TYPE_BOOL:
+          if ((*m_iter)->get_req() != t_field::T_OPTIONAL) {
+            out <<
+              indent() << "if (!((long)" << (*m_iter)->get_name()
+                << " == rhs))" << endl <<
+              indent() << "  return false;" << endl;
+          } else {
+            out <<
+              indent() << "if (__isset." << (*m_iter)->get_name()
+                << " && !((long)"
+                << (*m_iter)->get_name() << " == rhs))" << endl <<
+              indent() << "  return false;" << endl;
+          }
           break;
         default:
           out << indent() << "return false;" << endl;
@@ -3045,21 +3045,21 @@ void t_cpp_generator::generate_struct_definition(ofstream& out,
       if (type->is_base_type()) {
         t_base_type::t_base tbase = ((t_base_type*)type)->get_base();
         switch (tbase) {
-	case t_base_type::TYPE_BYTE:
-	case t_base_type::TYPE_I16:
-	case t_base_type::TYPE_I32:
-	case t_base_type::TYPE_I64:
-	case t_base_type::TYPE_DOUBLE:
-	case t_base_type::TYPE_U16:
-	case t_base_type::TYPE_U32:
-	case t_base_type::TYPE_U64:
-	  if ((*m_iter)->get_req() != t_field::T_OPTIONAL) {
-	    out <<
+        case t_base_type::TYPE_BYTE:
+        case t_base_type::TYPE_I16:
+        case t_base_type::TYPE_I32:
+        case t_base_type::TYPE_I64:
+        case t_base_type::TYPE_DOUBLE:
+        case t_base_type::TYPE_U16:
+        case t_base_type::TYPE_U32:
+        case t_base_type::TYPE_U64:
+          if ((*m_iter)->get_req() != t_field::T_OPTIONAL) {
+            out <<
               indent() << "result." << sn << nn << "(get_" << nn <<
                 "() + right.get_" << nn << "());" << endl << endl;
           } else {
             out <<
-	      indent() << "if ((__isset." << nn << ") && (right.__isset." <<
+              indent() << "if ((__isset." << nn << ") && (right.__isset." <<
                 nn << ")) result." << sn << nn << "(get_" << nn <<
                 "() + right.get_" << nn << "());" << endl <<
               indent() << "else if (__isset." << nn << ") result." << sn <<
@@ -3090,16 +3090,16 @@ void t_cpp_generator::generate_struct_definition(ofstream& out,
       if (type->is_base_type()) {
         t_base_type::t_base tbase = ((t_base_type*)type)->get_base();
         switch (tbase) {
-	case t_base_type::TYPE_BYTE:
-	case t_base_type::TYPE_I16:
-	case t_base_type::TYPE_I32:
-	case t_base_type::TYPE_I64:
-	case t_base_type::TYPE_DOUBLE:
-	case t_base_type::TYPE_U16:
-	case t_base_type::TYPE_U32:
-	case t_base_type::TYPE_U64:
-	  if ((*m_iter)->get_req() != t_field::T_OPTIONAL) {
-	    out <<
+        case t_base_type::TYPE_BYTE:
+        case t_base_type::TYPE_I16:
+        case t_base_type::TYPE_I32:
+        case t_base_type::TYPE_I64:
+        case t_base_type::TYPE_DOUBLE:
+        case t_base_type::TYPE_U16:
+        case t_base_type::TYPE_U32:
+        case t_base_type::TYPE_U64:
+          if ((*m_iter)->get_req() != t_field::T_OPTIONAL) {
+            out <<
               indent() << "result." << sn << nn << "(get_" << nn <<
                 "() / div);" << endl << endl;
           } else {
@@ -3130,16 +3130,16 @@ void t_cpp_generator::generate_struct_definition(ofstream& out,
       if (type->is_base_type()) {
         t_base_type::t_base tbase = ((t_base_type*)type)->get_base();
         switch (tbase) {
-	case t_base_type::TYPE_BYTE:
-	case t_base_type::TYPE_I16:
-	case t_base_type::TYPE_I32:
-	case t_base_type::TYPE_I64:
-	case t_base_type::TYPE_DOUBLE:
-	case t_base_type::TYPE_U16:
-	case t_base_type::TYPE_U32:
-	case t_base_type::TYPE_U64:
-	  if ((*m_iter)->get_req() != t_field::T_OPTIONAL) {
-	    out <<
+        case t_base_type::TYPE_BYTE:
+        case t_base_type::TYPE_I16:
+        case t_base_type::TYPE_I32:
+        case t_base_type::TYPE_I64:
+        case t_base_type::TYPE_DOUBLE:
+        case t_base_type::TYPE_U16:
+        case t_base_type::TYPE_U32:
+        case t_base_type::TYPE_U64:
+          if ((*m_iter)->get_req() != t_field::T_OPTIONAL) {
+            out <<
               indent() << "result." << sn <<  nn << "(get_" << nn <<
                 "() - right.get_" << nn << "());" << endl << endl;
           } else {
@@ -3185,9 +3185,9 @@ void t_cpp_generator::generate_struct_definition(ofstream& out,
     out <<
       indent() << "template <>" << endl <<
       indent() << "struct SandeshStructDeleteTrait<" <<
-	tstruct->get_name() << "> {" << endl <<
+        tstruct->get_name() << "> {" << endl <<
       indent() << "  static bool get(const " <<
-	tstruct->get_name() << "& s) { return s.get_deleted(); }" <<
+        tstruct->get_name() << "& s) { return s.get_deleted(); }" <<
         endl <<
       indent() << "};" << endl;
   }
@@ -3195,9 +3195,9 @@ void t_cpp_generator::generate_struct_definition(ofstream& out,
     out <<
       indent() << "template <>" << endl <<
       indent() << "struct SandeshStructProxyTrait<" <<
-	tstruct->get_name() << "> {" << endl <<
+        tstruct->get_name() << "> {" << endl <<
       indent() << "  static std::string get(const " <<
-	tstruct->get_name() << "& s) { return s.get_proxy(); }" <<
+        tstruct->get_name() << "& s) { return s.get_proxy(); }" <<
         endl <<
       indent() << "};" << endl;
   }
@@ -3792,7 +3792,7 @@ void t_cpp_generator::generate_sandesh_static_rate_limit_log_def(
  * @param tsandesh The sandesh
  */
 void t_cpp_generator::generate_sandesh_http_reader(ofstream& out,
-		                                      t_sandesh* tsandesh) {
+                                                   t_sandesh* tsandesh) {
     indent(out) << "#include <boost/tokenizer.hpp>" << endl;
     indent(out) << "#include <base/util.h>" << endl << endl;
     indent(out) << "bool " << tsandesh->get_name() << "::RequestFromHttp" <<
@@ -3848,7 +3848,7 @@ void t_cpp_generator::generate_sandesh_http_reader(ofstream& out,
         {
             t_base_type *btype = static_cast<t_base_type *>(ftype);
             if (btype->is_string() || btype->is_xml())
-	    {
+            {
                 indent(out) << "entity_name=\""  << (*f_iter)->get_name() << "\";" <<  endl;
                 indent(out) << "if((tok_new.substr(0,(entity_name.length()))).compare(entity_name) == 0)" << endl;
                 scope_up(out);
@@ -4123,10 +4123,10 @@ void t_cpp_generator::generate_sandesh_updater(ofstream& out,
       if (ds_iter->second.prealgo_.empty()) {
         indent(out) << "_data.__dsobj_" << ds_iter->first << " = boost::make_shared<" <<
           " ::contrail::sandesh::DerivedStatsPeriodicIf< ::contrail::sandesh::" <<
-	  ds_iter->second.algo_ << ", " <<
-	  ds_iter->second.rawtype_ << ", " <<
-	  ds_iter->second.resulttype_.substr(0, ds_iter->second.resulttype_.size() - 3) << ", " <<
-	  ds_iter->second.resulttype_ << "> >(_dci->second, is_agg);" << endl;
+          ds_iter->second.algo_ << ", " <<
+          ds_iter->second.rawtype_ << ", " <<
+          ds_iter->second.resulttype_.substr(0, ds_iter->second.resulttype_.size() - 3) << ", " <<
+          ds_iter->second.resulttype_ << "> >(_dci->second, is_agg);" << endl;
       } else {
         indent(out) << "_data.__dsobj_" << ds_iter->first << " = boost::make_shared<" <<
           " ::contrail::sandesh::DerivedStatsPeriodicAnomalyIf< ::contrail::sandesh::" <<
@@ -4138,9 +4138,9 @@ void t_cpp_generator::generate_sandesh_updater(ofstream& out,
     } else {
       indent(out) << "_data.__dsobj_" << ds_iter->first << " = boost::make_shared<" <<
         " ::contrail::sandesh::DerivedStatsIf< ::contrail::sandesh::" <<
-	ds_iter->second.algo_ << ", " <<
-	ds_iter->second.rawtype_ << ", " << ds_iter->second.resulttype_ <<
-	"> >(_dci->second, is_agg);" << endl;
+        ds_iter->second.algo_ << ", " <<
+        ds_iter->second.rawtype_ << ", " << ds_iter->second.resulttype_ <<
+        "> >(_dci->second, is_agg);" << endl;
     }
     indent_down();
     indent(out) << "}" << endl;
@@ -4658,7 +4658,7 @@ void t_cpp_generator::generate_sandesh_uve_creator(
  * @param tsandesh The sandesh
  */
 void t_cpp_generator::generate_sandesh_creator(ofstream& out,
-		                                       t_sandesh* tsandesh) {
+                                               t_sandesh* tsandesh) {
     const t_type *t = tsandesh->get_type();
     assert(t->is_base_type());
 
@@ -4723,14 +4723,14 @@ void t_cpp_generator::generate_logger_field(ofstream& out,
                                             string prefix,
                                             bool log_value_only,
                                             bool no_name_log,
-					    bool for_sandesh) {
+                                            bool for_sandesh) {
     t_type* type = get_true_type(tfield->get_type());
     string name = tfield->get_name();
     // Handle optional elements
     if (tfield->get_req() == t_field::T_OPTIONAL) {
-	if (for_sandesh) {
-	    return;
-	}
+        if (for_sandesh) {
+            return;
+        }
         out << indent() << "if (__isset." << name << ") {" <<
                 endl;
         indent_up();
@@ -8050,7 +8050,7 @@ void t_cpp_generator::generate_serialize_field(ofstream& out,
     out << endl;
 #ifdef SANDESH
   } else if (type->is_sandesh()) {
-	  generate_serialize_sandesh(out, (t_sandesh*)type, name);
+    generate_serialize_sandesh(out, (t_sandesh*)type, name);
 #endif
   } else {
     printf("DO NOT KNOW HOW TO SERIALIZE FIELD '%s' TYPE '%s'\n",
@@ -8567,9 +8567,9 @@ string t_cpp_generator::declare_field(t_field* tfield, bool init, bool pointer, 
   }
   if (!reference
 #ifdef SANDESH
-	  && !constructor
+    && !constructor
 #endif
-	 ) {
+  ) {
     result += ";";
   }
   return result;
@@ -8596,7 +8596,7 @@ string t_cpp_generator::function_signature(t_function* tfunction,
 
 #ifdef SANDESH
   if (is_static) {
-  	func_begin_modifier = "static ";
+    func_begin_modifier = "static ";
   } else if (is_virtual) {
     func_begin_modifier = "virtual ";
     func_end_modifier = " = 0";
@@ -8607,7 +8607,7 @@ string t_cpp_generator::function_signature(t_function* tfunction,
     if (is_complex_type(ttype)) {
       return
 #ifdef SANDESH
-    	func_begin_modifier +
+        func_begin_modifier +
 #endif
         "void " + prefix + tfunction->get_name() +
         "(" + type_name(ttype) + (name_params ? "& _return" : "& /* _return */") +
@@ -8619,7 +8619,7 @@ string t_cpp_generator::function_signature(t_function* tfunction,
     } else {
       return
 #ifdef SANDESH
-    	func_begin_modifier +
+        func_begin_modifier +
 #endif
         type_name(ttype) + " " + prefix + tfunction->get_name() +
         "(" + argument_list(arglist, name_params) + ")"
@@ -8747,7 +8747,7 @@ string t_cpp_generator::type_to_enum(t_type* type) {
     return "::contrail::sandesh::protocol::T_STRUCT";
 #ifdef SANDESH
   } else if (type->is_sandesh()) {
-	  return "::contrail::sandesh::protocol::T_SANDESH";
+    return "::contrail::sandesh::protocol::T_SANDESH";
 #endif
   } else if (type->is_map()) {
     return "::contrail::sandesh::protocol::T_MAP";
