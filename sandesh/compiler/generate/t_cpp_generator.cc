@@ -1118,14 +1118,14 @@ void t_cpp_generator::generate_sandesh_request(ofstream& out,
  * @param tsandesh The sandesh
  */
 std::string t_cpp_generator::generate_sandesh_no_static_const_string_function(t_sandesh* tsandesh,
-		bool signature, bool autogen_darg, bool trace, bool request, bool ctorcall) {
-	string result = "";
+    bool signature, bool autogen_darg, bool trace, bool request, bool ctorcall) {
+    string result = "";
 
-	// Get members
-	vector<t_field*>::const_iterator m_iter;
-	const vector<t_field*>& members = tsandesh->get_members();
+    // Get members
+    vector<t_field*>::const_iterator m_iter;
+    const vector<t_field*>& members = tsandesh->get_members();
 
-  bool init_function = false;
+    bool init_function = false;
 
     if (trace) {
         result += "(";
@@ -1152,57 +1152,57 @@ std::string t_cpp_generator::generate_sandesh_no_static_const_string_function(t_
         }
     }
 
-  for (m_iter = members.begin(); m_iter != members.end(); ++m_iter) {
-		t_type* t = get_true_type((*m_iter)->get_type());
-		if (t->is_static_const_string()) {
-			continue;
-		}
-		if ((*m_iter)->get_auto_generated() && trace) {
-		    continue;
-		}
-		if(((t_base_type *)tsandesh->get_type())->is_sandesh_object() &&
-		    ((*m_iter)->get_req() == t_field::T_OPTIONAL)) {
-		    continue;
-		}
-		if (!init_function) {
-		    result += "(";
-		    init_function = true;
-		} else {
-		    result += ", ";
-		}
+    for (m_iter = members.begin(); m_iter != members.end(); ++m_iter) {
+        t_type* t = get_true_type((*m_iter)->get_type());
+        if (t->is_static_const_string()) {
+            continue;
+        }
+        if ((*m_iter)->get_auto_generated() && trace) {
+            continue;
+        }
+        if(((t_base_type *)tsandesh->get_type())->is_sandesh_object() &&
+            ((*m_iter)->get_req() == t_field::T_OPTIONAL)) {
+            continue;
+        }
+        if (!init_function) {
+            result += "(";
+            init_function = true;
+        } else {
+            result += ", ";
+        }
 
-		if (signature) {
-		    // Special handling for auto-generated members
-		    if (autogen_darg && (*m_iter)->get_auto_generated()) {
-                        result += declare_field(*m_iter, true, false, false, false, true);
-		    } else {
-                        bool use_const = !(t->is_base_type() || t->is_enum()) || t->is_string();
-                        result += declare_field(*m_iter, false, false, use_const, !t->is_base_type() || t->is_string(), true);
-		    }
-		} else {
-			result += (*m_iter)->get_name();
-		}
-	}
-  if (!init_function) {
-      result += "(";
-  }
+        if (signature) {
+            // Special handling for auto-generated members
+            if (autogen_darg && (*m_iter)->get_auto_generated()) {
+                result += declare_field(*m_iter, true, false, false, false, true);
+            } else {
+                bool use_const = !(t->is_base_type() || t->is_enum()) || t->is_string();
+                result += declare_field(*m_iter, false, false, use_const, !t->is_base_type() || t->is_string(), true);
+            }
+        } else {
+            result += (*m_iter)->get_name();
+        }
+    }
+    if (!init_function) {
+        result += "(";
+    }
 
-  if (request) {
-      if (signature) {
-          if (init_function) {
-              result += ", ";
-          }
-          result += "const std::string& context, SandeshConnection * sconn = NULL";
-      } else {
-          if (init_function) {
-              result += ", ";
-          }
-          result += "context, sconn";
-      }
-  }
+    if (request) {
+        if (signature) {
+            if (init_function) {
+                result += ", ";
+            }
+            result += "const std::string& context, SandeshConnection * sconn = NULL";
+        } else {
+            if (init_function) {
+                result += ", ";
+            }
+            result += "context, sconn";
+        }
+    }
 
-	result += ")";
-	return result;
+    result += ")";
+    return result;
 }
 
 std::string t_cpp_generator::generate_sandesh_async_creator(t_sandesh* tsandesh, bool signature,
@@ -1260,13 +1260,13 @@ std::string t_cpp_generator::generate_sandesh_async_creator(t_sandesh* tsandesh,
         if (!init_function) {
             result += "(snh";
             init_function = true;
-	} else {
-	    if(signature) {
-		result += ", " + tsandesh->get_name() + " *snh";
-	    } else {
-		result += ", snh";
-	    }
-	}
+        } else {
+            if(signature) {
+                result += ", " + tsandesh->get_name() + " *snh";
+            } else {
+                result += ", snh";
+            }
+        }
     } else {
     for (m_iter = members.begin(); m_iter != members.end(); ++m_iter) {
         temp = "";
@@ -1274,10 +1274,10 @@ std::string t_cpp_generator::generate_sandesh_async_creator(t_sandesh* tsandesh,
         if (t->is_static_const_string()) {
             continue;
         }
-	bool is_optional = (*m_iter)->get_req() == t_field::T_OPTIONAL;
-	if(is_optional) {
-	    continue;
-	}
+        bool is_optional = (*m_iter)->get_req() == t_field::T_OPTIONAL;
+        if(is_optional) {
+            continue;
+        }
         bool skip = (*m_iter)->get_auto_generated() &&
                     ((*m_iter)->get_name() == "file" || (*m_iter)->get_name() == "line") &&
                     category_level_file_line_first;
@@ -2462,8 +2462,8 @@ void t_cpp_generator::derived_stats_info(t_struct* tstruct,
         assert(jt == (*m_iter)->annotations_.end());
         is_ds_map = true;
         assert(retype->is_map());
-	t_type* vtype = ((t_map*)retype)->get_val_type();
-	restype = type_name(get_true_type(vtype));
+        t_type* vtype = ((t_map*)retype)->get_val_type();
+        restype = type_name(get_true_type(vtype));
       } else {
         restype = type_name(get_true_type((*m_iter)->get_type()));
       }
@@ -2528,12 +2528,12 @@ void t_cpp_generator::derived_stats_info(t_struct* tstruct,
       RawMetric rmt = RM_DIAL;
       vector<t_field*>::const_iterator s_iter;
       for (s_iter = members.begin(); s_iter != members.end(); ++s_iter) {
-	if (rawattr.compare((*s_iter)->get_name())==0) {
+        if (rawattr.compare((*s_iter)->get_name())==0) {
           map<string,string>::const_iterator cit =
               (*s_iter)->annotations_.find("metric");
           if (cit != (*s_iter)->annotations_.end()) {
-	    if (cit->second.compare("agg") == 0) rmt = RM_AGG;
-	    else if (cit->second.compare("diff") == 0) rmt = RM_DIFF;
+            if (cit->second.compare("agg") == 0) rmt = RM_AGG;
+            else if (cit->second.compare("diff") == 0) rmt = RM_DIFF;
           }
           t_type* ratype = get_true_type((*s_iter)->get_type());
           t_type* vtype = ratype;
@@ -2573,8 +2573,8 @@ void t_cpp_generator::derived_stats_info(t_struct* tstruct,
               }
             }
           }
-	  break;
-	}
+          break;
+        }
       }
       assert(!rawtype.empty());
 
