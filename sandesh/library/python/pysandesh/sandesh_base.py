@@ -35,14 +35,15 @@ from sandesh_client import SandeshClient
 from sandesh_uve import SandeshUVETypeMaps, SandeshUVEPerTypeMap
 from work_queue import WorkQueue
 
-
 class SandeshConfig(object):
 
     def __init__(self, http_server_ip=None, keyfile=None, certfile=None, ca_cert=None,
                  sandesh_ssl_enable=False, introspect_ssl_enable=False,
                  dscp_value=0, disable_object_logs=False,
                  system_logs_rate_limit=DEFAULT_SANDESH_SEND_RATELIMIT,
-                 stats_collector=None):
+                 stats_collector=None, tcp_keepalive_enable=True,
+                 tcp_keepalive_idle_time=7200, tcp_keepalive_interval=75,
+                 tcp_keepalive_probes= 9):
         self.http_server_ip = http_server_ip
         self.keyfile = keyfile
         self.certfile = certfile
@@ -53,6 +54,10 @@ class SandeshConfig(object):
         self.disable_object_logs = disable_object_logs
         self.system_logs_rate_limit = system_logs_rate_limit
         self.stats_collector = stats_collector
+        self.tcp_keepalive_enable = tcp_keepalive_enable
+        self.tcp_keepalive_idle_time = tcp_keepalive_idle_time
+        self.tcp_keepalive_interval = tcp_keepalive_interval
+        self.tcp_keepalive_probes= tcp_keepalive_probes
     # end __init__
 
     @staticmethod
@@ -71,6 +76,10 @@ class SandeshConfig(object):
                     'introspect_ssl_enable': False,
                     'sandesh_dscp_value': 0,
                     'disable_object_logs': False,
+		    'tcp_keepalive_enable': True,
+		    'tcp_keepalive_idle_time': 7200,
+		    'tcp_keepalive_interval': 75,
+		    'tcp_keepalive_probes': 9,
                     })
             if section == 'DEFAULTS':
                 sandeshopts.update({'sandesh_send_rate_limit': \
@@ -121,7 +130,23 @@ class SandeshConfig(object):
                 parser_args.stats_collector if parser_args and \
                 hasattr(parser_args, 'stats_collector') and \
                 parser_args.stats_collector is not None else \
-                default_opts['stats_collector'])
+                default_opts['stats_collector'],
+	    tcp_keepalive_enable =
+		parser_args.tcp_keepalive_enable if parser_args and \
+		parser_args.tcp_keepalive_enable is not None else \
+		default_opts['tcp_keepalive_enable'],
+	    tcp_keepalive_idle_time =
+		parser_args.tcp_keepalive_idle_time if parser_args and \
+		parser_args.tcp_keepalive_idle_time is not None else \
+		default_opts['tcp_keepalive_idle_time'],
+	    tcp_keepalive_interval =
+		parser_args.tcp_keepalive_interval if parser_args and \
+		parser_args.tcp_keepalive_interval is not None else \
+		default_opts['tcp_keepalive_interval'],
+	    tcp_keepalive_probes =
+		parser_args.tcp_keepalive_probes if parser_args and \
+		parser_args.tcp_keepalive_probes is not None else \
+		default_opts['tcp_keepalive_probes'])
 
         return sandesh_config
     # end get_sandesh_config
@@ -147,6 +172,14 @@ class SandeshConfig(object):
             help="System logs send rate limit in messages per second per message type")
         parser.add_argument("--stats_collector",
             help="External Stats Collector")
+        parser.add_argument("--tcp_keepalive_enable", action="store_true",
+	    help="Enable keepalive for tcp connection")
+        parser.add_argument("--tcp_keepalive_idle_time", type=int,
+            help="set the keepalive timer in seconds")
+        parser.add_argument("--tcp_keepalive_interval", type=int,
+            help="specify the tcp keepalive interval time")
+        parser.add_argument("--tcp_keepalive_probes", type=int,
+            help="specify the tcp keepalive probes")
     # end add_parser_arguments
 
     @staticmethod
@@ -168,6 +201,20 @@ class SandeshConfig(object):
                         'SANDESH', 'sandesh_dscp_value')
                 except:
                     pass
+
+           if 'tcp_keepalive_enable' in config.options('SANDESH'):
+	        sandeshopts['tcp_keepalive_enable'] = config.getboolean(
+		    'SANDESH', 'tcp_keepalive_enable')
+	    if 'tcp_keepalive_idle_time' in config.options('SANDESH'):
+	        sandeshopts['tcp_keepalive_idle_time'] = config.getint(
+		    'SANDESH', 'tcp_keepalive_idle_time')
+	    if 'tcp_keepalive_interval' in config.options('SANDESH'):
+	        sandeshopts['tcp_keepalive_interval'] = config.getint(
+		    'SANDESH', 'tcp_keepalive_interval')
+	    if 'tcp_keepalive_probes' in config.options('SANDESH'):
+	        sandeshopts['tcp_keepalive_probes'] = config.getint(
+		    'SANDESH', 'tcp_keepalive_probes')
+
         if 'STATS' in config.sections():
             sandeshopts.update(dict(config.items('STATS')))
             if 'stats_collector' in config.options('STATS'):
