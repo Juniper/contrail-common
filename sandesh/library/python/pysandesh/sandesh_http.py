@@ -121,19 +121,38 @@ class SandeshHttp(object):
             self._sandesh.record_port("http", self._http_port)
             self._logger.error('Starting Introspect on HTTP Port %d' %
                 self._http_port)
-            if self._sandesh_config and \
-                    self._sandesh_config.introspect_ssl_enable:
-                ca_certs=self._sandesh_config.ca_cert
-                keyfile=self._sandesh_config.keyfile
-                certfile=self._sandesh_config.certfile
-                self._http_server = WSGIServer(sock, self._http_app,
-                    ca_certs=ca_certs, keyfile=keyfile,
-                    certfile=certfile, ssl_version=ssl.PROTOCOL_SSLv23,
-                    cert_reqs=ssl.CERT_REQUIRED, log=self._std_log)
-            else:
-                self._http_server = WSGIServer(sock, self._http_app, log=self._std_log)
+            if self._sandesh_config:
+                if self._sandesh_config.tcp_keepalive_enable:
+                    self.set_socket_options(sock)
+                if self._sandesh_config.introspect_ssl_enable:
+                    ca_certs=self._sandesh_config.ca_cert
+                    keyfile=self._sandesh_config.keyfile
+                    certfile=self._sandesh_config.certfile
+                    self._http_server = WSGIServer(sock, self._http_app,
+                        ca_certs=ca_certs, keyfile=keyfile,
+                        certfile=certfile, ssl_version=ssl.PROTOCOL_SSLv23,
+                        cert_reqs=ssl.CERT_REQUIRED, log=self._std_log)
+                else:
+                    self._http_server = WSGIServer(sock, self._http_app, log=self._std_log)
             self._http_server.serve_forever()
     # end start_http_server
+
+    def set_socket_options(self, sock):
+        if hasattr(socket, 'SO_KEEPALIVE'):
+           sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+        if hasattr(socket, 'TCP_KEEPIDLE'):
+           sock.setsockopt(
+                socket.IPPROTO_TCP, socket.TCP_KEEPIDLE,
+                self._sandesh_config.tcp_keepalive_idle_time)
+        if hasattr(socket, 'TCP_KEEPINTVL'):
+           sock.setsockopt(
+                socket.IPPROTO_TCP, socket.TCP_KEEPINTVL,
+                self._sandesh_config.tcp_keepalive_interval)
+        if hasattr(socket, 'TCP_KEEPCNT'):
+           sock.setsockopt(
+                socket.IPPROTO_TCP, socket.TCP_KEEPCNT,
+                self._sandesh_config.tcp_keepalive_probes)
+    #end set_socket_options
 
     def get_port(self):
         return self._http_port
