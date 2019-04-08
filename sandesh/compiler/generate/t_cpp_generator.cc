@@ -4424,95 +4424,95 @@ void t_cpp_generator::generate_sandesh_reader(ofstream& out,
  * @param tsandesh The sandesh
  */
 void t_cpp_generator::generate_sandesh_writer(ofstream& out,
-		                                      t_sandesh* tsandesh) {
-	string name = tsandesh->get_name();
-	const vector<t_field*>& fields = tsandesh->get_members();
-	vector<t_field*>::const_iterator f_iter;
+                                              t_sandesh* tsandesh) {
+  string name = tsandesh->get_name();
+  const vector<t_field*>& fields = tsandesh->get_members();
+  vector<t_field*>::const_iterator f_iter;
 
-	indent(out) <<
-			"int32_t " << tsandesh->get_name() <<
-			"::Write(boost::shared_ptr<contrail::sandesh::protocol::TProtocol> oprot) const {" <<
-			endl;
+  indent(out) <<
+    "int32_t " << tsandesh->get_name() <<
+    "::Write(boost::shared_ptr<contrail::sandesh::protocol::TProtocol> oprot) const {" <<
+    endl;
 
-	indent_up();
+  indent_up();
 
-	out << indent() << "int32_t xfer = 0, ret;" << endl;
+  out << indent() << "int32_t xfer = 0, ret;" << endl;
 
-	indent(out) <<
-			"if ((ret = oprot->writeSandeshBegin(\"" << name << "\")) < 0) {" << endl;
-	indent_up();
-    indent(out) << "return ret;" << endl;
-    scope_down(out);
-    indent(out) << "xfer += ret;" << endl;
+  indent(out) <<
+    "if ((ret = oprot->writeSandeshBegin(\"" << name << "\")) < 0) {" << endl;
+  indent_up();
+  indent(out) << "return ret;" << endl;
+  scope_down(out);
+  indent(out) << "xfer += ret;" << endl;
 
-	for (f_iter = fields.begin(); f_iter != fields.end(); ++f_iter) {
-		if ((*f_iter)->get_req() == t_field::T_OPTIONAL) {
-			indent(out) << "if (this->__isset." << (*f_iter)->get_name() << ") {" << endl;
-			indent_up();
-		}
-		// Write field header
-                if (!((*f_iter)->annotations_.empty())) {
-                    out << indent() << "{" << endl;
-                    indent_up();
-                    out << indent() << "std::map<std::string, std::string> annotations_;" << endl;
-                    std::map<std::string, std::string>::iterator it;
-                    for (it = (*f_iter)->annotations_.begin(); it != (*f_iter)->annotations_.end(); it++) {
-                        out << indent() << "annotations_.insert(std::make_pair(\""
-                            << (*it).first << "\"" << ", \"" << (*it).second << "\"));"
-                            << endl;
-                    }
-                    out << indent() << "if ((ret = oprot->writeFieldBegin(" <<
-                        "\"" << (*f_iter)->get_name() << "\", " <<
-                        type_to_enum((*f_iter)->get_type()) << ", " <<
-                        (*f_iter)->get_key() << ", &annotations_)) < 0) {" << endl;
-                    indent_up();
-                    indent(out) << "return ret;" << endl;
-                    scope_down(out);
-                    indent(out) << "xfer += ret;" << endl;
-                    indent_down();
-                    out << indent() << "}" << endl;
-                } else {
-                    out <<
-                        indent() << "if ((ret = oprot->writeFieldBegin(" <<
-                        "\"" << (*f_iter)->get_name() << "\", " <<
-                        type_to_enum((*f_iter)->get_type()) << ", " <<
-                        (*f_iter)->get_key() << ")) < 0) {" << endl;
-                    indent_up();
-                    indent(out) << "return ret;" << endl;
-                    scope_down(out);
-                    indent(out) << "xfer += ret;" << endl;
-                }
-		// Write field contents
-		generate_serialize_field(out, *f_iter, "this->");
-		// Write field closer
-		indent(out) <<
-				"if ((ret = oprot->writeFieldEnd()) < 0) {" << endl;
-        indent_up();
-        indent(out) << "return ret;" << endl;
-        scope_down(out);
-        indent(out) << "xfer += ret;" << endl;
-		if ((*f_iter)->get_req() == t_field::T_OPTIONAL) {
-			indent_down();
-			indent(out) << '}' << endl;
-		}
-	}
+  for (f_iter = fields.begin(); f_iter != fields.end(); ++f_iter) {
+    if ((*f_iter)->get_req() == t_field::T_OPTIONAL) {
+      indent(out) << "if (this->__isset." << (*f_iter)->get_name() << ") {" << endl;
+      indent_up();
+    }
+    // Write field header
+    if (!((*f_iter)->annotations_.empty())) {
+      out << indent() << "{" << endl;
+      indent_up();
+      out << indent() << "std::map<std::string, std::string> annotations_;" << endl;
+      std::map<std::string, std::string>::iterator it;
+      for (it = (*f_iter)->annotations_.begin(); it != (*f_iter)->annotations_.end(); it++) {
+        out << indent() << "annotations_.insert(std::make_pair(\""
+          << (*it).first << "\"" << ", \"" << (*it).second << "\"));"
+          << endl;
+      }
+      out << indent() << "if ((ret = oprot->writeFieldBegin(" <<
+        "\"" << (*f_iter)->get_name() << "\", " <<
+        type_to_enum((*f_iter)->get_type()) << ", " <<
+        (*f_iter)->get_key() << ", &annotations_)) < 0) {" << endl;
+      indent_up();
+      indent(out) << "return ret;" << endl;
+      scope_down(out);
+      indent(out) << "xfer += ret;" << endl;
+      indent_down();
+      out << indent() << "}" << endl;
+    } else {
+      out <<
+        indent() << "if ((ret = oprot->writeFieldBegin(" <<
+        "\"" << (*f_iter)->get_name() << "\", " <<
+        type_to_enum((*f_iter)->get_type()) << ", " <<
+        (*f_iter)->get_key() << ")) < 0) {" << endl;
+      indent_up();
+      indent(out) << "return ret;" << endl;
+      scope_down(out);
+      indent(out) << "xfer += ret;" << endl;
+    }
+    // Write field contents
+    generate_serialize_field(out, *f_iter, "this->");
+    // Write field closer
+    indent(out) <<
+      "if ((ret = oprot->writeFieldEnd()) < 0) {" << endl;
+      indent_up();
+      indent(out) << "return ret;" << endl;
+      scope_down(out);
+      indent(out) << "xfer += ret;" << endl;
+    if ((*f_iter)->get_req() == t_field::T_OPTIONAL) {
+      indent_down();
+      indent(out) << '}' << endl;
+    }
+  }
 
-	// Write the struct map
-	out <<
-			indent() << "if ((ret = oprot->writeFieldStop()) < 0) {" << endl <<
-			indent() << "  return ret;" << endl <<
-			indent() << "}" << endl <<
-			indent() << "xfer += ret;" << endl <<
-			indent() << "if ((ret = oprot->writeSandeshEnd()) < 0) {" << endl <<
-            indent() << "  return ret;" << endl <<
-            indent() << "}" << endl <<
-            indent() << "xfer += ret;" << endl <<
-			indent() << "return xfer;" << endl;
+  // Write the struct map
+  out <<
+    indent() << "if ((ret = oprot->writeFieldStop()) < 0) {" << endl <<
+    indent() << "  return ret;" << endl <<
+    indent() << "}" << endl <<
+    indent() << "xfer += ret;" << endl <<
+    indent() << "if ((ret = oprot->writeSandeshEnd()) < 0) {" << endl <<
+    indent() << "  return ret;" << endl <<
+    indent() << "}" << endl <<
+    indent() << "xfer += ret;" << endl <<
+    indent() << "return xfer;" << endl;
 
-	indent_down();
-	indent(out) <<
-			"}" << endl <<
-			endl;
+  indent_down();
+  indent(out) <<
+    "}" << endl <<
+    endl;
 }
 
 /**
