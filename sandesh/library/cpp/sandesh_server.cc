@@ -77,9 +77,7 @@ SandeshServer::SandeshServer(EventManager *evm, const SandeshConfig &config)
         // CA certificate
         if (!config.ca_cert.empty()) {
             // Verify that the peer certificate is signed by a trusted CA
-            ctx->set_verify_mode(boost::asio::ssl::verify_peer |
-                                 boost::asio::ssl::verify_fail_if_no_peer_cert,
-                                 ec);
+            ctx->set_verify_mode(boost::asio::ssl::verify_none, ec);
             if (ec.value() != 0) {
                 SANDESH_LOG(ERROR, "Error setting verification mode: " <<
                             ec.message());

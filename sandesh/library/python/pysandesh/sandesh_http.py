@@ -129,7 +129,7 @@ class SandeshHttp(object):
                 self._http_server = WSGIServer(sock, self._http_app,
                     ca_certs=ca_certs, keyfile=keyfile,
                     certfile=certfile, ssl_version=ssl.PROTOCOL_SSLv23,
-                    cert_reqs=ssl.CERT_REQUIRED, log=self._std_log)
+                    cert_reqs=ssl.CERT_OPTIONAL, log=self._std_log)
             else:
                 self._http_server = WSGIServer(sock, self._http_app, log=self._std_log)
             self._http_server.serve_forever()
