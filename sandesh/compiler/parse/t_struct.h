@@ -51,10 +51,6 @@ class t_struct : public t_type {
     is_xception_(false),
     xsd_all_(false) {}
 
-  void set_name(const std::string& name) {
-    name_ = name;
-  }
-
   void set_xception(bool is_xception) {
     is_xception_ = is_xception;
   }
@@ -100,7 +96,7 @@ class t_struct : public t_type {
   bool is_xception() const {
     return is_xception_;
   }
-  
+
   bool is_union() const {
     return is_union_;
   }

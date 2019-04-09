@@ -51,10 +51,6 @@ class t_sandesh : public t_type {
     t_type(program, name),
     type_(NULL) {}
 
-  void set_name(const std::string& name) {
-    name_ = name;
-  }
-
   void set_type(t_type* type) {
     type_ = type;
   }
