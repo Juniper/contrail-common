@@ -50,6 +50,10 @@ class t_sandesh : public t_struct_common {
     return "Sandesh";
   }
 
+  virtual bool is_sandesh() const {
+    return true;
+  }
+
   void set_type(t_type* type) {
     type_ = type;
   }
