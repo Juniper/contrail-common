@@ -23,14 +23,11 @@
 #ifndef T_SANDESH_H
 #define T_SANDESH_H
 
-#include <algorithm>
-#include <vector>
-#include <utility>
 #include <string>
 
 #include "t_type.h"
+#include "t_struct_common.h"
 #include "t_base_type.h"
-#include "t_field.h"
 
 // Forward declare that puppy
 class t_program;
@@ -39,16 +36,14 @@ class t_program;
  * A sandesh is a container for a set of member fields that has a name.
  *
  */
-class t_sandesh : public t_type {
+class t_sandesh : public t_struct_common {
  public:
-  typedef std::vector<t_field*> members_type;
-
   t_sandesh(t_program* program) :
-    t_type(program),
+    t_struct_common(program),
     type_(NULL) {}
 
   t_sandesh(t_program* program, const std::string& name) :
-    t_type(program, name),
+    t_struct_common(program, name),
     type_(NULL) {}
 
   void set_type(t_type* type) {
@@ -65,47 +60,6 @@ class t_sandesh : public t_type {
     return false;
   }
 
-  bool append(t_field* elem) {
-    members_.push_back(elem);
-
-    typedef members_type::iterator iter_type;
-    std::pair<iter_type, iter_type> bounds = std::equal_range(
-            members_in_id_order_.begin(), members_in_id_order_.end(), elem, t_field::key_compare()
-        );
-    if (bounds.first != bounds.second) {
-      return false;
-    }
-    members_in_id_order_.insert(bounds.second, elem);
-    return true;
-  }
-
-  virtual std::string get_fingerprint_material() const {
-    std::string rv = "{";
-    members_type::const_iterator m_iter;
-    for (m_iter = members_in_id_order_.begin(); m_iter != members_in_id_order_.end(); ++m_iter) {
-      rv += (*m_iter)->get_fingerprint_material();
-      rv += ";";
-    }
-    rv += "}";
-    return rv;
-  }
-
-  virtual void generate_fingerprint() {
-    t_type::generate_fingerprint();
-    members_type::const_iterator m_iter;
-    for (m_iter = members_in_id_order_.begin(); m_iter != members_in_id_order_.end(); ++m_iter) {
-      (*m_iter)->get_type()->generate_fingerprint();
-    }
-  }
-
-  const members_type& get_members() {
-    return members_;
-  }
-
-  const members_type& get_sorted_members() {
-    return members_in_id_order_;
-  }
-
   const t_type* get_type() {
     return type_;
   }
@@ -119,10 +73,7 @@ class t_sandesh : public t_type {
   virtual bool has_key_annotation() const;
 
  private:
-
   t_type*      type_;
-  members_type members_;
-  members_type members_in_id_order_;
 };
 
 #endif
