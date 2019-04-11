@@ -8447,66 +8447,77 @@ void t_cpp_generator::generate_common_struct_reader_body(
     indent() << "  break;" << endl <<
     indent() << "}" << endl;
 
-  // Switch statement on the field we are reading
-  indent(out) <<
-    "switch (fid)" << endl;
-
-  scope_up(out);
-
-  // Generate deserialization code for known cases
-  for (f_iter = fields.begin(); f_iter != fields.end(); ++f_iter) {
+  // Generate 'switch' statement only when there is at least
+  // one 'case' in it. Otherwise, generate just the contents
+  // of 'default' label, without a 'switch'.
+  if (fields.empty()) {
+    out <<
+      indent() << "if ((ret = iprot->skip(ftype)) < 0) {" << endl <<
+      indent() << "  return ret;" << endl <<
+      indent() << "}" << endl <<
+      indent() << "xfer += ret;" << endl;
+  } else {
+    // Switch statement on the field we are reading
     indent(out) <<
-      "case " << (*f_iter)->get_key() << ":" << endl;
-    indent_up();
-    indent(out) <<
-      "if (ftype == " << type_to_enum((*f_iter)->get_type()) << ") {" << endl;
-    indent_up();
+      "switch (fid)" << endl;
 
-    const char *isset_prefix =
-      ((*f_iter)->get_req() != t_field::T_REQUIRED) ? "this->__isset." : "isset_";
+    scope_up(out);
+
+    // Generate deserialization code for known cases
+    for (f_iter = fields.begin(); f_iter != fields.end(); ++f_iter) {
+      indent(out) <<
+        "case " << (*f_iter)->get_key() << ":" << endl;
+      indent_up();
+      indent(out) <<
+        "if (ftype == " << type_to_enum((*f_iter)->get_type()) << ") {" << endl;
+      indent_up();
+
+      const char *isset_prefix =
+        ((*f_iter)->get_req() != t_field::T_REQUIRED) ? "this->__isset." : "isset_";
 
 #if 0
-    // This code throws an exception if the same field is encountered twice.
-    // We've decided to leave it out for performance reasons.
-    // TODO(dreiss): Generate this code and "if" it out to make it easier
-    // for people recompiling thrift to include it.
-    out <<
-      indent() << "if (" << isset_prefix << (*f_iter)->get_name() << ")" << endl <<
-      indent() << "  throw TProtocolException(TProtocolException::INVALID_DATA);" << endl;
+      // This code throws an exception if the same field is encountered twice.
+      // We've decided to leave it out for performance reasons.
+      // TODO(dreiss): Generate this code and "if" it out to make it easier
+      // for people recompiling thrift to include it.
+      out <<
+        indent() << "if (" << isset_prefix << (*f_iter)->get_name() << ")" << endl <<
+        indent() << "  throw TProtocolException(TProtocolException::INVALID_DATA);" << endl;
 #endif
 
-    if (pointers && !(*f_iter)->get_type()->is_xception()) {
-      generate_deserialize_field(out, *f_iter, "(*(this->", "))");
-    } else {
-      generate_deserialize_field(out, *f_iter, "this->");
+      if (pointers && !(*f_iter)->get_type()->is_xception()) {
+        generate_deserialize_field(out, *f_iter, "(*(this->", "))");
+      } else {
+        generate_deserialize_field(out, *f_iter, "this->");
+      }
+      out <<
+        indent() << isset_prefix << (*f_iter)->get_name() << " = true;" << endl;
+      indent_down();
+      out <<
+        indent() << "} else {" << endl <<
+        indent() << "  if ((ret = iprot->skip(ftype)) < 0) {" << endl <<
+        indent() << "    return ret;" << endl <<
+        indent() << "  }" << endl <<
+        indent() << "  xfer += ret;" << endl <<
+        // TODO(dreiss): Make this an option when thrift structs
+        // have a common base class.
+        // indent() << "  throw TProtocolException(TProtocolException::INVALID_DATA);" << endl <<
+        indent() << "}" << endl <<
+        indent() << "break;" << endl;
+      indent_down();
     }
+
+    // In the default case we skip the field
     out <<
-      indent() << isset_prefix << (*f_iter)->get_name() << " = true;" << endl;
-    indent_down();
-    out <<
-      indent() << "} else {" << endl <<
+      indent() << "default:" << endl <<
       indent() << "  if ((ret = iprot->skip(ftype)) < 0) {" << endl <<
       indent() << "    return ret;" << endl <<
       indent() << "  }" << endl <<
       indent() << "  xfer += ret;" << endl <<
-      // TODO(dreiss): Make this an option when thrift structs
-      // have a common base class.
-      // indent() << "  throw TProtocolException(TProtocolException::INVALID_DATA);" << endl <<
-      indent() << "}" << endl <<
-      indent() << "break;" << endl;
-    indent_down();
+      indent() << "  break;" << endl;
+
+    scope_down(out);
   }
-
-  // In the default case we skip the field
-  out <<
-    indent() << "default:" << endl <<
-    indent() << "  if ((ret = iprot->skip(ftype)) < 0) {" << endl <<
-    indent() << "    return ret;" << endl <<
-    indent() << "  }" << endl <<
-    indent() << "  xfer += ret;" << endl <<
-    indent() << "  break;" << endl;
-
-  scope_down(out);
 
   // Read field end marker
   indent(out) <<
