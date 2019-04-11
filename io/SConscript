@@ -3,7 +3,7 @@
 #
 
 # -*- mode: python; -*-
-import sys
+import platform
 Import('BuildEnv')
 
 env = BuildEnv.Clone()
@@ -31,11 +31,18 @@ IoSrc = [
     'tcp_server.cc',
     'tcp_session.cc',
     'udp_server.cc',
-    'process_signal.cc',
+    'process_signal_common.cc',
 ]
 
-if sys.platform != 'win32':
-    IoSrc.append(usock_server)
+if platform.system() == 'Windows':
+    IoSrc += [
+        'windows/process_signal.cc'
+    ]
+else:
+    IoSrc += [
+        'nix/process_signal.cc',
+        usock_server,
+    ]
 
 # IO
 contrail_common_io_doc_files = []
