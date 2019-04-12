@@ -62,5 +62,5 @@ public:
 private:
     bool deleted_;
 };
-    
+
 #endif // __SANDESH_STATISTICS_H__

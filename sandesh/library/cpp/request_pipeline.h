@@ -24,8 +24,8 @@ public:
 
     ~RequestPipeline() {}
 
-    // Clients can build and store a (taskId,InstanceId)'s 
-    // intermediate information in an object who's type is 
+    // Clients can build and store a (taskId,InstanceId)'s
+    // intermediate information in an object who's type is
     // derived from InstanceData
     class InstData {
     public:
@@ -68,7 +68,7 @@ public:
         const StageData* GetStageData(int stage) const;
 
         // This function is not intended for client use
-        PipeSpec(const PipeSpec& ps, PipeImpl * impl) : 
+        PipeSpec(const PipeSpec& ps, PipeImpl * impl) :
             stages_(ps.stages_), snhRequest_(ps.snhRequest_), impl_(impl) {}
     private:
         PipeImpl * impl_;
@@ -76,7 +76,7 @@ public:
 
     // Client Construct a Pipeline by passing the specification
     RequestPipeline(const PipeSpec& spec);
-    
+
 private:
     class StageWorker;
 

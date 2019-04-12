@@ -105,7 +105,7 @@ const char * Sandesh::SandeshRoleToString(SandeshRole::type role) {
         return "Collector";
     case SandeshRole::Test:
         return "Test";
-    case SandeshRole::Invalid: 
+    case SandeshRole::Invalid:
         return "Invalid";
     default:
         return "Unknown";
@@ -236,7 +236,7 @@ void Sandesh::ReConfigCollectors(const std::vector<std::string>& collector_list)
     }
 }
 
-bool Sandesh::InitClient(EventManager *evm, 
+bool Sandesh::InitClient(EventManager *evm,
                          const std::vector<std::string> &collectors,
                          const SandeshConfig &config) {
     connect_to_collector_ = true;
@@ -258,7 +258,7 @@ bool Sandesh::InitClient(EventManager *evm,
 }
 
 bool Sandesh::InitGenerator(const std::string &module,
-                            const std::string &source, 
+                            const std::string &source,
                             const std::string &node_type,
                             const std::string &instance_id,
                             EventManager *evm,
@@ -275,7 +275,7 @@ bool Sandesh::InitGenerator(const std::string &module,
                             const std::string &source,
                             const std::string &node_type,
                             const std::string &instance_id,
-                            EventManager *evm, 
+                            EventManager *evm,
                             unsigned short http_port,
                             const std::vector<std::string> &collectors,
                             SandeshContext *client_context,
@@ -296,7 +296,7 @@ bool Sandesh::InitCollector(const std::string &module,
                             const std::string &source,
                             const std::string &node_type,
                             const std::string &instance_id,
-                            EventManager *evm, 
+                            EventManager *evm,
                             const std::string &collector_ip, int collector_port,
                             unsigned short http_port,
                             SandeshContext *client_context,
@@ -315,7 +315,7 @@ bool Sandesh::InitGeneratorTest(const std::string &module,
                                 const std::string &node_type,
                                 const std::string &instance_id,
                                 EventManager *evm,
-                                unsigned short http_port, 
+                                unsigned short http_port,
                                 SandeshContext *client_context,
                                 const SandeshConfig &config) {
     return Initialize(SandeshRole::Test, module, source, node_type,
@@ -331,7 +331,7 @@ static void WaitForIdle() {
             break;
         }
         usleep(1000);
-    }    
+    }
 }
 
 void Sandesh::SetDscpValue(uint8_t value) {
@@ -362,7 +362,7 @@ void Sandesh::Uninit() {
     if (client_ != NULL) {
         client_->Shutdown();
         while (client()->IsSession()) usleep(100);
-        WaitForIdle(); 
+        WaitForIdle();
         client_->ClearSessions();
         TcpServerManager::DeleteServer(client_);
         client_ = NULL;
@@ -713,8 +713,8 @@ bool Sandesh::SendEnqueue() {
         }
         UpdateTxMsgFailStats(name_, 0, SandeshTxDropReason::NoClient);
         Release();
-        return false;        
-    } 
+        return false;
+    }
     if (!client_->SendSandesh(this)) {
         if (IsLoggingDroppedAllowed(type())) {
             SANDESH_LOG(ERROR, "SANDESH: Send FAILED: " << ToString());
@@ -920,7 +920,7 @@ void Sandesh::SetSendQueue(bool enable) {
             if (client_ && client_->IsSession()) {
                 client_->session()->send_queue()->MayBeStartRunner();
             }
-        } 
+        }
     }
 }
 

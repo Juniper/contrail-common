@@ -59,7 +59,7 @@ class SandeshStateMachine :
 public:
     static const int kIdleHoldTime = 5000; //5 sec .. specified in milliseconds
     static const int kQueueSize = 200 * 1024 * 1024; // 200 MB
-        
+
     SandeshStateMachine(const char *prefix, SandeshConnection *connection);
     ~SandeshStateMachine();
 
@@ -218,7 +218,7 @@ private:
     SandeshMessageStatistics message_stats_;
     SandeshMessageBuilder *builder_;
     SandeshLevel::type message_drop_level_;
-            
+
     DISALLOW_COPY_AND_ASSIGN(SandeshStateMachine);
 };
 
