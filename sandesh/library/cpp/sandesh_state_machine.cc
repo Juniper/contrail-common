@@ -318,7 +318,7 @@ struct ServerInit : public sc::state<ServerInit, SandeshStateMachine> {
         return discard_event();
     }
 };
-            
+
 struct Established : public sc::state<Established, SandeshStateMachine> {
     typedef mpl::list<
         TransitToIdle<EvStop>::reaction,
@@ -354,12 +354,12 @@ struct Established : public sc::state<Established, SandeshStateMachine> {
     sc::result react(const EvResourceUpdate &event) {
         SandeshStateMachine *state_machine = &context<SandeshStateMachine>();
         SandeshConnection *connection = state_machine->connection();
-     
+
         state_machine->set_resource(event.rsc);
 
         if (!connection->ProcessResourceUpdate(event.rsc)) {
             state_machine->set_session(NULL);
-            return transit<Idle>();              
+            return transit<Idle>();
         }
         return discard_event();
     }
@@ -388,7 +388,7 @@ SandeshStateMachine::SandeshStateMachine(const char *prefix, SandeshConnection *
       session_(),
       idle_hold_timer_(TimerManager::CreateTimer(
               *connection->server()->event_manager()->io_service(),
-              "Idle hold timer", 
+              "Idle hold timer",
               connection->GetTaskId(),
               connection->GetTaskInstance())),
       idle_hold_time_(0),
@@ -543,7 +543,7 @@ bool SandeshStateMachine::GetMessageDropLevel(
     }
     drop_level = Sandesh::LevelToString(message_drop_level_);
     return true;
-} 
+}
 
 void SandeshStateMachine::GetEventStatistics(
     SandeshStateMachineStats *sm_stats) {
@@ -587,7 +587,7 @@ void SandeshStateMachine::GetBasicMessageStatistics(
 bool SandeshStateMachine::IsValid() const {
     return !deleted_ && !generator_key_.empty();
 }
- 
+
 bool SandeshStateMachine::GetDetailStatistics(
     SandeshStateMachineStats *sm_stats,
     SandeshGeneratorStats *detail_msg_stats) {
@@ -681,7 +681,7 @@ bool SandeshStateMachine::OnSandeshMessage(SandeshSession *session,
     }
     const SandeshHeader &header(xmessage->GetHeader());
     const std::string &message_type(xmessage->GetMessageType());
-    // Drop ? 
+    // Drop ?
     if (DoDropSandeshMessage(header, message_drop_level_)) {
         // Update message statistics
         UpdateRxMsgFailStats(message_type, msg.size(),
@@ -753,7 +753,7 @@ const string &SandeshStateMachine::LastStateName() const {
 
 bool SandeshStateMachine::LogEvent(const sc::event_base *event) {
     if (state_ == ssm::ESTABLISHED) {
-        const ssm::EvSandeshMessageRecv *snh_rcv = 
+        const ssm::EvSandeshMessageRecv *snh_rcv =
             dynamic_cast<const ssm::EvSandeshMessageRecv *>(event);
         if (snh_rcv != NULL) {
             return false;

@@ -61,7 +61,7 @@ inline size_t SandeshTraceBufferSizeGet(SandeshTraceBufferPtr trace_buf) {
 }
 
 inline void SandeshTraceBufferRead(SandeshTraceBufferPtr trace_buf,
-        const std::string& read_context, const int count, 
+        const std::string& read_context, const int count,
         boost::function<void (SandeshTrace *, bool)> cb) {
     trace_buf->TraceRead(read_context, count, cb);
 }
@@ -79,7 +79,7 @@ inline void SandeshTraceBufferListGet(std::vector<std::string>& trace_buf_list) 
 /*
  * Generator API to send the trace buffer to the Collector.
  * trace_count limits the number of trace messages sent to the Collector.
- * If trace count is not specified/or zero, then the entire trace buffer 
+ * If trace count is not specified/or zero, then the entire trace buffer
  * is sent to the Collector.
  *
  * [Note] No duplicate trace message sent to the Collector. i.e., If there is

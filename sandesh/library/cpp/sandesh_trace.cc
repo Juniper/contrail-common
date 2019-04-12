@@ -28,7 +28,7 @@ public:
     SandeshTraceRequestRunner(SandeshTraceBufferPtr trace_buf,
             const std::string& req_context,
             const std::string& read_context,
-            uint32_t count) : 
+            uint32_t count) :
         req_buf_(trace_buf),
         req_context_(req_context),
         read_context_(read_context),
@@ -45,7 +45,7 @@ public:
 
     void Run() {
         SandeshTraceBufferRead(req_buf_, read_context_, req_count_,
-                boost::bind(&SandeshTraceRequestRunner::SandeshTraceRead, 
+                boost::bind(&SandeshTraceRequestRunner::SandeshTraceRead,
                     this, _1, _2));
         if ("Collector" != read_context_) {
             sttr_->set_context(req_context_);
@@ -59,7 +59,7 @@ private:
         read_count_++;
         assert(tsnh);
         vector<string>& tracebuf = const_cast<vector<string>&>(sttr_->get_traces());
-        
+
         if ("Collector" != read_context_) {
             tracebuf.push_back(tsnh->ToString());
             return;
@@ -84,7 +84,7 @@ void SandeshTraceRequest::HandleRequest() const {
     std::string read_context;
 
     // TODO:
-    // We should get the Sandesh Header to differentiate 
+    // We should get the Sandesh Header to differentiate
     // trace requests from non-http modules.
     if ((0 == context().find("http%")) || (0 == context().find("https%"))) {
         read_context = "Http";
@@ -110,9 +110,9 @@ void SandeshTraceRequest::HandleRequest() const {
 void SandeshTraceSend(const std::string& buf_name, uint32_t trace_count) {
     // TODO:
     // Handle this in a separate task, so that the generator can resume its execution.
-    // Need to ensure that we don't run parallel tasks that send trace messages 
-    // [in the same trace buffer] to the collector. It is possible that when the 
-    // generator invoked this api, there may be another task running that handles 
+    // Need to ensure that we don't run parallel tasks that send trace messages
+    // [in the same trace buffer] to the collector. It is possible that when the
+    // generator invoked this api, there may be another task running that handles
     // the trace request (for the same trace buffer) from the Collector.
     SandeshTraceBufferPtr trace_buf(SandeshTraceBufferGet(buf_name));
     if (!trace_buf) {
@@ -127,7 +127,7 @@ void SandeshTraceBufferListRequest::HandleRequest() const {
     std::vector<std::string> trace_buf_list;
     SandeshTraceBufferListGet(trace_buf_list);
     std::vector<SandeshTraceBufInfo> trace_buf_info_list;
-    for (std::vector<std::string>::const_iterator it = trace_buf_list.begin(); 
+    for (std::vector<std::string>::const_iterator it = trace_buf_list.begin();
          it != trace_buf_list.end(); ++it) {
         SandeshTraceBufInfo trace_buf_info;
         trace_buf_info.set_trace_buf_name(*it);
@@ -173,7 +173,7 @@ void SandeshTraceBufStatusReq::HandleRequest() const {
     std::vector<std::string> trace_buf_list;
     SandeshTraceBufferListGet(trace_buf_list);
     std::vector<SandeshTraceBufStatusInfo> trace_buf_status_list;
-    for (std::vector<std::string>::const_iterator it = trace_buf_list.begin(); 
+    for (std::vector<std::string>::const_iterator it = trace_buf_list.begin();
          it != trace_buf_list.end(); ++it) {
         SandeshTraceBufStatusInfo trace_buf_status;
         trace_buf_status.set_trace_buf_name(*it);
@@ -194,7 +194,7 @@ void SandeshTraceBufStatusReq::HandleRequest() const {
 }
 
 void SandeshTraceBufferEnableDisableReq::HandleRequest() const {
-    SandeshTraceBufferEnableDisableRes *resp = new 
+    SandeshTraceBufferEnableDisableRes *resp = new
         SandeshTraceBufferEnableDisableRes;
     std::string status;
     SandeshTraceBufferPtr trace_buf(

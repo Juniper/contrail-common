@@ -46,9 +46,9 @@ public:
     SandeshConnection *FindConnection(const Endpoint &peer_addr);
     void RemoveConnection(SandeshConnection *connection);
     virtual bool DisableSandeshLogMessages() const { return true; }
-   
+
     virtual bool ReceiveResourceUpdate(SandeshSession *session,
-            bool rsc) { return true; } 
+            bool rsc) { return true; }
     virtual bool ReceiveSandeshMsg(SandeshSession *session,
         const SandeshMessage *msg, bool resource) = 0;
     virtual bool ReceiveSandeshCtrlMsg(SandeshStateMachine *state_machine,
@@ -71,7 +71,7 @@ private:
     static const std::string kStateMachineTask;
     static const std::string kLifetimeMgrTask;
     static bool task_policy_set_;
-    
+
     class DeleteActor;
     friend class DeleteActor;
 

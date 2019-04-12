@@ -43,7 +43,7 @@ class SandeshClient : public SslServer, public SandeshClientSM::Mgr {
 public:
     static const int kInitialSMSessionCloseIntervalMSec = 10 * 1000;
     static const int kMaxSMSessionCloseIntervalMSec = 60 * 1000;
-    
+
     SandeshClient(EventManager *evm, const std::vector<Endpoint> &collectors,
              const SandeshConfig &config,
              bool periodicuve = false);
@@ -61,7 +61,7 @@ public:
     void InitializeSMSession(int connects);
     void DeleteSMSession(SandeshSession * session) {
         DeleteSession(session);
-    } 
+    }
     bool CloseSMSession();
     bool ReceiveMsg(const std::string& msg,
         const SandeshHeader &header, const std::string &sandesh_name,
@@ -147,5 +147,3 @@ private:
 };
 
 #endif // __SANDESH_CLIENT_H__
-
-

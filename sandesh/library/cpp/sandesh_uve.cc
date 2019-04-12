@@ -15,13 +15,13 @@
 #include "sandesh_client_sm.h"
 
 using std::string;
-using std::map; 
+using std::map;
 
 SandeshUVETypeMaps::uve_global_map* SandeshUVETypeMaps::map_ = NULL;
 int PullSandeshUVE = 0;
 
 
-bool 
+bool
 SandeshUVETypeMaps::InitDerivedStats(
         const std::map<std::string, ds_conf_elem> &dsmap) {
     bool success = true;
@@ -72,7 +72,7 @@ SandeshUVETypeMaps::SyncAllMaps(const map<string,uint32_t> & inpMap, bool period
             cycle = (uint32_t) (periodic_count / target_count);
             assert(inpMap.size() == 0);
         }
-        SandeshUVE::SendType stype = (periodic ? SandeshUVE::ST_PERIODIC : SandeshUVE::ST_SYNC); 
+        SandeshUVE::SendType stype = (periodic ? SandeshUVE::ST_PERIODIC : SandeshUVE::ST_SYNC);
         if (iit == inpMap.end()) {
             uint count = it->second.second->SyncUVE("", stype, 0, cycle, "");
             SANDESH_LOG(INFO, __func__ << " for " << it->first << ":" << stype <<
@@ -119,12 +119,12 @@ void
 SandeshUVEDSConfReq::HandleRequest() const {
     const SandeshUVETypeMaps::uve_global_elem um =
         SandeshUVETypeMaps::TypeMap(get_tname());
-    
+
     map<string,string> dsconf;
     bool success = false;
     if (um.second) {
         dsconf.insert(std::make_pair(get_dsattr(), get_dsconf()));
-        success = um.second->InitDerivedStats(dsconf); 
+        success = um.second->InitDerivedStats(dsconf);
     }
     SandeshUVEDSConfResp *sur = new SandeshUVEDSConfResp();
     sur->set_success(success);

@@ -92,7 +92,7 @@ private:
     int task_instance_;
     int task_id_;
     boost::scoped_ptr<SandeshStateMachine> state_machine_;
-    
+
     DISALLOW_COPY_AND_ASSIGN(SandeshConnection);
 };
 
@@ -102,12 +102,12 @@ public:
         int task_instance, int task_id);
     virtual ~SandeshServerConnection();
 
-    virtual bool ProcessResourceUpdate(bool res); 
+    virtual bool ProcessResourceUpdate(bool res);
     virtual bool ProcessSandeshMessage(const SandeshMessage *msg,
             bool resource);
     virtual bool ProcessSandeshCtrlMessage(const std::string &msg,
             const SandeshHeader &header, const std::string sandesh_name,
-            const uint32_t header_offset);    
+            const uint32_t header_offset);
     virtual void ProcessDisconnect(SandeshSession *session);
 
     virtual void ManagedDelete();

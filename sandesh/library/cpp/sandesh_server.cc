@@ -253,7 +253,7 @@ bool SandeshServer::AcceptSession(TcpSession *session) {
         SANDESH_LOG(INFO, "Server: " << __func__ << " " << "Create Connection");
         //create a connection_
         connection = new SandeshServerConnection(this, remote,
-                         ssession->GetSessionInstance(), 
+                         ssession->GetSessionInstance(),
                          sm_task_id_);
         connection->Initialize();
         connection_.insert(remote, connection);
