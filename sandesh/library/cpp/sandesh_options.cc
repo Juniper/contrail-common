@@ -45,6 +45,18 @@ void AddOptions(opt::options_description *sandesh_options,
          opt::value<std::string>()->default_value(
          "0.0.0.0"),
          "Listen IP for the Introspect")
+        ("SANDESH.tcp_keepalive_enable",
+         opt::bool_switch(&sandesh_config->tcp_keepalive_enable)->default_value(true),
+         "Enable Keepalive for tcp socket")
+        ("SANDESH.tcp_keepalive_idle_time",
+         opt::value<int>(&sandesh_config->tcp_keepalive_idle_time),
+         "Keepalive idle time for tcp socket")
+        ("SANDESH.tcp_keepalive_probes",
+         opt::value<int>(&sandesh_config->tcp_keepalive_probes),
+         "Keepalive probes for tcp socket")
+        ("SANDESH.tcp_keepalive_interval",
+         opt::value<int>(&sandesh_config->tcp_keepalive_interval),
+         "Keepalive interval for tcp socket")
         ;
 }
 
@@ -68,6 +80,14 @@ void ProcessOptions(const opt::variables_map &var_map,
                           "DEFAULT.sandesh_send_rate_limit");
     GetOptValue<std::string>(var_map, sandesh_config->http_server_ip,
                         "DEFAULT.http_server_ip");
+    GetOptValue<bool>(var_map, sandesh_config->tcp_keepalive_enable,
+                       "SANDESH.tcp_keepalive_enable");
+    GetOptValue<int>(var_map, sandesh_config->tcp_keepalive_idle_time,
+                     "SANDESH.tcp_keepalive_idle_time");
+    GetOptValue<int>(var_map, sandesh_config->tcp_keepalive_probes,
+                     "SANDESH.tcp_keepalive_probes");
+    GetOptValue<int>(var_map, sandesh_config->tcp_keepalive_interval,
+                     "SANDESH.tcp_keepalive_interval");
 }
 
 }  // namespace options
