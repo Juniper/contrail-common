@@ -547,6 +547,58 @@ uint8_t TcpServer::GetDscpValue(NativeSocketType fd) const {
     return dscp;
 }
 
+int TcpServer::SetSocketOptions(const SandeshConfig &sandesh_config) {
+    int retval = 0;
+    if (acceptor_ && sandesh_config.tcp_keepalive_enable) {
+        retval = SetKeepAliveSocketOption(acceptor_->native_handle(), sandesh_config);
+    }
+    return retval;
+}
+
+int TcpServer::SetKeepAliveSocketOption(int fd, const SandeshConfig &sandesh_config) {
+    int tcp_keepalive_enable = 1, retval = 0;
+    int tcp_keepalive_idle_time = sandesh_config.tcp_keepalive_idle_time;
+    int tcp_keepalive_probes = sandesh_config.tcp_keepalive_probes;
+    int tcp_keepalive_interval = sandesh_config.tcp_keepalive_interval;
+    retval = setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE,
+                    &tcp_keepalive_enable, sizeof(tcp_keepalive_enable));
+    if (retval < 0) {
+        TCP_SERVER_LOG_ERROR(this, TCP_DIR_NA,
+            "Failure in setting Keepalive enable on the socket " +
+            integerToString(fd) +
+            " with errno " + strerror(errno));
+        return retval;
+    }
+    retval = setsockopt(fd, IPPROTO_TCP, TCP_KEEPIDLE,
+                    &tcp_keepalive_idle_time, sizeof(tcp_keepalive_idle_time));
+    if (retval < 0) {
+        TCP_SERVER_LOG_ERROR(this, TCP_DIR_NA,
+            "Failure in setting keepalive idle time on the socket " +
+            integerToString(fd) +
+            " with errno " + strerror(errno));
+        return retval;
+    }
+    retval = setsockopt(fd, IPPROTO_TCP, TCP_KEEPCNT,
+                    &tcp_keepalive_probes, sizeof(tcp_keepalive_probes));
+    if (retval < 0) {
+        TCP_SERVER_LOG_ERROR(this, TCP_DIR_NA,
+            "Failure in setting keepalive probes on the socket " +
+            integerToString(fd) +
+            " with errno " + strerror(errno));
+        return retval;
+    }
+    retval = setsockopt(fd, IPPROTO_TCP, TCP_KEEPINTVL,
+                    &tcp_keepalive_interval, sizeof(tcp_keepalive_interval));
+    if (retval < 0) {
+        TCP_SERVER_LOG_ERROR(this, TCP_DIR_NA,
+            "Failure in setting keepalive interval on the socket " +
+            integerToString(fd) +
+            " with errno " + strerror(errno));
+        return retval;
+    }
+    return retval;
+}
+
 void TcpServer::GetRxSocketStats(SocketIOStats *socket_stats) const {
     stats_.GetRxStats(socket_stats);
 }
