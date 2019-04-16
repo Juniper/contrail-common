@@ -19,6 +19,10 @@ struct SandeshConfig {
         sandesh_ssl_enable(false),
         introspect_ssl_enable(false),
         disable_object_logs(false),
+        tcp_keepalive_enable(true),
+        tcp_keepalive_idle_time(7200),
+        tcp_keepalive_probes(9),
+        tcp_keepalive_interval(75),
         system_logs_rate_limit(
             g_sandesh_constants.DEFAULT_SANDESH_SEND_RATELIMIT) {
     }
@@ -33,6 +37,10 @@ struct SandeshConfig {
     bool sandesh_ssl_enable;
     bool introspect_ssl_enable;
     bool disable_object_logs;
+    bool tcp_keepalive_enable;
+    int tcp_keepalive_idle_time;
+    int tcp_keepalive_probes;
+    int tcp_keepalive_interval;
     uint32_t system_logs_rate_limit;
 };
 
