@@ -46,6 +46,10 @@ class t_sandesh : public t_struct_common {
     t_struct_common(program, name),
     type_(NULL) {}
 
+  virtual std::string get_struct_type_name() {
+    return "Sandesh";
+  }
+
   void set_type(t_type* type) {
     type_ = type;
   }

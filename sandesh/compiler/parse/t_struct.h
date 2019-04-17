@@ -46,6 +46,10 @@ class t_struct : public t_struct_common {
     is_xception_(false),
     xsd_all_(false) {}
 
+  virtual std::string get_struct_type_name() {
+    return "Struct";
+  }
+
   void set_xception(bool is_xception) {
     is_xception_ = is_xception;
   }

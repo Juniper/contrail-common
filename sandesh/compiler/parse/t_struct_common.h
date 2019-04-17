@@ -26,6 +26,8 @@ class t_struct_common : public t_type {
 
   virtual ~t_struct_common() {}
 
+  virtual std::string get_struct_type_name() = 0;
+
   const members_type& get_members() {
     return members_;
   }
