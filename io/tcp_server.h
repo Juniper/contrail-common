@@ -19,6 +19,7 @@
 #include "base/address.h"
 #include "io/server_manager.h"
 #include "io/io_utils.h"
+#include <sandesh/library/cpp/sandesh_options.h>
 
 class EventManager;
 class TcpSession;
@@ -101,6 +102,8 @@ public:
     int SetDscpSocketOption(NativeSocketType fd, uint8_t value);
     uint8_t GetDscpValue(NativeSocketType fd) const;
     int SetListenSocketDscp(uint8_t value);
+    int SetSocketOptions(const SandeshConfig &sandesh_config);
+    int SetKeepAliveSocketOption(int fd, const SandeshConfig &sandesh_config);
 
 protected:
     typedef boost::intrusive_ptr<TcpServer> TcpServerPtr;
@@ -133,7 +136,6 @@ protected:
 
     virtual void AcceptHandlerComplete(TcpSessionPtr session);
     virtual void ConnectHandlerComplete(TcpSessionPtr session);
-
 
 private:
     friend class TcpSession;

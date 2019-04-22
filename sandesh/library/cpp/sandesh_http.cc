@@ -419,7 +419,7 @@ SandeshHttp::Init(EventManager *evm, const string module,
     } else {
         success = hServ_->Initialize(port);
     }
-
+    hServ_->SetSocketOptions(config);
     if (success) {
         int lport(hServ_->GetPort());
         SANDESH_LOG(DEBUG, "Sandesh Http Server Port: " << lport);
