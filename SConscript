@@ -59,18 +59,6 @@ elif sys.platform.startswith('darwin'):
 if sys.platform.startswith('freebsd'):
     BuildEnv.Prepend(LINKFLAGS = ['-lprocstat'])
 
-BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/http',
-    '#src/contrail-common/http/http_request.h')
-BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/http',
-    '#src/contrail-common/http/http_server.h')
-BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/http',
-    '#src/contrail-common/http/http_session.h')
-BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/http',
-    '#src/contrail-common/http/client/vncapi.h')
-BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/http',
-    '#src/contrail-common/http/client/http_curl.h')
-BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/http',
-    '#src/contrail-common/http/client/http_client.h')
 BuildEnv.Install(BuildEnv['TOP_INCLUDE'] + '/zookeeper',
     '#src/contrail-common/zookeeper/zookeeper_client.h')
 
