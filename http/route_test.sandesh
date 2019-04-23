@@ -23,14 +23,14 @@ struct VNSContainer {
         2: VNSContained                 vnCon;
         3: list<VNSContained>           vnLc;
 }
-  
-response sandesh VNSwitchRouteResp {        
+
+response sandesh VNSwitchRouteResp {
        1: i32                           vnSwitchId;
        2: i32                           vnId (link="HttpRequestTest")
        3: list<VNSRoute>                vnRoutes;
        4: VNSRoute                      vnMarkerRoute;
        5: list<string>                  names;
-} 
+}
 
 response sandesh VNSContainTestResp {
         1: string                       desc;
@@ -42,4 +42,4 @@ request sandesh VNSwitchRouteReq {
        1: i32                          startRoutePrefix;
        2: i32                          endRoutePrefix;
        3: i32                          numRoutes;
-} 
+}

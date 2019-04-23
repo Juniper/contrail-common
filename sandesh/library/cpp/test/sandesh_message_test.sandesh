@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
  */
- 
+
 /*
  * sandesh_message_test.sandesh
  *
@@ -109,7 +109,7 @@ struct SandeshPeriodicData {
     5: optional map<string,i32> tsm
     6: optional map<string,int_P_> sum_tsm (mstats="tsm:DSSum:")
     7: optional int_P_ avg_x (stats="x:DSAvg:3")
-    8: optional i32 jx 
+    8: optional i32 jx
 
     // This DS is hidden-periodic
     9: optional int_P_ avh_jx (stats="jx:DSAvg", hidden="yes")
