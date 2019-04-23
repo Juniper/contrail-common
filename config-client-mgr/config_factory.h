@@ -23,7 +23,7 @@ class ConfigEtcdClient;
 class ConfigEtcdPartition;
 class ConfigClientManager;
 class ConfigJsonParserBase;
-class ConfigClientOptions;
+struct ConfigClientOptions;
 class EventManager;
 
 class ConfigFactory : public Factory<ConfigFactory> {
