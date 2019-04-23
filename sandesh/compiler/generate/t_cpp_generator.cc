@@ -384,6 +384,14 @@ class t_cpp_generator : public t_oop_generator {
                                           bool pointers = false);
 
   /**
+   * Makes a helper function to gen a generic body of
+   * sandesh and struct writers.
+   */
+  void generate_common_struct_writer_body(std::ofstream& out,
+                                          t_struct_common* tstruct,
+                                          bool pointers = false);
+
+  /**
    * True if we should generate pure enums for Thrift enums, instead of wrapper classes.
    */
   bool gen_pure_enums_;
@@ -3415,10 +3423,6 @@ void t_cpp_generator::generate_struct_reader(ofstream& out,
 void t_cpp_generator::generate_struct_writer(ofstream& out,
                                              t_struct* tstruct,
                                              bool pointers) {
-  string name = tstruct->get_name();
-  const vector<t_field*>& fields = tstruct->get_members();
-  vector<t_field*>::const_iterator f_iter;
-
   if (gen_templates_) {
     out <<
       indent() << "template <class Protocol_>" << endl <<
@@ -3429,93 +3433,9 @@ void t_cpp_generator::generate_struct_writer(ofstream& out,
       "int32_t " << tstruct->get_name() <<
       "::write(boost::shared_ptr<contrail::sandesh::protocol::TProtocol> oprot) const {" << endl;
   }
-  indent_up();
 
-  out <<
-    indent() << "int32_t xfer = 0, ret;" << endl;
+  generate_common_struct_writer_body(out, tstruct, pointers);
 
-  indent(out) <<
-    "if ((ret = oprot->writeStructBegin(\"" << name << "\")) < 0) {" << endl;
-  indent_up();
-  indent(out) << "return ret;" << endl;
-  scope_down(out);
-  indent(out) << "xfer += ret;" << endl;
-  for (f_iter = fields.begin(); f_iter != fields.end(); ++f_iter) {
-    if ((*f_iter)->get_req() == t_field::T_OPTIONAL) {
-      indent(out) << "if (this->__isset." << (*f_iter)->get_name() << ") {" << endl;
-      indent_up();
-    }
-    // Write field header
-    if (!((*f_iter)->annotations_.empty())) {
-        out << indent() << "{" << endl;
-        indent_up();
-        out << indent() << "std::map<std::string, std::string> annotations_;" << endl;
-        std::map<std::string, std::string>::iterator it;
-        for (it = (*f_iter)->annotations_.begin(); it != (*f_iter)->annotations_.end(); it++) {
-            if (((*f_iter)->get_name() == "name") && (it->first == "key")) {
-              out << indent() << "assert(!table_.empty());" << endl;
-              out << indent() << "annotations_.insert("
-                  "std::make_pair(\"key\", table_));" << endl;
-
-            } else {
-              out << indent() << "annotations_.insert(std::make_pair(\"" << (*it).first
-                  << "\"" << ", \"" << (*it).second << "\"));" << endl;
-            }
-        }
-        out << indent() << "if ((ret = oprot->writeFieldBegin(" <<
-            "\"" << (*f_iter)->get_name() << "\", " <<
-            type_to_enum((*f_iter)->get_type()) << ", " <<
-            (*f_iter)->get_key() << ", &annotations_)) < 0) {" << endl;
-        indent_up();
-        indent(out) << "return ret;" << endl;
-        scope_down(out);
-        indent(out) << "xfer += ret;" << endl;
-        indent_down();
-        out << indent() << "}" << endl;
-    } else {
-        out <<
-            indent() << "if ((ret = oprot->writeFieldBegin(" <<
-            "\"" << (*f_iter)->get_name() << "\", " <<
-            type_to_enum((*f_iter)->get_type()) << ", " <<
-            (*f_iter)->get_key() << ")) < 0) {" << endl;
-        indent_up();
-        indent(out) << "return ret;" << endl;
-        scope_down(out);
-        indent(out) << "xfer += ret;" << endl;
-    }
-
-    // Write field contents
-    if (pointers && !(*f_iter)->get_type()->is_xception()) {
-      generate_serialize_field(out, *f_iter, "(*(this->", "))");
-    } else {
-      generate_serialize_field(out, *f_iter, "this->");
-    }
-    // Write field closer
-    indent(out) <<
-      "if ((ret = oprot->writeFieldEnd()) < 0) {" << endl;
-    indent_up();
-    indent(out) << "return ret;" << endl;
-    scope_down(out);
-    indent(out) << "xfer += ret;" << endl;
-    if ((*f_iter)->get_req() == t_field::T_OPTIONAL) {
-      indent_down();
-      indent(out) << '}' << endl;
-    }
-  }
-
-  // Write the struct map
-  out <<
-    indent() << "if ((ret = oprot->writeFieldStop()) < 0) {" << endl <<
-    indent() << "  return ret;" << endl <<
-    indent() << "}" << endl <<
-    indent() << "xfer += ret;" << endl <<
-    indent() << "if ((ret = oprot->writeStructEnd()) < 0) {" << endl <<
-    indent() << "  return ret;" << endl <<
-    indent() << "}" << endl <<
-    indent() << "xfer += ret;" << endl <<
-    indent() << "return xfer;" << endl;
-
-  indent_down();
   indent(out) <<
     "}" << endl <<
     endl;
@@ -4158,91 +4078,13 @@ void t_cpp_generator::generate_sandesh_reader(ofstream& out,
  */
 void t_cpp_generator::generate_sandesh_writer(ofstream& out,
                                               t_sandesh* tsandesh) {
-  string name = tsandesh->get_name();
-  const vector<t_field*>& fields = tsandesh->get_members();
-  vector<t_field*>::const_iterator f_iter;
-
   indent(out) <<
     "int32_t " << tsandesh->get_name() <<
     "::Write(boost::shared_ptr<contrail::sandesh::protocol::TProtocol> oprot) const {" <<
     endl;
 
-  indent_up();
+  generate_common_struct_writer_body(out, tsandesh, false);
 
-  out << indent() << "int32_t xfer = 0, ret;" << endl;
-
-  indent(out) <<
-    "if ((ret = oprot->writeSandeshBegin(\"" << name << "\")) < 0) {" << endl;
-  indent_up();
-  indent(out) << "return ret;" << endl;
-  scope_down(out);
-  indent(out) << "xfer += ret;" << endl;
-
-  for (f_iter = fields.begin(); f_iter != fields.end(); ++f_iter) {
-    if ((*f_iter)->get_req() == t_field::T_OPTIONAL) {
-      indent(out) << "if (this->__isset." << (*f_iter)->get_name() << ") {" << endl;
-      indent_up();
-    }
-    // Write field header
-    if (!((*f_iter)->annotations_.empty())) {
-      out << indent() << "{" << endl;
-      indent_up();
-      out << indent() << "std::map<std::string, std::string> annotations_;" << endl;
-      std::map<std::string, std::string>::iterator it;
-      for (it = (*f_iter)->annotations_.begin(); it != (*f_iter)->annotations_.end(); it++) {
-        out << indent() << "annotations_.insert(std::make_pair(\""
-          << (*it).first << "\"" << ", \"" << (*it).second << "\"));"
-          << endl;
-      }
-      out << indent() << "if ((ret = oprot->writeFieldBegin(" <<
-        "\"" << (*f_iter)->get_name() << "\", " <<
-        type_to_enum((*f_iter)->get_type()) << ", " <<
-        (*f_iter)->get_key() << ", &annotations_)) < 0) {" << endl;
-      indent_up();
-      indent(out) << "return ret;" << endl;
-      scope_down(out);
-      indent(out) << "xfer += ret;" << endl;
-      indent_down();
-      out << indent() << "}" << endl;
-    } else {
-      out <<
-        indent() << "if ((ret = oprot->writeFieldBegin(" <<
-        "\"" << (*f_iter)->get_name() << "\", " <<
-        type_to_enum((*f_iter)->get_type()) << ", " <<
-        (*f_iter)->get_key() << ")) < 0) {" << endl;
-      indent_up();
-      indent(out) << "return ret;" << endl;
-      scope_down(out);
-      indent(out) << "xfer += ret;" << endl;
-    }
-    // Write field contents
-    generate_serialize_field(out, *f_iter, "this->");
-    // Write field closer
-    indent(out) <<
-      "if ((ret = oprot->writeFieldEnd()) < 0) {" << endl;
-      indent_up();
-      indent(out) << "return ret;" << endl;
-      scope_down(out);
-      indent(out) << "xfer += ret;" << endl;
-    if ((*f_iter)->get_req() == t_field::T_OPTIONAL) {
-      indent_down();
-      indent(out) << '}' << endl;
-    }
-  }
-
-  // Write the struct map
-  out <<
-    indent() << "if ((ret = oprot->writeFieldStop()) < 0) {" << endl <<
-    indent() << "  return ret;" << endl <<
-    indent() << "}" << endl <<
-    indent() << "xfer += ret;" << endl <<
-    indent() << "if ((ret = oprot->writeSandeshEnd()) < 0) {" << endl <<
-    indent() << "  return ret;" << endl <<
-    indent() << "}" << endl <<
-    indent() << "xfer += ret;" << endl <<
-    indent() << "return xfer;" << endl;
-
-  indent_down();
   indent(out) <<
     "}" << endl <<
     endl;
@@ -8701,6 +8543,110 @@ void t_cpp_generator::generate_common_struct_reader_body(
   }
 
   indent(out) << "return xfer;" << endl;
+
+  indent_down();
+}
+
+void t_cpp_generator::generate_common_struct_writer_body(
+    std::ofstream& out,
+    t_struct_common* tstruct,
+    bool pointers) {
+  indent_up();
+
+  std::string struct_type_name = tstruct->get_struct_type_name();
+
+  string name = tstruct->get_name();
+  const vector<t_field*>& fields = tstruct->get_members();
+  vector<t_field*>::const_iterator f_iter;
+
+  out <<
+    indent() << "int32_t xfer = 0, ret;" << endl;
+
+  indent(out) <<
+    "if ((ret = oprot->write" << struct_type_name << "Begin(\"" << name << "\")) < 0) {" <<
+    endl;
+
+  indent_up();
+  indent(out) << "return ret;" << endl;
+  scope_down(out);
+  indent(out) << "xfer += ret;" << endl;
+  for (f_iter = fields.begin(); f_iter != fields.end(); ++f_iter) {
+    if ((*f_iter)->get_req() == t_field::T_OPTIONAL) {
+      indent(out) << "if (this->__isset." << (*f_iter)->get_name() << ") {" << endl;
+      indent_up();
+    }
+    // Write field header
+    if (!((*f_iter)->annotations_.empty())) {
+      out << indent() << "{" << endl;
+      indent_up();
+      out << indent() << "std::map<std::string, std::string> annotations_;" << endl;
+      std::map<std::string, std::string>::iterator it;
+      for (it = (*f_iter)->annotations_.begin(); it != (*f_iter)->annotations_.end(); it++) {
+        if (!tstruct->is_sandesh() &&
+            ((*f_iter)->get_name() == "name") && (it->first == "key")) {
+          out << indent() << "assert(!table_.empty());" << endl;
+          out << indent() << "annotations_.insert("
+              "std::make_pair(\"key\", table_));" << endl;
+        } else {
+          out << indent() << "annotations_.insert(std::make_pair(\"" << (*it).first
+              << "\"" << ", \"" << (*it).second << "\"));" << endl;
+        }
+      }
+      out <<
+        indent() << "if ((ret = oprot->writeFieldBegin(" <<
+          "\"" << (*f_iter)->get_name() << "\", " <<
+          type_to_enum((*f_iter)->get_type()) << ", " <<
+          (*f_iter)->get_key() << ", &annotations_)) < 0) {" << endl;
+      indent_up();
+      indent(out) << "return ret;" << endl;
+      scope_down(out);
+      indent(out) << "xfer += ret;" << endl;
+      indent_down();
+      out << indent() << "}" << endl;
+    } else {
+      out <<
+        indent() << "if ((ret = oprot->writeFieldBegin(" <<
+          "\"" << (*f_iter)->get_name() << "\", " <<
+          type_to_enum((*f_iter)->get_type()) << ", " <<
+          (*f_iter)->get_key() << ")) < 0) {" << endl;
+      indent_up();
+      indent(out) << "return ret;" << endl;
+      scope_down(out);
+      indent(out) << "xfer += ret;" << endl;
+    }
+
+    // Write field contents
+    if (pointers && !(*f_iter)->get_type()->is_xception()) {
+      generate_serialize_field(out, *f_iter, "(*(this->", "))");
+    } else {
+      generate_serialize_field(out, *f_iter, "this->");
+    }
+    // Write field closer
+    indent(out) <<
+      "if ((ret = oprot->writeFieldEnd()) < 0) {" << endl;
+    indent_up();
+    indent(out) << "return ret;" << endl;
+    scope_down(out);
+    indent(out) << "xfer += ret;" << endl;
+    if ((*f_iter)->get_req() == t_field::T_OPTIONAL) {
+      indent_down();
+      indent(out) << '}' << endl;
+    }
+  }
+
+  // Write the struct map
+  out <<
+    indent() << "if ((ret = oprot->writeFieldStop()) < 0) {" << endl <<
+    indent() << "  return ret;" << endl <<
+    indent() << "}" << endl <<
+    indent() << "xfer += ret;" << endl <<
+    indent() <<
+      "if ((ret = oprot->write" << struct_type_name << "End()) < 0) {" <<
+      endl <<
+    indent() << "  return ret;" << endl <<
+    indent() << "}" << endl <<
+    indent() << "xfer += ret;" << endl <<
+    indent() << "return xfer;" << endl;
 
   indent_down();
 }
