@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
  */
- 
+
 /*
  *  sandesh_ctrl.sandesh
  *
@@ -28,4 +28,3 @@ request sandesh SandeshCtrlServerToClient {
     1: list<UVETypeInfo> type_info;
     2: bool success;
 }
-

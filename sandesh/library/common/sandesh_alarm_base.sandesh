@@ -44,7 +44,7 @@ struct AlarmRules {
  * It contains:
  *     - Alarm Type
  *     - A description of why the alarm was raised.
- *       This corresponds to an OR of ANDs of the 
+ *       This corresponds to an OR of ANDs of the
  *       AlarmElements of individual AlarmTemplates
  *     - Whether the alarm has been acknowledged yet
  *     - Timestamp

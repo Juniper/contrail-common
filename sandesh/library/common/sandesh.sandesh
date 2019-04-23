@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
  */
- 
+
 /*
  *  sandesh.sandesh
  *
@@ -29,7 +29,7 @@ enum SandeshLevel {
      * Syslog severity levels
      */
     SYS_UVE = -100,
-    SYS_EMERG = 0, 
+    SYS_EMERG = 0,
     SYS_ALERT = 1,
     SYS_CRIT = 2,
     SYS_ERR = 3,
@@ -39,7 +39,7 @@ enum SandeshLevel {
     SYS_DEBUG = 7,
     /*
      * User defined levels
-     */ 
+     */
     /*
      * Unit test levels
      */
@@ -56,7 +56,7 @@ enum SandeshLevel {
      /*
       * Invalid
       */
-      INVALID = 0x7fffffff  
+      INVALID = 0x7fffffff
 }
 
 enum SandeshTxDropReason {
@@ -95,7 +95,7 @@ const i32 SANDESH_SYNC_HINT = 0x4
 const u32 DEFAULT_SANDESH_SEND_RATELIMIT = 0
 
 // Update ParseHeader function in sandesh_message_builder.cc
-// when modifying SandeshHeader below 
+// when modifying SandeshHeader below
 struct SandeshHeader {
     1: string Namespace;
     2: i64 Timestamp;
