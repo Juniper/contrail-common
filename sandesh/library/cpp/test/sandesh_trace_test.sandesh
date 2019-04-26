@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
  */
- 
+
 /*
  * sandesh_trace_test.sandesh
  *
@@ -10,7 +10,7 @@
 
 trace sandesh SandeshTraceTest1 {
     1: i32  magicNo;
-    2: i32  test1; 
+    2: i32  test1;
 }
 
 trace sandesh SandeshTraceTest2 {
@@ -20,5 +20,5 @@ trace sandesh SandeshTraceTest2 {
 
 trace sandesh SandeshTraceTest3 {
     1: i32  magicNo;
-    2: i32  test3; 
+    2: i32  test3;
 }

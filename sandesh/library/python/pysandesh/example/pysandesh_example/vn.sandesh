@@ -32,7 +32,7 @@ response sandesh VirtualNetworkAllResp {
     1: VNInfo vn_info;
 }
 
-struct UveVirtualNetworkCtrl {  
+struct UveVirtualNetworkCtrl {
     1: string         name (key="ObjectVNTable")
     2: optional bool  deleted
 } (type = "object")

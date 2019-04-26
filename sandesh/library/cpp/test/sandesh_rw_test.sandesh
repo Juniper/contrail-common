@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
  */
- 
+
 /*
  * sandesh_rw_test.sandesh
  *
@@ -16,7 +16,7 @@ struct SandeshInnerStructElement {
 struct SandeshListTestElement {
     1: i32                           i32Elem;
 }
-    
+
 struct SandeshStructTest {
     1: "Const static string is";
     2: i32                           i32Test;

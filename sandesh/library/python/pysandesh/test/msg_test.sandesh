@@ -20,13 +20,13 @@ struct StructObject {
     2: bool flag1;
     3: list<xml> list1;
     4: string s1;
-} 
+}
 
 objectlog sandesh ObjectLogTest {
     1: StructObject object;
     2: list<StructObject> list_obj1;
     3: optional u64 u64_1;
-} 
+}
 
 struct StructKeyHint {
     1: string str_1 (key="VM");

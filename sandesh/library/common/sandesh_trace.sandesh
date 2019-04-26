@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
  */
- 
+
 /*
  *  sandesh_trace.sandesh
  *
@@ -23,7 +23,7 @@ request sandesh SandeshTraceRequest {
  * @description: request to get list sandesh trace buffers
  * @cli_name: read sandesh trace buffer list
  */
-request sandesh SandeshTraceBufferListRequest { 
+request sandesh SandeshTraceBufferListRequest {
 }
 
 struct SandeshTraceBufInfo {
@@ -64,7 +64,7 @@ request sandesh SandeshTraceBufStatusReq {
 
 struct SandeshTraceBufStatusInfo {
     1: string trace_buf_name  (link="SandeshTraceRequest");
-    2: string enable_disable; 
+    2: string enable_disable;
 }
 
 response sandesh SandeshTraceBufStatusRes {
@@ -83,5 +83,5 @@ request sandesh SandeshTraceBufferEnableDisableReq {
 }
 
 response sandesh SandeshTraceBufferEnableDisableRes {
-    1: string enable_disable_status; 
+    1: string enable_disable_status;
 }

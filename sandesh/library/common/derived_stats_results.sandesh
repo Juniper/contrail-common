@@ -9,13 +9,13 @@
 
 /* For testing only */
 struct NullResult {
-    3: u64 samples 
+    3: u64 samples
     5: i32 value
 }
 
 /* Deprecated. Use AnomalyResult instead */
 struct EWMResult {
-    3: u64 samples 
+    3: u64 samples
     4: optional string error
     6: optional double mean
     7: optional double stddev
@@ -34,7 +34,7 @@ struct AnomalyResult {
 
 /* TODO: Not implemented yet */
 struct PercentileResult {
-    3: u64 samples 
+    3: u64 samples
     4: map<string,double> percentiles;
 }
 
@@ -42,4 +42,3 @@ struct CategoryResult {
     /** @display_name:Sandesh Client Message Stats*/
     1: map<string, u64> counters (tags=".__key")
 }
-

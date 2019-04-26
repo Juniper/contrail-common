@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
  */
- 
+
 /*
  * sandesh_c_test.sandesh
  *
@@ -30,9 +30,9 @@ struct abc_inner {
     13:string inner_m;
     14:string inner_n;
 }
- 
+
 struct abc {
-    1:abc_inner nested;     
+    1:abc_inner nested;
 }
 
 buffer sandesh abc_sandesh {
