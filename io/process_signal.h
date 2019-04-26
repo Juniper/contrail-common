@@ -39,8 +39,11 @@ class Signal {
     void RegisterHandler(SignalChildHandler handler);
 
  private:
+    boost::system::error_code AddSignal(int sig);
+    boost::system::error_code InitializeSigChild();
     void RegisterSigHandler();
     void HandleSig(const boost::system::error_code& error, int sig);
+    bool HandleSigOsSpecific(const boost::system::error_code& error, int sig);
     void NotifySig(const boost::system::error_code &error, int sig);
     void NotifySigChld(const boost::system::error_code &error, int sig, int pid,
                        int status);

@@ -41,10 +41,9 @@ Signal::Signal(EventManager *evm,
 Signal::~Signal() {
 }
 
-static boost::system::error_code AddSignal(int sig,
-    boost::asio::signal_set *signal_set) {
+boost::system::error_code Signal::AddSignal(int sig) {
     boost::system::error_code ec;
-    signal_set->add(sig, ec);
+    signal_.add(sig, ec);
     if (ec) {
         std::string sigstr(strsignal(sig));
         LOG(ERROR, sigstr << " registration failed: " << ec);
@@ -56,23 +55,13 @@ void Signal::RegisterHandler(int sig, SignalHandler handler) {
     SignalCallbackMap::iterator it = sig_callback_map_.find(sig);
     if (it == sig_callback_map_.end()) {
         // Add signal first
-        AddSignal(sig, &signal_);
+        AddSignal(sig);
         sig_callback_map_.insert(std::make_pair(sig,
             std::vector<SignalHandler>(1, handler)));
     } else {
         std::vector<SignalHandler> &sig_handlers(it->second);
         sig_handlers.push_back(handler);
     }
-}
-
-void Signal::RegisterHandler(SignalChildHandler handler) {
-#ifndef _WIN32
-    if (sigchld_callbacks_.size() == 0) {
-        // Add signal first
-        AddSignal(SIGCHLD, &signal_);
-    }
-    sigchld_callbacks_.push_back(handler);
-#endif
 }
 
 void Signal::NotifySigChld(const boost::system::error_code &error, int sig,
@@ -100,20 +89,8 @@ int Signal::WaitPid(int pid, int *status, int options) {
 
 void Signal::HandleSig(const boost::system::error_code &error, int sig) {
     if (!error) {
-        int status = 0;
-        pid_t pid = 0;
-
-        switch (sig) {
-#ifndef _WIN32
-          case SIGCHLD:
-            while ((pid = WaitPid(-1, &status, WNOHANG)) > 0) {
-                NotifySigChld(error, sig, pid, status);
-            }
-            break;
-#endif
-          default:
+        if (!HandleSigOsSpecific(error, sig)) {
             NotifySig(error, sig);
-            break;
         }
         RegisterSigHandler();
     }
@@ -128,13 +105,11 @@ void Signal::Initialize() {
 
     // Add signals
     BOOST_FOREACH(int sig, sig_callback_map_ | boost::adaptors::map_keys) {
-        ec = AddSignal(sig, &signal_);
+        ec = AddSignal(sig);
     }
-#ifndef _WIN32
-    if (sigchld_callbacks_.size() != 0 || always_handle_sigchild_) {
-        ec = AddSignal(SIGCHLD, &signal_);
-    }
-#endif
+
+    ec = InitializeSigChild();
+
     RegisterSigHandler();
 }
 
