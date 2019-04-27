@@ -41,7 +41,7 @@ typedef boost::function<bool(SandeshClientSMImpl *)> EvValidate;
 
 class SandeshClientSMImpl : public SandeshClientSM,
         public sc::state_machine<SandeshClientSMImpl, scm::Idle> {
- 
+
 public:
     static const int kConnectInterval = 30;
     static const int kIdleHoldTime = 5000; //5 sec .. specified in milliseconds
@@ -134,7 +134,7 @@ public:
 
     void set_collector_name(const std::string& cname) { coll_name_ = cname; }
     std::string collector_name() { return coll_name_; }
-    
+
     void unconsumed_event(const sc::event_base &event);
     void SendUVE () {
         mgr_->SendUVE(connects(), StateName(), collector_name(), server(),
@@ -190,4 +190,3 @@ private:
 };
 
 #endif // __SANDESH_CLIENT_SM_PRIV_H__
-

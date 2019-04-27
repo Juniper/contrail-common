@@ -21,7 +21,7 @@ public:
     const SandeshHeader& GetHeader() const { return header_; }
     const std::string& GetMessageType() const { return message_type_; }
     const size_t GetSize() const { return size_; }
- 
+
 protected:
     SandeshHeader header_;
     std::string message_type_;
@@ -57,7 +57,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(SandeshSyslogMessage);
 };
-    
+
 class SandeshMessageBuilder {
 public:
     enum Type {

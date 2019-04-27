@@ -4,8 +4,8 @@
 
 
 // derived_stats_algo.h
-// 
-// This file has the implementation of 
+//
+// This file has the implementation of
 // derived stats algorithms
 //
 #ifndef __DERIVED_STATS_ALGO_H__
@@ -44,7 +44,7 @@ class DSAnomalyIf {
 template <typename ElemT>
 class DSAnomalyEWM : public DSAnomalyIf<ElemT> {
   public:
-    DSAnomalyEWM (const std::string &annotation, 
+    DSAnomalyEWM (const std::string &annotation,
             std::string &errstr) : samples_(0),
                 mean_(0), variance_(0), sigma_(0), stddev_(0), psigma_(0) {
         alpha_ = (double) strtod(annotation.c_str(), NULL);
@@ -60,7 +60,7 @@ class DSAnomalyEWM : public DSAnomalyIf<ElemT> {
     double sigma_;
     double stddev_;
     double psigma_;
-    
+
     virtual DSReturnType FillResult(AnomalyResult& res) const {
         assert(alpha_ != 0);
         std::ostringstream meanstr, stddevstr;
@@ -76,14 +76,14 @@ class DSAnomalyEWM : public DSAnomalyIf<ElemT> {
         // We don't have enough samples to report an anomaly
         if (samples_ < (uint64_t(1.0/alpha_))) return DSR_INVALID;
         if (samples_ == (uint64_t(1.0/alpha_))) return DSR_OK;
-       
-        // If sigma was low, and is still low, 
-        // we don't need to send anything 
-        if ((psigma_ < 0.5) && (psigma_ > -0.5) && 
+
+        // If sigma was low, and is still low,
+        // we don't need to send anything
+        if ((psigma_ < 0.5) && (psigma_ > -0.5) &&
             (sigma_ < 0.5) && (sigma_ > -0.5))
             return DSR_SKIP;
         else
-	    return DSR_OK;
+            return DSR_OK;
     }
 
     virtual void Update(const ElemT& raw) {
@@ -126,9 +126,9 @@ class DSAnomaly {
             assert(error_.empty());
         }
         if (started_) res.set_metric(previous_);
-	res.set_algo(algo_);
-	res.set_config(config_);
-	if (!error_.empty()) res.set_error(error_);
+        res.set_algo(algo_);
+        res.set_config(config_);
+        if (!error_.empty()) res.set_error(error_);
         return ret;
     }
 
@@ -174,7 +174,7 @@ class DSEWM {
     std::string error_;
 
     DSReturnType FillResult(EWMResT &res) const {
-	res.set_samples(samples_);
+        res.set_samples(samples_);
         if (!error_.empty()) {
             res.set_error(error_);
             return DSR_OK;
@@ -207,8 +207,8 @@ class DSChange {
     DSReturnType FillResult(NullResT &res) const {
         if (!init_) return DSR_INVALID;
         res = value_;
-	if (prev_ == value_) return DSR_SKIP;
-	else return DSR_OK;
+        if (prev_ == value_) return DSR_SKIP;
+        else return DSR_OK;
     }
 
     void Update(const ElemT& raw, uint64_t mono_usec) {
@@ -225,9 +225,9 @@ class DSNon0 {
     ElemT value_;
 
     DSReturnType FillResult(NullResT &res) const {
-	res = value_;
-	if (value_ == 0) return DSR_SKIP;
-	else return DSR_OK;
+        res = value_;
+        if (value_ == 0) return DSR_SKIP;
+        else return DSR_OK;
     }
 
     void Update(const ElemT& raw, uint64_t mono_usec) {
@@ -268,7 +268,7 @@ class DSNull {
     }
 };
 
-template <typename ElemT, class SumResT> 
+template <typename ElemT, class SumResT>
 class DSSum {
   public:
     DSSum(const std::string &annotation): samples_(0), shifter_(0),
@@ -315,7 +315,7 @@ class DSSum {
 
     virtual void Purge(uint64_t mono_usec) {
 
-        for (typename map<uint64_t, pair<uint64_t,ElemT> >::iterator it = 
+        for (typename map<uint64_t, pair<uint64_t,ElemT> >::iterator it =
                 history_buf_.begin(); it!= history_buf_.end(); ) {
             uint64_t end_range = ((it->first + range_usecs_) >> shifter_) << shifter_;
             if (end_range <= mono_usec) {
@@ -325,7 +325,7 @@ class DSSum {
             } else {
                 ++it;
             }
-        } 
+        }
     }
 
     virtual void Update(const ElemT& raw, uint64_t mono_usec) {

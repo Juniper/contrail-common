@@ -26,15 +26,15 @@ class SandeshSession;
 // The user of the state machine instantiates it using
 // the static function "CreateClientSM"
 //
-// The user must provide callbacks by implementing the 
+// The user must provide callbacks by implementing the
 // SandeshClientSM::Mgr class, which has to be passed in
 // at creation time.
 
 class SandeshClientSM {
-public:    
+public:
     class Mgr {
         public:
-            virtual bool ReceiveMsg(const std::string& msg, 
+            virtual bool ReceiveMsg(const std::string& msg,
                         const SandeshHeader &header, const std::string &sandesh_name,
                         const uint32_t header_offset) = 0;
             virtual void SendUVE(int count,
@@ -67,9 +67,9 @@ public:
     virtual const std::string &StateName() const = 0;
     SandeshSession *session() {
         return session_;
-    } 
+    }
     TcpServer::Endpoint server() {
-    	tbb::mutex::scoped_lock l(mtex_); return server_;
+        tbb::mutex::scoped_lock l(mtex_); return server_;
     }
 
     // This function is used to start and stop the state machine
@@ -97,7 +97,7 @@ protected:
             session_->SetReceiveMsgCb(NULL);
             session_->Close();
             session_->Shutdown();
-            if (enq) EnqueDelSession(session_);	
+            if (enq) EnqueDelSession(session_);
         }
         session_ = session;
     }
@@ -105,7 +105,7 @@ protected:
     bool send_session(Sandesh *snh) {
         return snh->Enqueue(session_->send_queue());
     }
-   
+
     void set_server(TcpServer::Endpoint e) {
         tbb::mutex::scoped_lock l(mtex_); server_ = e;
     }
@@ -122,4 +122,3 @@ private:
 };
 
 #endif
-

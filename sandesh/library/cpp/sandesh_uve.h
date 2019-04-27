@@ -4,8 +4,8 @@
 
 //
 // sandesh_uve.h
-// 
-// This file has the interface for the generator-side UVE 
+//
+// This file has the interface for the generator-side UVE
 // cache.
 //
 
@@ -27,7 +27,7 @@ class SandeshUVEPerTypeMap;
 // This class holds a map of all per-SandeshUVE-type caches.
 // Each cache registers with this class during static initialization.
 //
-// The Sandesh Session state machine uses this class to 
+// The Sandesh Session state machine uses this class to
 // find the per-SandeshUVE-type caches and invoke operations on them.
 //
 class SandeshUVETypeMaps {
@@ -43,7 +43,7 @@ public:
     }
     static const uve_global_elem TypeMap(const std::string &s) {
         uve_global_map::const_iterator it = GetMap()->find(s);
-        if (it == GetMap()->end()) 
+        if (it == GetMap()->end())
             return std::make_pair(0, (SandeshUVEPerTypeMap *)(NULL));
         else
             return it->second;
@@ -89,10 +89,10 @@ public:
 
 
 // This is the per-SandeshUVE-type cache.
-// 
+//
 //
 // It is parameterized on the Sandesh type, and the underlying UVE Type.
-// 
+//
 // Assumptions about Sandesh Type:
 // - Has a single element called "data", of the UVE type.
 // - Provides static "Send" function.
@@ -109,12 +109,12 @@ template<typename T, typename U, int P, int TM>
 class SandeshUVEPerTypeMapImpl {
 public:
 
-    struct HashCompare { 
+    struct HashCompare {
         static size_t hash( const std::string& key )
-            { return boost::hash_value(key); } 
+            { return boost::hash_value(key); }
         static bool   equal( const std::string& key1, const std::string& key2 )
-            { return ( key1 == key2 ); } 
-    }; 
+            { return ( key1 == key2 ); }
+    };
 
     struct UVEMapEntry {
         UVEMapEntry(const std::string &table, uint32_t seqnum,
@@ -132,7 +132,7 @@ public:
     // The key is the UVE-Key
     typedef tbb::concurrent_hash_map<std::string, uve_table_map, HashCompare > uve_cmap;
 
-    SandeshUVEPerTypeMapImpl() : 
+    SandeshUVEPerTypeMapImpl() :
             dsconf_(T::_DSConf()) {}
 
     // This function is called whenever a SandeshUVE is sent from
@@ -146,13 +146,13 @@ public:
         assert(!table.empty());
         const std::string &s = data.get_name();
         if (!mono_usec) mono_usec = ClockMonotonicUsec();
- 
+
         // pickup DS Config
         lock.acquire(uve_mutex_);
         std::map<string,string> dsconf = dsconf_;
 
         // If we are going to erase, we need a global lock
-        // to coordinate with iterators 
+        // to coordinate with iterators
         // To prevent deadlock, we always acquire global lock
         // before accessor
         if (!data.get_deleted()) {
@@ -168,7 +168,7 @@ public:
             }
         }
 
-        typename uve_table_map::iterator imapentry = a->second.find(table); 
+        typename uve_table_map::iterator imapentry = a->second.find(table);
         if (imapentry == a->second.end()) {
             std::auto_ptr<UVEMapEntry> ume(new
                     UVEMapEntry(data.table_, seqnum, level));
@@ -177,7 +177,7 @@ public:
             imapentry = a->second.insert(table, ume).first;
         } else {
             if (TM != 0) {
-                // If we get an update , mark this UVE so that it is not 
+                // If we get an update , mark this UVE so that it is not
                 // deleted during the next round of periodic processing
                 imapentry->second->data.set_deleted(false);
             }
@@ -190,7 +190,7 @@ public:
             if (a->second.empty()) cmap_.erase(a);
             lock.release();
         }
-        
+
         return send;
     }
 
@@ -209,9 +209,9 @@ public:
             typename uve_table_map::iterator uit = a->second.begin();
             while (uit != a->second.end()) {
                 typename uve_table_map::iterator dit = a->second.end();
-                SANDESH_LOG(INFO, __func__ << " Clearing " << uit->first << 
+                SANDESH_LOG(INFO, __func__ << " Clearing " << uit->first <<
                     " val " << uit->second->data.log() << " proxy " <<
-                    SandeshStructProxyTrait<U>::get(uit->second->data) << 
+                    SandeshStructProxyTrait<U>::get(uit->second->data) <<
                     " seq " << uit->second->seqno);
                 uit->second->data.set_deleted(true);
                 T::Send(uit->second->data, uit->second->level,
@@ -233,7 +233,7 @@ public:
         // Copy the existing configuration
         // We will be replacing elements in it.
         std::map<std::string,std::string> dsnew = dsconf_;
-        
+
         bool failure = false;
         for (map<std::string,std::string>::const_iterator n_iter = dsconf.begin();
                 n_iter != dsconf.end(); n_iter++) {
@@ -248,7 +248,7 @@ public:
                 failure = true;
             }
         }
-        
+
         if (failure) return false;
 
         // Copy the new conf into the old one if there we no errors
@@ -299,9 +299,9 @@ public:
                 if (!table.empty() && uit->first != table) continue;
                 if ((seqno < uit->second->seqno) || (seqno == 0)) {
                     if (ctx.empty()) {
-                        SANDESH_LOG(INFO, __func__ << " Syncing " << uit->first << 
+                        SANDESH_LOG(INFO, __func__ << " Syncing " << uit->first <<
                             " val " << uit->second->data.log() << " proxy " <<
-                            SandeshStructProxyTrait<U>::get(uit->second->data) << 
+                            SandeshStructProxyTrait<U>::get(uit->second->data) <<
                             " seq " << uit->second->seqno);
                     }
                     T::Send(uit->second->data, uit->second->level, st,
@@ -350,7 +350,7 @@ public:
         }
         return sent;
     }
-    
+
     std::map<std::string, std::string> GetDSConf(void) const {
         return dsconf_;
     }
