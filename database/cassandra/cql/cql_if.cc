@@ -1900,6 +1900,10 @@ CqlIfImpl::CqlIfImpl(EventManager *evm,
 }
 
 CqlIfImpl::~CqlIfImpl() {
+    if (session_) {
+        cci_->CassSessionFree(session_);
+        session_ = NULL;
+    }
     assert(session_state_ == SessionState::INIT ||
         session_state_ == SessionState::DISCONNECTED);
     assert(schema_session_state_ == SessionState::INIT ||
