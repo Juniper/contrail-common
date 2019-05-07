@@ -54,6 +54,15 @@ public:
         return trace_buf_size_;
     }
 
+    size_t TraceBufCapacityGet() {
+        return trace_buf_.capacity();
+    }
+
+
+    void TraceBufCapacityReset(size_t size) {
+        trace_buf_.rset_capacity(size);
+    }
+
     void TraceWrite(TraceEntryT *trace_entry) {
         tbb::mutex::scoped_lock lock(mutex_);
 
@@ -263,6 +272,36 @@ public:
         typename TraceBufMap::iterator it;
         for (it = trace_buf_map_.begin(); it != trace_buf_map_.end(); ++it) {
             trace_buf_list.push_back(it->first);
+        }
+    }
+
+    size_t TraceBufCapacityGet(const std::string& buf_name) {
+        tbb::mutex::scoped_lock lock(mutex_);
+        typename TraceBufMap::iterator it = trace_buf_map_.find(buf_name);
+        if (it != trace_buf_map_.end()) {
+            boost::shared_ptr<TraceBuffer<TraceEntryT> > trace_buf =
+                                                             it->second.lock();
+            return trace_buf->TraceBufCapacityGet();
+        } else {
+            return 0;
+        }
+    }
+
+    boost::shared_ptr<TraceBuffer<TraceEntryT> > TraceBufCapacityReset(
+                                    const std::string& buf_name, size_t size) {
+        tbb::mutex::scoped_lock lock(mutex_);
+        typename TraceBufMap::iterator it = trace_buf_map_.find(buf_name);
+        if (it != trace_buf_map_.end()) {
+            boost::shared_ptr<TraceBuffer<TraceEntryT> > trace_buf =
+                                                             it->second.lock();
+            trace_buf->TraceBufCapacityReset(size);
+            return trace_buf;
+        } else {
+            boost::shared_ptr<TraceBuffer<TraceEntryT> > trace_buf(
+                new TraceBuffer<TraceEntryT>(buf_name, size, true),
+                TraceBufferDeleter<TraceEntryT>(trace_buf_map_, mutex_));
+            trace_buf_map_.insert(std::make_pair(buf_name, trace_buf));
+            return trace_buf;
         }
     }
 

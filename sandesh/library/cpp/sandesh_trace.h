@@ -32,6 +32,17 @@ inline bool IsSandeshTraceEnabled() {
     return TraceSandeshType::GetInstance()->IsTraceOn();
 }
 
+inline size_t SandeshTraceBufferCapacityGet(const std::string& buf_name) {
+    return TraceSandeshType::GetInstance()->TraceBufCapacityGet(buf_name);
+}
+
+inline SandeshTraceBufferPtr SandeshTraceBufferResetSize(
+        const std::string& buf_name,
+        size_t buf_size) {
+    return TraceSandeshType::GetInstance()->TraceBufCapacityReset(
+             buf_name, buf_size);
+}
+
 inline SandeshTraceBufferPtr SandeshTraceBufferCreate(
         const std::string& buf_name,
         size_t buf_size,
