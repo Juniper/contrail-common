@@ -34,6 +34,11 @@ thrift_protocol_init (ThriftProtocol *protocol,
     // Initialize the protocol methods
     thrift_binary_protocol_init(protocol);
     break;
+  case T_PROTOCOL_XML:
+#ifndef __KERNEL__
+    thrift_xml_protocol_init(protocol);
+#endif
+    break;
   default:
     break;
   }
