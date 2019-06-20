@@ -156,8 +156,10 @@ static inline void os_put_value64(uint8_t *data, uint64_t value) {
 #include "transport/thrift_transport.h"
 #include "transport/thrift_memory_buffer.h"
 #include "transport/thrift_fake_transport.h"
+#include "transport/thrift_file_transport.h"
 #include "protocol/thrift_protocol.h"
 #include "protocol/thrift_binary_protocol.h"
+#include "protocol/thrift_xml_protocol.h"
 
 typedef struct sandesh_info_s {
     const char *name;
