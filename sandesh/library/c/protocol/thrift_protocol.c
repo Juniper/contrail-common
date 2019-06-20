@@ -34,6 +34,9 @@ thrift_protocol_init (ThriftProtocol *protocol,
     // Initialize the protocol methods
     thrift_binary_protocol_init(protocol);
     break;
+  case T_PROTOCOL_XML:
+    thrift_xml_protocol_init(protocol);
+    break;
   default:
     break;
   }

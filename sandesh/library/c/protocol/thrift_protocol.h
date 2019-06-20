@@ -79,6 +79,7 @@ typedef enum {
  */
 typedef enum {
   T_PROTOCOL_BINARY = 1,
+  T_PROTOCOL_XML = 2,
 } ThriftProtocolType;
 
 /*

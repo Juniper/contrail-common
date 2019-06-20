@@ -33,6 +33,7 @@ extern "C" {
 typedef enum {
   T_TRANSPORT_MEMORY_BUFFER = 1,
   T_TRANSPORT_FAKE = 2,
+  T_TRANSPORT_FILE = 3,
 } ThriftTransportType;
 
 /*!
