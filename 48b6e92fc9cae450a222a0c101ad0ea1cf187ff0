@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9f5c4f37_d6b5a57f",
+        "filename": "sandesh/library/c/protocol/thrift_xml_protocol.c",
+        "patchSetId": 2
+      },
+      "lineNbr": 470,
+      "author": {
+        "id": 213
+      },
+      "writtenOn": "2019-06-25T08:10:46Z",
+      "side": 1,
+      "message": "Nit: remove these spaces",
+      "range": {
+        "startLine": 470,
+        "startChar": 0,
+        "endLine": 470,
+        "endChar": 19
+      },
+      "revId": "48b6e92fc9cae450a222a0c101ad0ea1cf187ff0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    }
+  ]
+}
