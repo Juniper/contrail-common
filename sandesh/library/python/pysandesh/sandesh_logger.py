@@ -69,6 +69,8 @@ class SandeshLogger(sandesh_base_logger.SandeshBaseLogger):
 
     @staticmethod
     def _get_sandesh_and_logging_levels(level):
+        if isinstance(level, unicode):
+            level = level.encode('utf-8')
         if isinstance(level, str):
             if level in SandeshLevel._NAMES_TO_VALUES:
                 level = SandeshLevel._NAMES_TO_VALUES[level]
