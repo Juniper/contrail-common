@@ -22,6 +22,7 @@
 #include <base/sandesh/cpuinfo_types.h>
 #include <base/sandesh/nodeinfo_constants.h>
 #include <base/sandesh/nodeinfo_types.h>
+#include <base/feature_flags.h>
 
 class ConnectionInfoTest;
 
@@ -88,6 +89,9 @@ public:
             ConnectionState::CreateInstance(boost::bind(
                 &ConnectionStateManager::
                     SendProcessStateUve, instance_.get(), false));
+            FlagUveManager::CreateInstance(FlagManager::GetInstance(),
+                boost::bind(&ConnectionStateManager::
+                    SendProcessStateUve, instance_.get(), false));
         }
         return instance_.get();
     }
@@ -107,6 +111,7 @@ public:
 
 private:
     friend class ConnectionState;
+    friend class FlagUveManager;
     friend class ::ConnectionInfoTest;
 
     // Singleton
@@ -118,14 +123,21 @@ private:
         status_cb_ = status_cb;
     }
 
+    // Convert flag_infos to sandesh type
+    std::vector<FlagInfo> GetFlagInfos(const FlagConfigVec& flag_infos);
+
     bool SendProcessStateUve(bool lock) {
         if (status_cb_.empty()) {
             return false;
         }
         // Update
+        // Add connection_info
         process_status_.set_connection_infos(lock ?
             ConnectionState::GetInstance()->GetInfos() :
             ConnectionState::GetInstance()->GetInfosUnlocked());
+        // Add flag_info
+        process_status_.set_flag_infos(GetFlagInfos(
+            FlagUveManager::GetInstance()->GetFlagInfos(lock)));
         ProcessState::type pstate;
         std::string message;
         status_cb_(process_status_.get_connection_infos(), pstate, message);
@@ -139,6 +151,7 @@ private:
         NodeStatusUVE::Send(data_);
         return true;
     }
+
     static boost::scoped_ptr<ConnectionStateManager> instance_;
 
     ProcessStateFn status_cb_;
@@ -148,4 +161,4 @@ private:
 
 } // namespace process
 
-#endif // __CONNECTION_INFO_H__     
+#endif // __CONNECTION_INFO_H__

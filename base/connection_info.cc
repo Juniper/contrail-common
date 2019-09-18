@@ -241,4 +241,30 @@ void GetConnectionInfoMessage(const std::vector<ConnectionInfo> &cinfos,
     }
 }
 
+std::vector<FlagInfo>
+ConnectionStateManager::GetFlagInfos(const FlagConfigVec& flag_infos) {
+    FlagInfo info;
+    std::vector<FlagInfo> infos;
+    ContextInfo c_info;
+    std::vector<ContextInfo> c_infos;
+    FlagState state;
+    ContextVec c_vec;
+    context_iterator c_itr;
+    for (flag_cfg_itr it = flag_infos.begin(); it != flag_infos.end(); it++) {
+        info.set_name(it->name());
+        info.set_version(it->version());
+        info.set_enabled(it->enabled());
+        info.set_state(state.ToString(it->state()));
+        c_vec = it->context_infos();
+        for (c_itr = c_vec.begin(); c_itr != c_vec.end(); c_itr++) {
+            c_info.desc = c_itr->desc;
+            c_info.value = c_itr->value;
+            c_infos.push_back(c_info);
+        }
+        info.set_context_infos(c_infos);
+        infos.push_back(info);
+    }
+    return infos;
+}
+
 } // namespace process
