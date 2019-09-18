@@ -47,7 +47,7 @@ ProcessInfoSandeshGenFiles = env.SandeshGenCpp('sandesh/process_info.sandesh')
 ProcessInfoSandeshGenSrcs = env.ExtractCpp(ProcessInfoSandeshGenFiles)
 
 libprocessinfo = env.Library('process_info',
-                          ['connection_info.cc'] +
+                          ['connection_info.cc', 'feature_flags.cc'] +
                           ProcessInfoSandeshGenSrcs)
 
 NodeInfoSandeshGenFiles = env.SandeshGenCpp('sandesh/nodeinfo.sandesh')
