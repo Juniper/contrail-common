@@ -14,6 +14,9 @@
 
 namespace process {
 
+using std::vector;
+using std::string;
+
 // ConnectionState
 boost::scoped_ptr<ConnectionState> ConnectionState::instance_;
 boost::scoped_ptr<ConnectionStateManager> ConnectionStateManager::instance_;
@@ -47,8 +50,8 @@ void ConnectionState::Update() {
 }
 
 void ConnectionState::UpdateInternal(ConnectionType::type ctype,
-    const std::string &name, ConnectionStatus::type status,
-    const std::vector<Endpoint> &servers, std::string message) {
+    const string &name, ConnectionStatus::type status,
+    const vector<Endpoint> &servers, string message) {
     // Populate key
     ConnectionInfoKey key(ctype, name);
     // Populate info
@@ -56,12 +59,12 @@ void ConnectionState::UpdateInternal(ConnectionType::type ctype,
     info.set_type(
         g_process_info_constants.ConnectionTypeNames.find(ctype)->second);
     info.set_name(name);
-    std::vector<std::string> server_addrs;
+    vector<string> server_addrs;
     BOOST_FOREACH(const Endpoint &server, servers) {
         boost::system::error_code ec;
-        std::string saddr(server.address().to_string(ec));
+        string saddr(server.address().to_string(ec));
         int sport(server.port());
-        std::string server_address(saddr + ":" + integerToString(sport));
+        string server_address(saddr + ":" + integerToString(sport));
         server_addrs.push_back(server_address);
     }
     info.set_server_addrs(server_addrs);
@@ -91,20 +94,20 @@ void ConnectionState::UpdateInternal(ConnectionType::type ctype,
 }
 
 void ConnectionState::Update(ConnectionType::type ctype,
-    const std::string &name, ConnectionStatus::type status,
-    const std::vector<Endpoint> &servers, std::string message) {
+    const string &name, ConnectionStatus::type status,
+    const vector<Endpoint> &servers, string message) {
     UpdateInternal(ctype, name, status, servers, message);
 }
 
 void ConnectionState::Update(ConnectionType::type ctype,
-    const std::string &name, ConnectionStatus::type status,
-    Endpoint server, std::string message) {
+    const string &name, ConnectionStatus::type status,
+    Endpoint server, string message) {
     UpdateInternal(ctype, name, status, boost::assign::list_of(server),
         message);
 }
 
 void ConnectionState::Delete(ConnectionType::type ctype,
-    const std::string &name) {
+    const string &name) {
     // Construct key
     ConnectionInfoKey key(ctype, name);
     // Delete
@@ -115,8 +118,8 @@ void ConnectionState::Delete(ConnectionType::type ctype,
     }
 }
 
-std::vector<ConnectionInfo> ConnectionState::GetInfosUnlocked() const {
-    std::vector<ConnectionInfo> infos;
+vector<ConnectionInfo> ConnectionState::GetInfosUnlocked() const {
+    vector<ConnectionInfo> infos;
     for (ConnectionInfoMap::const_iterator it = connection_map_.begin();
          it != connection_map_.end(); it++) {
         infos.push_back(it->second);
@@ -124,14 +127,14 @@ std::vector<ConnectionInfo> ConnectionState::GetInfosUnlocked() const {
     return infos;
 }
 
-std::vector<ConnectionInfo> ConnectionState::GetInfos() const {
+vector<ConnectionInfo> ConnectionState::GetInfos() const {
     tbb::mutex::scoped_lock lock(mutex_);
     return GetInfosUnlocked();
 }
 
-void GetProcessStateCb(const std::vector<ConnectionInfo> &cinfos,
-    ProcessState::type &state, std::string &message,
-    const std::vector<ConnectionTypeName> &expected_connections) {
+void GetProcessStateCb(const vector<ConnectionInfo> &cinfos,
+    ProcessState::type &state, string &message,
+    const vector<ConnectionTypeName> &expected_connections) {
     // Determine if the number of connections is as expected.
     size_t num_connections(cinfos.size());
     if (num_connections != expected_connections.size()) {
@@ -139,14 +142,14 @@ void GetProcessStateCb(const std::vector<ConnectionInfo> &cinfos,
         state = ProcessState::NON_FUNCTIONAL;
         return;
     }
-    std::string cup(g_process_info_constants.ConnectionStatusNames.
+    string cup(g_process_info_constants.ConnectionStatusNames.
                     find(ConnectionStatus::UP)->second);
     bool is_cup = true;
     // Iterate to determine process connectivity status
-    for (std::vector<ConnectionInfo>::const_iterator it = cinfos.begin();
+    for (vector<ConnectionInfo>::const_iterator it = cinfos.begin();
          it != cinfos.end(); it++) {
         const ConnectionInfo &cinfo(*it);
-        const std::string &conn_status(cinfo.get_status());
+        const string &conn_status(cinfo.get_status());
         if (conn_status != cup) {
             is_cup = false;
             if (message.empty()) {
@@ -154,7 +157,7 @@ void GetProcessStateCb(const std::vector<ConnectionInfo> &cinfos,
             } else {
                 message += ", " + cinfo.get_type();
             }
-            const std::string &name(cinfo.get_name());
+            const string &name(cinfo.get_name());
             if (!name.empty()) {
                 message += ":" + name;
             }
@@ -187,9 +190,9 @@ struct CompareConnections : public std::unary_function<ConnectionTypeName,
     }
 };
 
-void GetConnectionInfoMessage(const std::vector<ConnectionInfo> &cinfos,
-    const std::vector<ConnectionTypeName> &expected_connections,
-    std::string &message) {
+void GetConnectionInfoMessage(const vector<ConnectionInfo> &cinfos,
+    const vector<ConnectionTypeName> &expected_connections,
+    string &message) {
     size_t num_connections(cinfos.size());
     message = "Number of connections:" + integerToString(num_connections) +
               ", Expected:" + integerToString(expected_connections.size());
@@ -197,11 +200,11 @@ void GetConnectionInfoMessage(const std::vector<ConnectionInfo> &cinfos,
         size_t i = 0;
         message += " Extra: ";
         // find the extra connection
-        for (std::vector<ConnectionInfo>::const_iterator it = cinfos.begin();
+        for (vector<ConnectionInfo>::const_iterator it = cinfos.begin();
             it != cinfos.end(); it++) {
             const ConnectionInfo &cinfo(*it);
             ConnectionTypeName con_info(cinfo.get_type(), cinfo.get_name());
-            std::vector<ConnectionTypeName>::const_iterator position;
+            vector<ConnectionTypeName>::const_iterator position;
             position = std::find(expected_connections.begin(),
                                  expected_connections.end(), con_info);
             if (position == expected_connections.end()) {
@@ -219,10 +222,10 @@ void GetConnectionInfoMessage(const std::vector<ConnectionInfo> &cinfos,
         // find the missing connection
         size_t i = 0;
         message += " Missing: ";
-        for (std::vector<ConnectionTypeName>::const_iterator it =
+        for (vector<ConnectionTypeName>::const_iterator it =
              expected_connections.begin(); it != expected_connections.end();
              it++) {
-            std::vector<ConnectionInfo>::const_iterator position;
+            vector<ConnectionInfo>::const_iterator position;
             position = std::find_if(cinfos.begin(), cinfos.end(),
                                      CompareConnections(*it));
             // If connection is not found in cinfo, its a missing
@@ -239,6 +242,32 @@ void GetConnectionInfoMessage(const std::vector<ConnectionInfo> &cinfos,
             }
         }
     }
+}
+
+vector<FlagInfo>
+ConnectionStateManager::GetFlagInfos(const FlagConfigVec &flag_infos) {
+    FlagInfo info;
+    vector<FlagInfo> infos;
+    ContextInfo c_info;
+    vector<ContextInfo> c_infos;
+    FlagState state;
+    ContextVec c_vec;
+    context_iterator c_itr;
+    for (flag_cfg_itr it = flag_infos.begin(); it != flag_infos.end(); it++) {
+        info.set_name(it->name());
+        info.set_version(it->version());
+        info.set_enabled(it->enabled());
+        info.set_state(state.ToString(it->state()));
+        c_vec = it->context_infos();
+        for (c_itr = c_vec.begin(); c_itr != c_vec.end(); c_itr++) {
+            c_info.desc = c_itr->desc;
+            c_info.value = c_itr->value;
+            c_infos.push_back(c_info);
+        }
+        info.set_context_infos(c_infos);
+        infos.push_back(info);
+    }
+    return infos;
 }
 
 } // namespace process
