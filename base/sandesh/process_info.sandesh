@@ -64,6 +64,36 @@ struct ConnectionInfo {
     5: optional string description
 }
 
+enum FlagState {
+    EXPERIMENTAL,
+    ALPHA,
+    BETA,
+    IN_PROGRESS,
+}
+
+const map<FlagState, string> FlagStateNames = {
+    FlagState.EXPERIMENTAL : "Experimental",
+    FlagState.ALPHA : "Alpha"
+    FlagState.BETA : "Beta"
+    FlagState.IN_PROGRESS : "In Progress"
+}
+
+struct ContextInfo {
+    1: string desc
+    2: string value
+}
+
+struct FlagInfo {
+    1: string name
+    2: string description
+    3: string release
+    4: bool enabled
+    5: bool default_state
+    6: bool configured
+    7: string state
+    8: optional list<ContextInfo> context_infos
+}
+
 enum ProcessState {
     FUNCTIONAL,
     NON_FUNCTIONAL,
@@ -84,7 +114,8 @@ struct ProcessStatus {
     2: string instance_id
     3: string state
     4: optional list<ConnectionInfo> connection_infos
-    5: optional string description
+    5: optional list<FlagInfo> flag_infos
+    6: optional string description
 }
 
 // Sent by the node manager
