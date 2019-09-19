@@ -8,8 +8,16 @@
 # sandesh_session_test
 #
 
+from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import unittest
-import cStringIO
+import io
 import sys
 import os
 import socket
@@ -46,7 +54,7 @@ class SandeshSessionTestHelper(sandesh_session.SandeshSession):
 
     def write(self, send_buf):
         self.send_buf_list.append(send_buf)
-        print 'Send message of length [%s]' % (len(send_buf))
+        print('Send message of length [%s]' % (len(send_buf)))
         return len(send_buf)
     #end write
 
@@ -62,7 +70,7 @@ class SandeshReaderTestHelper(sandesh_session.SandeshReader):
         msg_len = len(sandesh_session._XML_SANDESH_OPEN) + len(sandesh) + \
             len(sandesh_session._XML_SANDESH_CLOSE)
         self.sandesh_msg_size_list.append(msg_len)
-        print 'Received message of length [%s]' % (msg_len)
+        print('Received message of length [%s]' % (msg_len))
     #end _sandesh_msg_handler
 
 #end class SandeshReaderTestHelper
@@ -85,10 +93,10 @@ class SandeshReaderTest(unittest.TestCase):
     #end setUp
 
     def test_read_msg(self):
-        print '-------------------------'
-        print '       Test Read Msg     '
-        print '-------------------------'
-        msg_stream = cStringIO.StringIO()
+        print('-------------------------')
+        print('       Test Read Msg     ')
+        print('-------------------------')
+        msg_stream = io.StringIO()
         msg_size_list = [100, 400, 80, 110, 70, 80, 100]
         msg_segment_list = [
             100 + 60,      # complete msg + start (with header)
@@ -155,14 +163,14 @@ class SandeshWriterTest(unittest.TestCase):
     #end setUp
 
     def test_send_msg_more(self):
-        print '-------------------------'
-        print '    Test Send Msg More   '
-        print '-------------------------'
+        print('-------------------------')
+        print('    Test Send Msg More   ')
+        print('-------------------------')
         msg_info_list = [
             dict(msg=create_fake_sandesh(self._max_msg_size)),
-            dict(msg=create_fake_sandesh(self._max_msg_size/2)),
-            dict(msg=create_fake_sandesh(self._max_msg_size/4)),
-            dict(msg=create_fake_sandesh((self._max_msg_size/4)+1)),
+            dict(msg=create_fake_sandesh(old_div(self._max_msg_size,2))),
+            dict(msg=create_fake_sandesh(old_div(self._max_msg_size,4))),
+            dict(msg=create_fake_sandesh((old_div(self._max_msg_size,4))+1)),
             dict(msg=create_fake_sandesh(self._max_msg_size-1)),
             dict(msg=create_fake_sandesh(2*self._max_msg_size)),
         ]
@@ -171,8 +179,8 @@ class SandeshWriterTest(unittest.TestCase):
         # the end of each iteration
         exp_at_each_it = [
             dict(send_count=1, send_buf_cache_size=0),
-            dict(send_count=1, send_buf_cache_size=self._max_msg_size/2),
-            dict(send_count=1, send_buf_cache_size=3*(self._max_msg_size/4)),
+            dict(send_count=1, send_buf_cache_size=old_div(self._max_msg_size,2)),
+            dict(send_count=1, send_buf_cache_size=3*(old_div(self._max_msg_size,4))),
             dict(send_count=2, send_buf_cache_size=0),
             dict(send_count=2, send_buf_cache_size=self._max_msg_size-1),
             dict(send_count=3, send_buf_cache_size=0)
@@ -200,28 +208,28 @@ class SandeshWriterTest(unittest.TestCase):
     #end test_send_more
 
     def test_send_msg_all(self):
-        print '-------------------------'
-        print '    Test Send Msg All    '
-        print '-------------------------'
+        print('-------------------------')
+        print('    Test Send Msg All    ')
+        print('-------------------------')
         msg_info_list = [
             dict(msg=create_fake_sandesh(self._max_msg_size), send_all=True),
-            dict(msg=create_fake_sandesh(self._max_msg_size/2), send_all=False),
-            dict(msg=create_fake_sandesh(self._max_msg_size/4), send_all=True),
-            dict(msg=create_fake_sandesh(self._max_msg_size/2), send_all=False),
-            dict(msg=create_fake_sandesh(self._max_msg_size/2), send_all=True),
-            dict(msg=create_fake_sandesh((self._max_msg_size/2)+1), send_all=False),
-            dict(msg=create_fake_sandesh(self._max_msg_size/2), send_all=True)
+            dict(msg=create_fake_sandesh(old_div(self._max_msg_size,2)), send_all=False),
+            dict(msg=create_fake_sandesh(old_div(self._max_msg_size,4)), send_all=True),
+            dict(msg=create_fake_sandesh(old_div(self._max_msg_size,2)), send_all=False),
+            dict(msg=create_fake_sandesh(old_div(self._max_msg_size,2)), send_all=True),
+            dict(msg=create_fake_sandesh((old_div(self._max_msg_size,2))+1), send_all=False),
+            dict(msg=create_fake_sandesh(old_div(self._max_msg_size,2)), send_all=True)
         ]
 
         # Fill the send_count and the send_buf_cache_size expected @
         # the end of each iteration
         exp_at_each_it = [
             dict(send_count=1, send_buf_cache_size=0),
-            dict(send_count=1, send_buf_cache_size=self._max_msg_size/2),
+            dict(send_count=1, send_buf_cache_size=old_div(self._max_msg_size,2)),
             dict(send_count=2, send_buf_cache_size=0),
-            dict(send_count=2, send_buf_cache_size=self._max_msg_size/2),
+            dict(send_count=2, send_buf_cache_size=old_div(self._max_msg_size,2)),
             dict(send_count=3, send_buf_cache_size=0),
-            dict(send_count=3, send_buf_cache_size=(self._max_msg_size/2)+1),
+            dict(send_count=3, send_buf_cache_size=(old_div(self._max_msg_size,2))+1),
             dict(send_count=4, send_buf_cache_size=0)
         ]
         self.assertEqual(len(msg_info_list), len(exp_at_each_it))
@@ -312,8 +320,8 @@ class SandeshSessionTest(unittest.TestCase):
     def verify_watermarks(self, session, expected_wms, actual_wms):
         expected_wms.sort()
         actual_wms.sort()
-        print '== verify watermarks =='
-        print expected_wms
+        print('== verify watermarks ==')
+        print(expected_wms)
         self.assertEqual(len(expected_wms), len(actual_wms))
         for i in range(len(expected_wms)):
             self.assertEqual(expected_wms[i][0], actual_wms[i].size)
