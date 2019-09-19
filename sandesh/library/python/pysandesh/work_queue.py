@@ -6,6 +6,7 @@
 # Work Queue
 #
 
+from builtins import object
 import gevent
 from gevent.queue import Queue, Empty
 import bisect
