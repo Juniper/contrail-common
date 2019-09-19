@@ -8,6 +8,10 @@
 # sandesh_uve_alarm_test
 #
 
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
+from builtins import range
 import mock
 import unittest
 import sys
@@ -15,7 +19,7 @@ import socket
 
 sys.path.insert(1, sys.path[0]+'/../../../python')
 
-import test_utils
+from . import test_utils
 from pysandesh.sandesh_base import *
 from pysandesh.sandesh_client import SandeshClient
 from pysandesh.util import UTCTimestampUsec
@@ -164,7 +168,7 @@ class SandeshUVEAlarmTest(unittest.TestCase):
                 uve_data = uve_data_type(name=uve['name'], elements=elts_exp,
                         deleted=uve.get('deleted'))
                 uve_data._table = uve['table']
-            print uve_data.__dict__
+            print(uve_data.__dict__)
             expected_data.extend([{'seqnum': uve['seqnum'], 'data': uve_data}])
 
         # verify the result

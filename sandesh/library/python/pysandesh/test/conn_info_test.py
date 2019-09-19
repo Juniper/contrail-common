@@ -8,10 +8,11 @@
 # conn_info_test
 #
 
+from __future__ import absolute_import
 import sys
 import socket
 import unittest
-import test_utils
+from . import test_utils
 
 sys.path.insert(1, sys.path[0]+'/../../../python')
 from pysandesh.gen_py.process_info.constants import ConnectionTypeNames, \

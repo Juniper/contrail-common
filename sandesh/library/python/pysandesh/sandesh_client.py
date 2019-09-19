@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import division
 #
 # Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
 #
@@ -6,13 +8,15 @@
 # Sandesh Client
 #
 
-from sandesh_connection import SandeshConnection
-from sandesh_logger import SandeshLogger
-from transport import TTransport
-from protocol import TXMLProtocol
-from sandesh_uve import SandeshUVETypeMaps
-from gen_py.sandesh.ttypes import SandeshTxDropReason, SandeshRxDropReason
-from util import UTCTimestampUsec
+from builtins import object
+from past.utils import old_div
+from .sandesh_connection import SandeshConnection
+from .sandesh_logger import SandeshLogger
+from .transport import TTransport
+from .protocol import TXMLProtocol
+from .sandesh_uve import SandeshUVETypeMaps
+from .gen_py.sandesh.ttypes import SandeshTxDropReason, SandeshRxDropReason
+from .util import UTCTimestampUsec
 
 class SandeshClient(object):
     _INITIAL_SM_SESSION_CLOSE_INTERVAL_MSEC = 10 * 1000;
@@ -49,13 +53,13 @@ class SandeshClient(object):
         # interval to the initial close interval
         if (time_since_close_usec > last_close_interval_usec) and \
                 (time_since_close_usec <= 2 * last_close_interval_usec):
-            nclose_interval_msec = (2 * last_close_interval_usec)/1000
+            nclose_interval_msec = old_div((2 * last_close_interval_usec),1000)
             close_interval_msec = min(nclose_interval_msec,
                 SandeshClient._MAX_SM_SESSION_CLOSE_INTERVAL_MSEC)
             return (True, close_interval_msec)
         elif (2 * last_close_interval_usec <= time_since_close_usec) and \
                 (time_since_close_usec <= 4 * last_close_interval_usec):
-            close_interval_msec = last_close_interval_usec/1000;
+            close_interval_msec = old_div(last_close_interval_usec,1000);
             return (True, close_interval_msec)
         else:
             return (True,

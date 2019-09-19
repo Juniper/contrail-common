@@ -6,6 +6,7 @@
 # Sandesh UVE
 #
 
+from builtins import object
 import importlib
 import copy
 from pysandesh.gen_py.sandesh.ttypes import SandeshType
@@ -64,7 +65,7 @@ class SandeshUVETypeMaps(object):
     # end get_uve_type_map
 
     def sync_all_uve_types(self, inmap, sandesh_instance):
-        for uve_type, uve_type_map in self._uve_global_map.iteritems():
+        for uve_type, uve_type_map in self._uve_global_map.items():
             try:
                 in_seqno = inmap[uve_type]
             except KeyError:
@@ -76,7 +77,7 @@ class SandeshUVETypeMaps(object):
 
     def get_object_types(self, sandesh_type):
         object_types = set()
-        for uve_type, uve_type_map in self._uve_global_map.iteritems():
+        for uve_type, uve_type_map in self._uve_global_map.items():
             if uve_type_map.sandesh_type() is sandesh_type:
                 tables = uve_type_map.get_object_types()
                 if tables is not None:
@@ -130,7 +131,7 @@ class SandeshUVEPerTypeMap(object):
     # end uve_data_type_name
 
     def get_object_types(self):
-        return self._uve_map.keys()
+        return list(self._uve_map.keys())
     # end get_object_types
 
     def uve_type_seqnum(self):
@@ -186,10 +187,10 @@ class SandeshUVEPerTypeMap(object):
 
     def sync_uve(self, table, seqno, ctx, more, sandesh_instance):
         count = 0
-        for uve_table, uve_map in self._uve_map.iteritems():
+        for uve_table, uve_map in self._uve_map.items():
             if table is not None and uve_table != table:
                 continue
-            for uve_name, uve_entry in uve_map.iteritems():
+            for uve_name, uve_entry in uve_map.items():
                 if seqno == 0 or seqno < uve_entry.seqno:
                     sandesh_uve = self._uve_type(sandesh=sandesh_instance)
                     sandesh_uve.data = uve_entry.data
@@ -203,7 +204,7 @@ class SandeshUVEPerTypeMap(object):
     # end sync_uve
 
     def send_uve(self, table, name, ctx, more, sandesh_instance):
-        for uve_table, uve_map in self._uve_map.iteritems():
+        for uve_table, uve_map in self._uve_map.items():
             if table is not None and uve_table != table:
                 continue
             uve_entry = uve_map.get(name)
