@@ -1,0 +1,248 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0277651a_c7a57268",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 140,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-09-26T23:52:33Z",
+      "side": 1,
+      "message": "I would personally recommend not having analytics embedded in the FlagManager.\nRather, have two classes:\n- a FlagManager, that just stores flags.\n- An analytics collector for flags, that takes a FlagManager as an argument, and collects the flags and send for analysis.\n\nI\u0027m also concerned about EndOfConfig. This does not work if flags are changed later on at run time? Eg, the new flags are not sent to analytics?",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5f3872ed_edfc812f",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 191,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-09-26T23:52:33Z",
+      "side": 1,
+      "message": "Same comment as above.",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ee86a760_72a22164",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 325,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-09-26T23:52:33Z",
+      "side": 1,
+      "message": "Two comments here: \n\n1) Flag is duplicating the information in MakeFlag, right? eg, name, description, and so on? Do we need a separate MakeFlag? Or do we need Flag to keep a copy of this information? (but see my next comment)\n\n2) From the example on line 30, this probably comes from the proposal in my original document? \n\nIf you look back at that document, I used the MakeFlag pattern because I was expecting the Flag object to be templated on a type, eg, so we could have a bool flag, a string flag, and so on.\nMakeFlag would have been a function, something like:\n\ntemplate\u003ctypename Type\u003e\nFlag\u003cType\u003e MakeFlag(...) {\n  [...]\n  return Flag\u003cType\u003e(...);\n}\n\nsimilar to eg, make_tuple, or make_unique.\n\n[before making changes, though, look at the next few comments, we can spend 30 mins on whiteboard as well]",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2f645a00_321e1344",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 374,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-09-26T23:52:33Z",
+      "side": 1,
+      "message": "FlagInfo is the sandesh type, correct? I would personally decouple it from the Flag object entirely.\n\nAs an example, we could try to have something like:\n\nclass Flag {\n public:\n  Flag(FlagManager* manager, bool default, ...)\n    : manager_(manager), enabled_(default) {\n    manager_-\u003eRegister(this, description, default, ...);\n  }\n\n  ~Flag() { if (manager_) manager_-\u003eUnregister(this); }\n\n  bool Get() const { return enabled_; }\n  Set(bool value) { enabled_ \u003d value; }\n\n  // Disable copy, as this will break the manager.\n  // Ideally, thought, we\u0027d have a move constructor.\n  Flag(const Flag\u0026) \u003d delete;\n  Flag operator\u003d(const Flag\u0026) \u003d delete;\n  \n private:\n  FlagManager *manager_;\n  bool enabled_;\n};\n\nclass FlagManager {\n  public:\n    ...\n    bool Register(name, description, ... Flag* flag);\n    bool Unregister(Flag* flag);\n    ...\n    ... Set(...); // to set a flag.\n    ... Get(...); // to get a value of a raw flag.\n    ...\n\n    // no sandesh, no stats, ... only flag store.\n};\n\nclass SandeshFlagManager {\n  // takes a FlagManager as a pointer, uses sandesh to recieve updates\n  // of flags, and calling set methods on flag manager.\n};\n\nclass UveFlagManager {\n  // takes a flagmanager as a pointer, sends flags to stats pipeline\n  // as necessary, and/or could inherit from the flagmanager class using virtual\n  // methods so that it can notify the stats when Set() is called, for example.\n  // In this case, we could turn FlagManager into an interface class.\n};",
+      "range": {
+        "startLine": 374,
+        "startChar": 20,
+        "endLine": 374,
+        "endChar": 28
+      },
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1f6e4788_fc64a3e6",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 381,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-09-26T23:52:33Z",
+      "side": 1,
+      "message": "I wish we could use C++11 here.",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9c6d27b9_3c7810a5",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 386,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-09-26T23:52:33Z",
+      "side": 1,
+      "message": "Not sure why this constructor is necessary, or how it would be used.",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2f3ee1eb_6e412ca8",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 393,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-09-26T23:52:33Z",
+      "side": 1,
+      "message": "I would personally just pass in the flag manager to use. It\u0027ll make testing easier.\nAnd/or have a constructor (or default parameter) that if not set uses the static method to get one.",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "02416a5f_446861be",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 420,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-09-26T23:52:33Z",
+      "side": 1,
+      "message": "not sure about the style guid here, but:\n\nFlag(...)\n  : name(mflag.fname),\n    description(mflag.fdesc),\n    ... {\n}\n\nallows to mark name and description as constant.",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "50146a95_3d1c183c",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 446,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-09-26T23:52:33Z",
+      "side": 1,
+      "message": "private? why is access to the manager() needed?",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "288cc88f_0de2d80a",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 459,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-09-26T23:52:33Z",
+      "side": 1,
+      "message": "this is not necessary, right?",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d0bc88e4_d1361967",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 473,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-09-26T23:52:33Z",
+      "side": 1,
+      "message": "private? why is this required?",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8efc216b_cdd14b24",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 480,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-09-26T23:52:33Z",
+      "side": 1,
+      "message": "my recommendation would be to rely on RAII, let the destructor unregister the flag.\nI would consider disabling the copy constructor, or having a move constructor (C++11, sigh).",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "77724cfd_37565622",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 487,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-09-26T23:52:33Z",
+      "side": 1,
+      "message": "bool Get() const {...}\n\n(Get does not modify the state of the object)",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "54a4e96b_9db5a7d0",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 494,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-09-26T23:52:33Z",
+      "side": 1,
+      "message": "I would personally not provide a callback interface until one is needed. I also don\u0027t understand what the name argument is here.",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
