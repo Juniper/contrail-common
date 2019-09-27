@@ -105,6 +105,7 @@ public:
 
     bool GetEndOfRibComputed() const;
     uint64_t GetEndOfRibComputedAt() const;
+    void PostShutdown();
 
 private:
     typedef std::pair<std::string, std::string> LinkMemberPair;
@@ -114,7 +115,6 @@ private:
     typedef std::map<std::string, std::string> WrapperFieldMap;
 
     void SetUp();
-    void PostShutdown();
     void SetDefaultSchedulingPolicy();
 
     LinkNameMap link_name_map_;
