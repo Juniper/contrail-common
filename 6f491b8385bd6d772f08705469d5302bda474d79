@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "cbfc9b97_4f679b33",
+        "filename": "sandesh/library/python/pysandesh/protocol/TJSONProtocol.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 213
+      },
+      "writtenOn": "2019-10-12T11:12:18Z",
+      "side": 1,
+      "message": "does it have to be first line?",
+      "revId": "6f491b8385bd6d772f08705469d5302bda474d79",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "87aa7374_e38aa38a",
+        "filename": "sandesh/library/python/pysandesh/sandesh_client.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 213
+      },
+      "writtenOn": "2019-10-12T11:12:18Z",
+      "side": 1,
+      "message": "can we move these after the header?",
+      "range": {
+        "startLine": 1,
+        "startChar": 2,
+        "endLine": 2,
+        "endChar": 8
+      },
+      "revId": "6f491b8385bd6d772f08705469d5302bda474d79",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
