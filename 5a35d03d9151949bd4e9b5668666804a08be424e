@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8fec0465_8d52c13e",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2019-10-12T16:15:02Z",
+      "side": 1,
+      "message": "Hmm, is one queue used by several agents at the same time ? I thought we delete the queue and recreate (afresh) upon startup. Is it not the case..\n\nBtw, agent always gets the config from control-node. Why would agent listen directly to rabbit-mq queue. Aren\u0027t these warnings seen from control-node ?",
+      "revId": "5a35d03d9151949bd4e9b5668666804a08be424e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
