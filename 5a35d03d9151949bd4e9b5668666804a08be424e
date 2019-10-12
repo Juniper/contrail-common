@@ -16,6 +16,24 @@
       "revId": "5a35d03d9151949bd4e9b5668666804a08be424e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ac575538_5c524e4e",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 213
+      },
+      "writtenOn": "2019-10-12T16:25:10Z",
+      "side": 1,
+      "message": "the queues get deleted by rabbitmq server whenever it detects disconnection. Client tries to delete it at the time of initialisation only but it would give the same resource_locked error. In this case, however, connections were going in TIME_WAIT state and not getting deleted by the server. Client uses the same name to reconnect and server thinks that the queue is owned by previous connection (because of exclusive flag) so it raises resource_locked exception. We also tried by changing the queue name to include a random number every time we reconnect and that also worked but then thought of not using \u0027exclusive\u0027 flag instead since python clients are also not using it so it will be similar for cpp clients also now.",
+      "parentUuid": "8fec0465_8d52c13e",
+      "revId": "5a35d03d9151949bd4e9b5668666804a08be424e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
