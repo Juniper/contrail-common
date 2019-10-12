@@ -203,14 +203,14 @@ void ConfigAmqpClient::RabbitMQReader::ConnectToRabbitMQ(bool queue_delete) {
             }
 
             // passive = false, durable = false,
-            // exclusive = true, auto_delete = false
+            // exclusive = false, auto_delete = false
             string queue = channel_->DeclareQueue(queue_name, false, false,
-                                                  true, false);
+                                                  false, false);
             channel_->BindQueue(queue, "vnc_config.object-update");
             // no_local = true, no_ack = false,
-            // exclusive = true, message_prefetch_count = 0
+            // exclusive = false, message_prefetch_count = 0
             consumer_tag_ = channel_->BasicConsume(queue, queue_name,
-                                                   true, false, true, 0);
+                                                   true, false, false, 0);
         } catch (std::exception &e) {
             static string what = e.what();
             string message =
