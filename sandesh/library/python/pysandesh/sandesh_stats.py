@@ -6,6 +6,8 @@
 # sandesh_stats.py
 #
 
+from builtins import str
+from builtins import object
 from pysandesh.sandesh_base import Sandesh
 from pysandesh.gen_py.sandesh_uve.ttypes import SandeshMessageStats
 from pysandesh.gen_py.sandesh.ttypes import SandeshTxDropReason, \
