@@ -5,6 +5,7 @@ from __future__ import print_function
 #  sandesh_trace_dump.py
 #  
 #  gdb macros to dump the sandesh trace buffer
+#
 
 from builtins import next
 from builtins import str
