@@ -1,4 +1,3 @@
-from __future__ import division
 #
 # Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
 #
@@ -7,9 +6,6 @@ from __future__ import division
 # util
 #
 
-from builtins import zip
-from builtins import range
-from past.utils import old_div
 import datetime
 import sys
 import traceback
@@ -26,12 +22,12 @@ def UTCTimestampUsec():
 
 def UTCTimestampUsecToString(utc_usec):
     return datetime.datetime.fromtimestamp(
-        old_div(utc_usec,1000000)).strftime('%Y-%m-%d %H:%M:%S')
+        utc_usec/1000000).strftime('%Y-%m-%d %H:%M:%S')
 # end UTCTimestampUsecToString
 
 
 def enum(*sequential, **named):
-    enums = dict(list(zip(sequential, list(range(len(sequential))))), **named)
+    enums = dict(zip(sequential, range(len(sequential))), **named)
     return type('Enum', (), enums)
 # end enum
 

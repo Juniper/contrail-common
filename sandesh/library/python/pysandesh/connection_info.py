@@ -6,13 +6,11 @@
 # Connection State 
 #
 
-from builtins import str
-from builtins import object
 import gevent
 
-from .gen_py.process_info.constants import ConnectionTypeNames, \
+from gen_py.process_info.constants import ConnectionTypeNames, \
     ConnectionStatusNames, ProcessStateNames
-from .gen_py.process_info.ttypes import ConnectionInfo, \
+from gen_py.process_info.ttypes import ConnectionInfo, \
     ProcessStatus, ProcessState, ConnectionStatus
 
 class ConnectionState(object):
@@ -35,7 +33,7 @@ class ConnectionState(object):
         description = ''
         if ConnectionState._process_status_cb is not None:
             state_value, description = ConnectionState._process_status_cb()
-        conn_infos = list(ConnectionState._connection_map.values())
+        conn_infos = ConnectionState._connection_map.values()
         (conn_state_value, conn_description) = \
             ConnectionState._conn_status_cb(conn_infos)
         if (conn_state_value == ProcessState.NON_FUNCTIONAL):
@@ -104,7 +102,7 @@ class ConnectionState(object):
                                    status = ConnectionStatusNames[status],
                                    description = message,
                                    server_addrs = server_addrs)
-        if conn_key in ConnectionState._connection_map:
+        if ConnectionState._connection_map.has_key(conn_key):
             if ConnectionStatusNames[status] == ConnectionState._connection_map[conn_key].status and \
                     server_addrs == ConnectionState._connection_map[conn_key].server_addrs and \
                     message == ConnectionState._connection_map[conn_key].description:

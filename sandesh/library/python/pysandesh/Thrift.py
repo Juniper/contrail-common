@@ -20,10 +20,9 @@
 # https://github.com/apache/thrift
 #
 
-from builtins import object
 import sys
 
-class TType(object):
+class TType:
   STOP   = 0
   VOID   = 1
   BOOL   = 2
@@ -77,13 +76,13 @@ class TType(object):
                        'UUID',
                        'IPADDR')
 
-class TMessageType(object):
+class TMessageType:
   CALL  = 1
   REPLY = 2
   EXCEPTION = 3
   ONEWAY = 4
 
-class TProcessor(object):
+class TProcessor:
 
   """Base class for procsessor, which works on two streams."""
 

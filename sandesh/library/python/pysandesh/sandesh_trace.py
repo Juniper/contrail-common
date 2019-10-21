@@ -6,7 +6,6 @@
 # sandesh_trace.py 
 #
 
-from builtins import object
 class SandeshTraceRequestRunner(object):
     def __init__(self, sandesh, request_buffer_name, request_context, read_context, request_count):
         self._sandesh = sandesh

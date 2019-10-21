@@ -6,7 +6,6 @@
 # Trace
 #
 
-from builtins import object
 import collections
 import itertools
     
@@ -65,7 +64,7 @@ class TraceBuffer(object):
         # trace buffer from where the next trace message should be read] 
         # stored in the read context, then there is no need to remember the
         # read context. 
-        for key, value in list(self._read_context_map.items()):
+        for key, value in self._read_context_map.items():
             if value == self._read_index:
                 self._read_context_map.pop(key, None)
         # Reset seqno_ if it reaches max value
@@ -152,7 +151,7 @@ class Trace(object):
     #end TraceBufDelete
 
     def TraceBufListGet(self):
-        return list(self._buffer_map.keys())
+        return self._buffer_map.keys()
     #end TraceBufListGet
 
     def TraceBufOn(self, name):

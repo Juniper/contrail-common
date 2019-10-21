@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 #
 # Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
 #
@@ -7,10 +6,6 @@ from __future__ import absolute_import
 # Sandesh Http
 #
 
-from future import standard_library
-standard_library.install_aliases()
-from builtins import str
-from builtins import object
 import pkgutil
 import importlib
 import sys
@@ -26,9 +21,9 @@ from gevent import monkey; monkey.patch_all()
 from gevent.server import StreamServer
 from gevent.pywsgi import WSGIServer
 import bottle
-import io
-from .transport import TTransport
-from .protocol import TXMLProtocol
+import cStringIO
+from transport import TTransport
+from protocol import TXMLProtocol
 import os
 import socket
 from gevent import ssl
@@ -180,7 +175,7 @@ class SandeshHttp(object):
         sandesh_resp_xml = transport.getvalue()
         if not SandeshHttp._http_response:
             SandeshHttp._state = 'HXMLNew'
-            SandeshHttp._http_response = io.BytesIO()
+            SandeshHttp._http_response = cStringIO.StringIO()
             SandeshHttp._http_response.write(universal_xsl_str)
             if sandesh_resp._more:
                 sandesh_name_end = sandesh_resp_xml.find(' ')
@@ -238,7 +233,7 @@ class SandeshHttp(object):
         self._homepage_links = {}
         for pkg_name in pkg_list:
             self._extract_http_requests(pkg_name)
-        homepage_str = io.BytesIO()
+        homepage_str = cStringIO.StringIO()
 
         homepage_str.write("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"" +
             " \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">" +
@@ -247,8 +242,8 @@ class SandeshHttp(object):
             "<link href=\"css/style.css\" rel=\"stylesheet\" type=\"text/css\"/>" +
             ("<title>%s</title></head><body>" % self._module))
 
-        homepage_str.write('<h1>Modules for %s</h1>' % self._module)
-        for link in self._homepage_links.keys():
+        homepage_str.write('<h1>Modules for %s</h1>' % (self._module))
+        for link in self._homepage_links.iterkeys():
             http_link = '<a href="%s">%s</a><br/>' % (link, link[:link.find('.')])
             homepage_str.write(http_link)
         self._homepage = homepage_str.getvalue()

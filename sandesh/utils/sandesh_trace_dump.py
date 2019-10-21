@@ -1,4 +1,3 @@
-from __future__ import print_function
 #
 #  Copyright (c) 2014 Juniper Networks. All rights reserved.
 #
@@ -6,9 +5,6 @@ from __future__ import print_function
 #  
 #  gdb macros to dump the sandesh trace buffer
 
-from builtins import next
-from builtins import str
-from builtins import range
 import gdb
 import datetime
 
@@ -86,7 +82,7 @@ def _print_trace_sandesh(tb, min_index, max_index):
 def print_trace_buffer_list():
     """Displays the list of trace buffers created by the daemon."""
     trace_buf_map = _get_trace_buffer_map()
-    for key in list(trace_buf_map.keys()):
+    for key in trace_buf_map.keys():
         print(key)
 #end print_trace_buffer_list
 
@@ -94,7 +90,7 @@ def print_trace_buffer(buf_name):
     """Dumps the content of the specified trace buffer."""
     trace_buf_map = _get_trace_buffer_map()
     trace_buffer = None
-    for k, v in list(trace_buf_map.items()):
+    for k, v in trace_buf_map.items():
         char_p = k.cast(gdb.lookup_type('char').pointer())
         if char_p.string() == buf_name:
             trace_buffer = v
