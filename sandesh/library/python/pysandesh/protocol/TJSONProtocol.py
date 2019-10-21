@@ -1,15 +1,12 @@
-from __future__ import absolute_import
 #
 # Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
 #
 
-from builtins import str
-from builtins import object
 import ctypes
 import re
 import uuid
 import netaddr
-from .TProtocol import *
+from TProtocol import *
 from  pysandesh.sandesh_logger import SandeshLogger
 from pysandesh.util import UTCTimestampUsec
 from pysandesh.util import UTCTimestampUsecToString
@@ -69,7 +66,7 @@ class TJSONProtocol(TProtocolBase):
 
     self._field_type_dict = {}
     # Now, interchange key and value
-    for key, value in self._field_typename_dict.items():
+    for key, value in self._field_typename_dict.iteritems():
       self._field_type_dict[value] = key
 
     self._xml_tag = []
@@ -244,7 +241,7 @@ class TJSONProtocol(TProtocolBase):
     self.field_type_.append(ftype)
     if len(annotations) > 0:
         field_begin += "\"ANNOTATION\":{"
-        for k,v in list(annotations.items()):
+        for k,v in annotations.items():
             field_begin += '\"'+k+'\"'
             field_begin += ':'
             field_begin += '\"'+v+'\"'
@@ -519,7 +516,7 @@ class TJSONProtocol(TProtocolBase):
       return -1
     return 0
 
-class TJSONProtocolFactory(object):
+class TJSONProtocolFactory:
   def __init__(self, strictRead=False, strictWrite=True):
     self.strictRead = strictRead
     self.strictWrite = strictWrite

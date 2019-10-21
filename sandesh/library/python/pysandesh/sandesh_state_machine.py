@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 #
 # Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
 #
@@ -7,13 +6,12 @@ from __future__ import absolute_import
 # Sandesh State Machine
 #
 
-from builtins import object
 import gevent
 from fysom import Fysom
-from .work_queue import WorkQueue
-from .sandesh_logger import SandeshLogger
-from .sandesh_session import SandeshSession
-from .gen_py.sandesh.ttypes import SandeshTxDropReason
+from work_queue import WorkQueue
+from sandesh_logger import SandeshLogger
+from sandesh_session import SandeshSession
+from gen_py.sandesh.ttypes import SandeshTxDropReason
 
 class State(object):
     # FSM states
@@ -58,8 +56,8 @@ class SandeshStateMachine(object):
     def __init__(self, connection, logger, collectors, stats_collector):
 
         def _update_connection_state(e, status):
-            from .connection_info import ConnectionState
-            from .gen_py.process_info.ttypes import ConnectionType
+            from connection_info import ConnectionState
+            from gen_py.process_info.ttypes import ConnectionType
             collector_addr = e.sm.collector()
             if collector_addr is None:
                 collector_addr = ''
@@ -71,17 +69,17 @@ class SandeshStateMachine(object):
         #end _update_connection_state
 
         def _connection_state_up(e):
-            from .gen_py.process_info.ttypes import ConnectionStatus
+            from gen_py.process_info.ttypes import ConnectionStatus
             _update_connection_state(e, ConnectionStatus.UP)
         #end _connection_state_up
 
         def _connection_state_down(e):
-            from .gen_py.process_info.ttypes import ConnectionStatus
+            from gen_py.process_info.ttypes import ConnectionStatus
             _update_connection_state(e, ConnectionStatus.DOWN)
         #end _connection_state_down
 
         def _connection_state_init(e):
-            from .gen_py.process_info.ttypes import ConnectionStatus
+            from gen_py.process_info.ttypes import ConnectionStatus
             _update_connection_state(e, ConnectionStatus.INIT)
         #end _connection_state_init
 

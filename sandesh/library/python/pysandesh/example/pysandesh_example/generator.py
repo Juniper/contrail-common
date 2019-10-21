@@ -1,17 +1,14 @@
-from __future__ import print_function
-from __future__ import absolute_import
 #
 # Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
 #
 
-from builtins import object
 import gevent
 from gevent import monkey; monkey.patch_all()
 from pysandesh.sandesh_base import *
 from gen_py.generator_msg.ttypes import *
 from pysandesh_example.gen_py.vn.ttypes import *
 from pysandesh_example.gen_py.vm.ttypes import *
-from . import sandesh_req_impl
+import sandesh_req_impl
 import socket
 
 class generator(object):
@@ -30,7 +27,7 @@ class generator(object):
                                                    size = 1000)
         send_uve_task = gevent.spawn(self._send_uve_sandesh)
         gevent.joinall([send_uve_task])
-        print('We shoud not see this message!')
+        print 'We shoud not see this message!'
     #end run_generator
 
     def _send_sandesh(self):

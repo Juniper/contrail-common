@@ -17,10 +17,7 @@
 # under the License.
 #
 
-from future import standard_library
-standard_library.install_aliases()
-from builtins import object
-from io import BytesIO
+from cStringIO import StringIO
 from struct import pack,unpack
 from pysandesh.Thrift import TException
 
@@ -38,7 +35,7 @@ class TTransportException(TException):
     TException.__init__(self, message)
     self.type = type
 
-class TTransportBase(object):
+class TTransportBase:
 
   """Base class for Thrift transport layer."""
 
@@ -74,18 +71,18 @@ class TTransportBase(object):
     pass
 
 # This class should be thought of as an interface.
-class CReadableTransport(object):
+class CReadableTransport:
   """base class for transports that are readable from C"""
 
   # TODO(dreiss): Think about changing this interface to allow us to use
-  #               a (Python, not c) BytesIO instead, because it allows
+  #               a (Python, not c) StringIO instead, because it allows
   #               you to write after reading.
 
   # NOTE: This is a classic class, so properties will NOT work
   #       correctly for setting.
   @property
   def cstringio_buf(self):
-    """A cBytesIO buffer that contains the current chunk we are reading."""
+    """A cStringIO buffer that contains the current chunk we are reading."""
     pass
 
   def cstringio_refill(self, partialread, reqlen):
@@ -101,7 +98,7 @@ class CReadableTransport(object):
     """
     pass
 
-class TServerTransportBase(object):
+class TServerTransportBase:
 
   """Base class for Thrift server transports."""
 
@@ -114,14 +111,14 @@ class TServerTransportBase(object):
   def close(self):
     pass
 
-class TTransportFactoryBase(object):
+class TTransportFactoryBase:
 
   """Base class for a Transport Factory"""
 
   def getTransport(self, trans):
     return trans
 
-class TBufferedTransportFactory(object):
+class TBufferedTransportFactory:
 
   """Factory transport that builds buffered transports"""
 
@@ -142,8 +139,8 @@ class TBufferedTransport(TTransportBase,CReadableTransport):
 
   def __init__(self, trans, rbuf_size = DEFAULT_BUFFER):
     self.__trans = trans
-    self.__wbuf = BytesIO()
-    self.__rbuf = BytesIO("")
+    self.__wbuf = StringIO()
+    self.__rbuf = StringIO("")
     self.__rbuf_size = rbuf_size
 
   def isOpen(self):
@@ -160,7 +157,7 @@ class TBufferedTransport(TTransportBase,CReadableTransport):
     if len(ret) != 0:
       return ret
 
-    self.__rbuf = BytesIO(self.__trans.read(max(sz, self.__rbuf_size)))
+    self.__rbuf = StringIO(self.__trans.read(max(sz, self.__rbuf_size)))
     return self.__rbuf.read(sz)
 
   def write(self, buf):
@@ -169,7 +166,7 @@ class TBufferedTransport(TTransportBase,CReadableTransport):
   def flush(self):
     out = self.__wbuf.getvalue()
     # reset wbuf before write/flush to preserve state on underlying failure
-    self.__wbuf = BytesIO()
+    self.__wbuf = StringIO()
     self.__trans.write(out)
     self.__trans.flush()
 
@@ -188,11 +185,11 @@ class TBufferedTransport(TTransportBase,CReadableTransport):
     if len(retstring) < reqlen:
       retstring += self.__trans.readAll(reqlen - len(retstring))
 
-    self.__rbuf = BytesIO(retstring)
+    self.__rbuf = StringIO(retstring)
     return self.__rbuf
 
 class TMemoryBuffer(TTransportBase, CReadableTransport):
-  """Wraps a cBytesIO object as a TTransport.
+  """Wraps a cStringIO object as a TTransport.
 
   NOTE: Unlike the C++ version of this class, you cannot write to it
         then immediately read from it.  If you want to read from a
@@ -206,9 +203,9 @@ class TMemoryBuffer(TTransportBase, CReadableTransport):
     If value is set, this will be a transport for reading,
     otherwise, it is for writing"""
     if value is not None:
-      self._buffer = BytesIO(value.encode("utf-8"))
+      self._buffer = StringIO(value)
     else:
-      self._buffer = BytesIO()
+      self._buffer = StringIO()
 
   def isOpen(self):
     return not self._buffer.closed
@@ -223,7 +220,7 @@ class TMemoryBuffer(TTransportBase, CReadableTransport):
     return self._buffer.read(sz)
 
   def write(self, buf):
-    self._buffer.write(buf.encode("utf-8"))
+    self._buffer.write(buf)
 
   def flush(self):
     pass
@@ -240,7 +237,7 @@ class TMemoryBuffer(TTransportBase, CReadableTransport):
     # only one shot at reading...
     raise EOFError()
 
-class TFramedTransportFactory(object):
+class TFramedTransportFactory:
 
   """Factory transport that builds framed transports"""
 
@@ -255,8 +252,8 @@ class TFramedTransport(TTransportBase, CReadableTransport):
 
   def __init__(self, trans,):
     self.__trans = trans
-    self.__rbuf = BytesIO()
-    self.__wbuf = BytesIO()
+    self.__rbuf = StringIO()
+    self.__wbuf = StringIO()
 
   def isOpen(self):
     return self.__trans.isOpen()
@@ -278,7 +275,7 @@ class TFramedTransport(TTransportBase, CReadableTransport):
   def readFrame(self):
     buff = self.__trans.readAll(4)
     sz, = unpack('!i', buff)
-    self.__rbuf = BytesIO(self.__trans.readAll(sz))
+    self.__rbuf = StringIO(self.__trans.readAll(sz))
 
   def write(self, buf):
     self.__wbuf.write(buf)
@@ -287,7 +284,7 @@ class TFramedTransport(TTransportBase, CReadableTransport):
     wout = self.__wbuf.getvalue()
     wsz = len(wout)
     # reset wbuf before write/flush to preserve state on underlying failure
-    self.__wbuf = BytesIO()
+    self.__wbuf = StringIO()
     # N.B.: Doing this string concatenation is WAY cheaper than making
     # two separate calls to the underlying socket object. Socket writes in
     # Python turn out to be REALLY expensive, but it seems to do a pretty
@@ -308,7 +305,7 @@ class TFramedTransport(TTransportBase, CReadableTransport):
     while len(prefix) < reqlen:
       self.readFrame()
       prefix += self.__rbuf.getvalue()
-    self.__rbuf = BytesIO(prefix)
+    self.__rbuf = StringIO(prefix)
     return self.__rbuf
 
 

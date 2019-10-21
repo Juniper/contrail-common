@@ -263,7 +263,6 @@ class t_py_generator : public t_generator {
    */
 
   std::string py_autogen_comment();
-  std::string future_imports();
 #ifdef SANDESH
   std::string py_autogen_sandesh_request_skeleton_comment();
   void py_autogen_sandesh_http_request_open(std::ofstream& out);
@@ -423,7 +422,6 @@ void t_py_generator::init_generator() {
   f_types_ <<
     py_autogen_comment() << endl <<
     py_imports() << endl <<
-    future_imports() << endl <<
     render_includes() << endl <<
     render_fastbinary_includes() <<
     render_sandesh_includes() <<
@@ -432,7 +430,7 @@ void t_py_generator::init_generator() {
   f_consts_ <<
     py_autogen_comment() << endl <<
     py_imports() << endl <<
-    "from .ttypes import *" << endl <<
+    "from ttypes import *" << endl <<
     endl;
 #ifdef SANDESH
   string f_request_impl_name = package_dir_+"/request_skeleton.py";
@@ -447,7 +445,7 @@ void t_py_generator::init_generator() {
   f_http_request_ <<
     py_autogen_comment() << endl;
   f_http_request_ <<
-    "from . import ttypes" << endl;
+    "import ttypes" << endl;
   py_autogen_sandesh_http_request_open(f_http_request_);
 #endif
 }
@@ -459,8 +457,7 @@ string t_py_generator::render_includes() {
   const vector<t_program*>& includes = program_->get_includes();
   string result = "";
   for (size_t i = 0; i < includes.size(); ++i) {
-    result += "from ." + get_real_py_module(includes[i], gen_twisted_) + 
-              " import ttypes as " + get_real_py_module(includes[i], gen_twisted_) + "_ttypes\n";
+    result += "import " + get_real_py_module(includes[i], gen_twisted_) + ".ttypes\n";
   }
   if (includes.size() > 0) {
     result += "\n";
@@ -502,7 +499,7 @@ string t_py_generator::render_sandesh_includes() {
   std::string module = get_real_py_module(program_, gen_twisted_);
   std::string sandesh_includes("\n");
   sandesh_includes +=
-    "import io\n"
+    "import cStringIO\n"
     "import uuid\n"
     "import netaddr\n"
     "from sys import getsizeof\n"
@@ -558,23 +555,6 @@ string t_py_generator::py_imports() {
   return
     string("from thrift.Thrift import TType, TMessageType, TException");
 #endif
-}
-
-/**
- * Prints standard future imports
- */
-string t_py_generator::future_imports() {
-  std::string future_imports("\n");
-  future_imports +=
-    "from future import standard_library\n"
-    "standard_library.install_aliases()\n"
-    "from builtins import hex\n"
-    "from builtins import str\n"
-    "from builtins import map\n"
-    "from builtins import range\n";
-    "from builtins import object\n";
-    
-    return future_imports;
 }
 
 /**
@@ -1003,7 +983,7 @@ void t_py_generator::generate_py_struct_definition(ofstream& out,
     out <<
       indent() << "def __repr__(self):" << endl <<
       indent() << "  L = ['%s=%r' % (key, value)" << endl <<
-      indent() << "    for key, value in self.__dict__.items()]" << endl <<
+      indent() << "    for key, value in self.__dict__.iteritems()]" << endl <<
       indent() << "  return '%s(%s)' % (self.__class__.__name__, ', '.join(L))" << endl <<
       endl;
 
@@ -1559,7 +1539,7 @@ void t_py_generator::generate_py_sandesh_definition(ofstream& out,
     out <<
       indent() << "def __repr__(self):" << endl <<
       indent() << "  L = ['%s=%r' % (key, value)" << endl <<
-      indent() << "    for key, value in self.__dict__.items()]" << endl <<
+      indent() << "    for key, value in self.__dict__.iteritems()]" << endl <<
       indent() << "  return '%s(%s)' % (self.__class__.__name__, ', '.join(L))" << endl <<
       endl;
 
@@ -2067,7 +2047,7 @@ void t_py_generator::generate_container_log(ofstream& out,
     indent(out) <<
       log_str << ".write('{ ')" << endl;
     indent(out) <<
-      "for " << kiter << "," << viter << " in " << prefix << ".items():" << endl;
+      "for " << kiter << "," << viter << " in " << prefix << ".iteritems():" << endl;
     indent_up();
     t_field kfield(((t_map*)ttype)->get_key_type(), kiter);
     generate_field_log(out, &kfield, log_str, "");
@@ -2128,9 +2108,6 @@ void t_py_generator::generate_field_log(ofstream& out,
         break;
       case t_base_type::TYPE_STRING:
       case t_base_type::TYPE_STATIC_CONST_STRING:
-        indent(out) <<
-          log_str << ".write(" << name << ".encode('utf-8'))" << endl;
-        break;
       case t_base_type::TYPE_XML:
         indent(out) <<
           log_str << ".write(" << name << ")" << endl;
@@ -2155,31 +2132,31 @@ void t_py_generator::generate_field_log(ofstream& out,
         break;
       case t_base_type::TYPE_I16:
         indent(out) <<
-          log_str << ".write(str(" << name << ").encode('utf-8'))" << endl;
+          log_str << ".write(str(" << name << "))" << endl;
         break;
       case t_base_type::TYPE_I32:
         indent(out) <<
-          log_str << ".write(str(" << name << ").encode('utf-8'))" << endl;
+          log_str << ".write(str(" << name << "))" << endl;
         break;
       case t_base_type::TYPE_I64:
         indent(out) <<
-          log_str << ".write(str(" << name << ").encode('utf-8'))" << endl;
+          log_str << ".write(str(" << name << "))" << endl;
         break;
       case t_base_type::TYPE_U16:
         indent(out) <<
-          log_str << ".write(str(" << name << ").encode('utf-8'))" << endl;
+          log_str << ".write(str(" << name << "))" << endl;
         break;
       case t_base_type::TYPE_U32:
         indent(out) <<
-          log_str << ".write(str(" << name << ").encode('utf-8'))" << endl;
+          log_str << ".write(str(" << name << "))" << endl;
         break;
       case t_base_type::TYPE_U64:
         indent(out) <<
-          log_str << ".write(str(" << name << ").encode('utf-8'))" << endl;
+          log_str << ".write(str(" << name << "))" << endl;
         break;
       case t_base_type::TYPE_DOUBLE:
         indent(out) <<
-          log_str << ".write(str(" << name << ").encode('utf-8'))" << endl;
+          log_str << ".write(str(" << name << "))" << endl;
         break;
       case t_base_type::TYPE_IPV4:
         indent(out) << "import socket, struct" << endl;
@@ -2188,18 +2165,18 @@ void t_py_generator::generate_field_log(ofstream& out,
         break;
       case t_base_type::TYPE_IPADDR:
         indent(out) <<
-          log_str << ".write(str(" << name << ").encode('utf-8'))" << endl;
+          log_str << ".write(str(" << name << "))" << endl;
         break;
       case t_base_type::TYPE_UUID:
         indent(out) <<
-          log_str << ".write(str(" << name << ").encode('utf-8'))" << endl;
+          log_str << ".write(str(" << name << "))" << endl;
         break;
       default:
         throw "compiler error: unrecognized base type " + t_base_type::t_base_name(tbase);
       }
     } else if (type->is_enum()) {
         indent(out) <<
-          log_str << ".write(str(" << name << ").encode('utf-8'))" << endl;
+          log_str << ".write(str(" << name << "))" << endl;
     }
   } else {
     printf("DO NOT KNOW HOW TO GENERATE LOG FOR FIELD '%s' TYPE '%s'\n",
@@ -2219,14 +2196,14 @@ void t_py_generator::generate_py_sandesh_logger(ofstream &out,
     "def log(self, trace=False):" << endl;
   indent_up();
   indent(out) <<
-    log_str << " = io.BytesIO()" << endl;
+    log_str << " = cStringIO.StringIO()" << endl;
   bool init = false;
   for (f_iter = fields.begin(); f_iter != fields.end(); ++f_iter) {
     if (!init) {
       init = true;
       indent(out) << "if trace:" << endl;
       indent_up();
-      indent(out) << log_str << ".write(str(self._timestamp).encode('utf-8'))" << endl;
+      indent(out) << log_str << ".write(str(self._timestamp))" << endl;
       indent(out) << log_str << ".write(' ')" << endl;
       indent_down();
       // Only systemlog, objectlog, and flowlog have valid level and category
@@ -2276,7 +2253,7 @@ void t_py_generator::generate_py_struct_logger(ofstream &out,
     "def log(self):" << endl;
   indent_up();
   indent(out) <<
-    log_str << " = io.BytesIO()" << endl;
+    log_str << " = cStringIO.StringIO()" << endl;
 
   for (f_iter = fields.begin(); f_iter != fields.end(); ++f_iter) {
     indent(out) <<
@@ -2319,8 +2296,8 @@ void t_py_generator::generate_py_sizeof(std::ofstream& out,
     if (type->is_container()) {
       if (type->is_map()) {
         indent(out) <<
-          "size += sum(map(getsizeof, chain.from_iterable(iter(self." <<
-          fname << ".items()))))" << endl;
+          "size += sum(map(getsizeof, chain.from_iterable(self." <<
+          fname << ".iteritems())))" << endl;
 
       } else {
         indent(out) <<
@@ -2464,7 +2441,7 @@ void t_py_generator::generate_service(t_service* tservice) {
   }
 
   f_service_ <<
-    "from .ttypes import *" << endl <<
+    "from ttypes import *" << endl <<
     "from thrift.Thrift import TProcessor" << endl <<
     render_fastbinary_includes() << endl;
 
@@ -2878,7 +2855,7 @@ void t_py_generator::generate_service_remote(t_service* tservice) {
 
   f_remote <<
     "import " << service_name_ << endl <<
-    "from .ttypes import *" << endl <<
+    "from ttypes import *" << endl <<
     endl;
 
   f_remote <<
@@ -3504,7 +3481,7 @@ void t_py_generator::generate_deserialize_container(ofstream &out,
   // For loop iterates over elements
   string i = tmp("_i");
   indent(out) <<
-    "for " << i << " in range(" << size << "):" << endl;
+    "for " << i << " in xrange(" << size << "):" << endl;
 
     indent_up();
 
@@ -3802,7 +3779,7 @@ void t_py_generator::generate_serialize_container(ofstream &out,
     string kiter = tmp("kiter");
     string viter = tmp("viter");
     indent(out) <<
-      "for " << kiter << "," << viter << " in " << prefix << ".items():" << endl;
+      "for " << kiter << "," << viter << " in " << prefix << ".iteritems():" << endl;
     indent_up();
     generate_serialize_map_element(out, (t_map*)ttype, kiter, viter);
     indent_down();
@@ -4072,7 +4049,7 @@ string t_py_generator::type_name(t_type* ttype) {
     return get_real_py_module(program, gen_twisted_) + "." + ttype->get_name();
   }
   if (program != NULL && program != program_) {
-    return get_real_py_module(program, gen_twisted_) + "_ttypes." + ttype->get_name();
+    return get_real_py_module(program, gen_twisted_) + ".ttypes." + ttype->get_name();
   }
   return ttype->get_name();
 }

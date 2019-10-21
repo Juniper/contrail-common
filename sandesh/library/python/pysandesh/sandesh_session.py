@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 #
 # Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
 #
@@ -7,17 +6,15 @@ from __future__ import absolute_import
 # Sandesh Session
 #
 
-from builtins import str
-from builtins import object
 import socket
 import sys
 from functools import partial
-from .transport import TTransport
-from .protocol import TXMLProtocol, TJSONProtocol
-from .work_queue import WorkQueue, WaterMark
-from .ssl_session import SslSession
-from .sandesh_logger import SandeshLogger
-from .gen_py.sandesh.ttypes import SandeshLevel, SandeshType, SandeshTxDropReason
+from transport import TTransport
+from protocol import TXMLProtocol, TJSONProtocol
+from work_queue import WorkQueue, WaterMark
+from ssl_session import SslSession
+from sandesh_logger import SandeshLogger
+from gen_py.sandesh.ttypes import SandeshLevel, SandeshType, SandeshTxDropReason
 
 _XML_SANDESH_OPEN = '<sandesh length="0000000000">'
 _XML_SANDESH_OPEN_ATTR_LEN = '<sandesh length="'
@@ -125,7 +122,7 @@ class SandeshReader(object):
         protocol_factory = TXMLProtocol.TXMLProtocolFactory()
         protocol = protocol_factory.getProtocol(transport)
 
-        from .gen_py.sandesh.ttypes import SandeshHeader
+        from gen_py.sandesh.ttypes import SandeshHeader
         hdr = SandeshHeader()
         hdr_len = hdr.read(protocol)
         if hdr_len == -1:
@@ -211,7 +208,7 @@ class SandeshWriter(object):
         protocol_factory = TXMLProtocol.TXMLProtocolFactory()
         protocol = protocol_factory.getProtocol(transport)
 
-        from .gen_py.sandesh.ttypes import SandeshHeader
+        from gen_py.sandesh.ttypes import SandeshHeader
 
         sandesh_hdr = SandeshHeader(sandesh.scope(),
                                     sandesh.timestamp(),
