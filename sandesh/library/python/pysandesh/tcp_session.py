@@ -6,7 +6,6 @@
 # Tcp Session
 #
 
-from builtins import object
 from gevent import socket
 
 class TcpSession(object):

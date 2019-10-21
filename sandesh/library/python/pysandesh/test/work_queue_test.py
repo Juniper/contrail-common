@@ -8,8 +8,6 @@
 # work_queue_test
 #
 
-from builtins import range
-from builtins import object
 import gevent
 import unittest
 import mock

@@ -8,7 +8,6 @@
 # sandesh_encode_decode_test
 #
 
-from __future__ import print_function
 import unittest
 import sys
 import os
@@ -38,9 +37,9 @@ class SandeshJSONEncodeDecodeTest(unittest.TestCase):
     #end setUpDecode
 
     def test_basic_types(self):
-        print('-------------------------')
-        print('     Test Basic Types    ')
-        print('-------------------------')
+        print '-------------------------'
+        print '     Test Basic Types    '
+        print '-------------------------'
         # Encode Test
         x = uuid.UUID('{00010203-0405-0607-0809-0a0b0c0d0e0f}')
         btype_encode = BasicTypesTest(bool_1=True, byte_1=127, i16_1=4321,
@@ -55,9 +54,9 @@ class SandeshJSONEncodeDecodeTest(unittest.TestCase):
         self.assertNotEqual(actual_data, expected_data)
 
     def test_struct(self):
-        print('-------------------------')
-        print('     Test Struct Type    ')
-        print('-------------------------')
+        print '-------------------------'
+        print '     Test Struct Type    '
+        print '-------------------------'
         # Encode Test
         x = uuid.UUID('{00010203-0405-0607-0809-0a0b0c0d0e0f}')
         btype_struct1 = StructBasicTypes(bool_1=False, i16_1=9876, u16_1=65535)
@@ -70,9 +69,9 @@ class SandeshJSONEncodeDecodeTest(unittest.TestCase):
 
 
     def test_container_types(self):
-        print('-------------------------')
-        print('   Test Container Types  ')
-        print('-------------------------')
+        print '-------------------------'
+        print '   Test Container Types  '
+        print '-------------------------'
         # Encode Test
         list_bool = [True, True, False, True]
         list_byte = [123, 12, 23]
@@ -102,9 +101,9 @@ class SandeshJSONEncodeDecodeTest(unittest.TestCase):
         self.assertNotEqual(actual_data, expected_data)
 
     def test_annotations(self):
-        print('-------------------------')
-        print('     Test Annotations    ')
-        print('-------------------------')
+        print '-------------------------'
+        print '     Test Annotations    '
+        print '-------------------------'
         # Encode Test
         anno_struct = StructAnnotation(string_1="VM", i16_1=345)
         anno_encode = AnnotationsTest(anno_struct, i32_1=911, string_1="VN")
@@ -115,9 +114,9 @@ class SandeshJSONEncodeDecodeTest(unittest.TestCase):
 
     def test_maps(self):
 
-        print('-------------------------')
-        print('     Test Maps    ')
-        print('-------------------------')
+        print '-------------------------'
+        print '     Test Maps    '
+        print '-------------------------'
         # Encode Test
         list_bool = [True, True, False, True]
         list_byte = [123, 12, 23]
@@ -179,9 +178,9 @@ class SandeshEncodeDecodeTest(unittest.TestCase):
     #end setUpDecode
 
     def test_basic_types(self):
-        print('-------------------------')
-        print('     Test Basic Types    ')
-        print('-------------------------')
+        print '-------------------------'
+        print '     Test Basic Types    '
+        print '-------------------------'
         # Encode Test
         x = uuid.UUID('{00010203-0405-0607-0809-0a0b0c0d0e0f}')
         btype_encode = BasicTypesTest(bool_1=True, byte_1=127, i16_1=4321,
@@ -203,9 +202,9 @@ class SandeshEncodeDecodeTest(unittest.TestCase):
     #end test_basic_types
 
     def test_xml_string(self):
-        print('-------------------------')
-        print('     Test XML String     ')
-        print('-------------------------')
+        print '-------------------------'
+        print '     Test XML String     '
+        print '-------------------------'
         # Encode Test
         xmlmsg = '<sandesh_types><type1>\"systemlog\"</type1><type2>\'objectlog\'</type2><type3>uve & trace</type3></sandesh_types>'
         xml_encode = BasicTypesTest(string_1=xmlmsg)
@@ -222,9 +221,9 @@ class SandeshEncodeDecodeTest(unittest.TestCase):
     #end test_xml_string
     
     def test_xml(self):
-        print('-------------------------')
-        print('     Test XML            ')
-        print('-------------------------')
+        print '-------------------------'
+        print '     Test XML            '
+        print '-------------------------'
         # Encode Test
         xmlmsg = '<sandesh_types><type1>\"systemlog\"</type1><type2>\'objectlog\'</type2><type3>uve & trace</type3></sandesh_types>'
         xml_encode = BasicTypesTest(xml_1=xmlmsg)
@@ -241,9 +240,9 @@ class SandeshEncodeDecodeTest(unittest.TestCase):
     #end test_xml
 
     def test_struct(self):
-        print('-------------------------')
-        print('     Test Struct Type    ')
-        print('-------------------------')
+        print '-------------------------'
+        print '     Test Struct Type    '
+        print '-------------------------'
         # Encode Test
         x = uuid.UUID('{00010203-0405-0607-0809-0a0b0c0d0e0f}')
         btype_struct1 = StructBasicTypes(bool_1=False, i16_1=9876, u16_1=65535)
@@ -263,9 +262,9 @@ class SandeshEncodeDecodeTest(unittest.TestCase):
     #end test_struct
 
     def test_container_types(self):
-        print('-------------------------')
-        print('   Test Container Types  ')
-        print('-------------------------')
+        print '-------------------------'
+        print '   Test Container Types  '
+        print '-------------------------'
         # Encode Test
         list_bool = [True, True, False, True]
         list_byte = [123, 12, 23]
@@ -302,9 +301,9 @@ class SandeshEncodeDecodeTest(unittest.TestCase):
     #end test_container_types
 
     def test_annotations(self):
-        print('-------------------------')
-        print('     Test Annotations    ')
-        print('-------------------------')
+        print '-------------------------'
+        print '     Test Annotations    '
+        print '-------------------------'
         # Encode Test
         anno_struct = StructAnnotation(string_1="VM", i16_1=345)
         anno_encode = AnnotationsTest(anno_struct, i32_1=911, string_1="VN")

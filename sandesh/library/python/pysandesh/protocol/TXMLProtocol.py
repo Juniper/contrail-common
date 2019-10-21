@@ -1,15 +1,12 @@
-from __future__ import absolute_import
 #
 # Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
 #
 
-from builtins import str
-from builtins import object
 import ctypes
 import re
 import uuid
 import netaddr
-from .TProtocol import *
+from TProtocol import *
 from  pysandesh.sandesh_logger import SandeshLogger
 
 class TXMLProtocol(TProtocolBase):
@@ -79,7 +76,7 @@ class TXMLProtocol(TProtocolBase):
 
     self._field_type_dict = {}
     # Now, interchange key and value
-    for key, value in self._field_typename_dict.items():
+    for key, value in self._field_typename_dict.iteritems():
       self._field_type_dict[value] = key
 
     self._xml_tag = []
@@ -151,7 +148,7 @@ class TXMLProtocol(TProtocolBase):
     field_begin = '<%s %s %s' %(name,
         self.formXMLAttr(self._XML_TYPE, self.fieldTypeName(ftype)),
         self.formXMLAttr(self._XML_IDENTIFIER, str(iden)))
-    for akey, avalue in annotations.items():
+    for akey, avalue in annotations.iteritems():
       field_begin += ' %s' %(self.formXMLAttr(akey, avalue))
     field_begin += '>'
     self.writeBuffer(field_begin)
@@ -318,7 +315,7 @@ class TXMLProtocol(TProtocolBase):
       return -1
     return 0
     
-  class XMLReader(object):
+  class XMLReader:
 
     """XML Reader implementation."""
 
@@ -851,7 +848,7 @@ class TXMLProtocol(TProtocolBase):
       return (-1, None)
     return (length, uuid_temp)
 
-class TXMLProtocolFactory(object):
+class TXMLProtocolFactory:
   def __init__(self, strictRead=False, strictWrite=True):
     self.strictRead = strictRead
     self.strictWrite = strictWrite

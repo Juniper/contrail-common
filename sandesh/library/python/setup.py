@@ -37,6 +37,5 @@ setup(
                       'bottle',
                       'netaddr>=0.7.5',
                       'fysom',
-                      'future',
                      ]
 )

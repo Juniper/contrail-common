@@ -20,8 +20,6 @@
 # https://github.com/apache/thrift
 #
 
-from builtins import range
-from builtins import object
 from pysandesh.Thrift import *
 
 class TProtocolException(TException):
@@ -39,7 +37,7 @@ class TProtocolException(TException):
     TException.__init__(self, message)
     self.type = type
 
-class TProtocolBase(object):
+class TProtocolBase:
 
   """Base class for Thrift protocol driver."""
 
@@ -294,13 +292,13 @@ class TProtocolBase(object):
     (list_type, list_len) = self.readListBegin()
     if tspec is None:
       # list values are simple types
-      for idx in range(list_len):
+      for idx in xrange(list_len):
         results.append(reader())
     else:
       # this is like an inlined readFieldByTType
       container_reader = self._TTYPE_HANDLERS[list_type][0]
       val_reader = getattr(self, container_reader)
-      for idx in range(list_len):
+      for idx in xrange(list_len):
         val = val_reader(tspec)
         results.append(val)
     self.readListEnd()
@@ -314,12 +312,12 @@ class TProtocolBase(object):
     (set_type, set_len) = self.readSetBegin()
     if tspec is None:
       # set members are simple types
-      for idx in range(set_len):
+      for idx in xrange(set_len):
         results.add(reader())
     else:
       container_reader = self._TTYPE_HANDLERS[set_type][0]
       val_reader = getattr(self, container_reader)
-      for idx in range(set_len):
+      for idx in xrange(set_len):
         results.add(val_reader(tspec))
     self.readSetEnd()
     return results
@@ -339,7 +337,7 @@ class TProtocolBase(object):
     key_reader = getattr(self, self._TTYPE_HANDLERS[key_ttype][0])
     val_reader = getattr(self, self._TTYPE_HANDLERS[val_ttype][0])
     # list values are simple types
-    for idx in range(map_len):
+    for idx in xrange(map_len):
       if key_spec is None:
         k_val = key_reader()
       else:
@@ -409,7 +407,7 @@ class TProtocolBase(object):
     k_writer = getattr(self, ktype_name)
     v_writer = getattr(self, vtype_name)
     self.writeMapBegin(k_type, v_type, len(val))
-    for m_key, m_val in val.items():
+    for m_key, m_val in val.iteritems():
       if not k_is_container:
         k_writer(m_key)
       else:
@@ -448,7 +446,7 @@ class TProtocolBase(object):
     else:
       writer(val)
 
-class TProtocolFactory(object):
+class TProtocolFactory:
   def getProtocol(self, trans):
     pass
 

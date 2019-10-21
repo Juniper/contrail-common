@@ -6,10 +6,9 @@
 # Sandesh Request Implementation
 #
 
-from builtins import object
 from pysandesh.test.gen_py.sandesh_http_test.ttypes import SandeshHttpRequest
 
-class SandeshHttpRequestImp(object):
+class SandeshHttpRequestImp():
 
     def __init__(self, sandesh):
         SandeshHttpRequest.handle_request = self.sandesh_http_request_handle_request
