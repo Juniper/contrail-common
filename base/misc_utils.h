@@ -27,6 +27,11 @@ extern SandeshTraceBufferPtr VersionTraceBuf;
                                   SandeshLevel::SYS_INFO, __FILE__, __LINE__, ##__VA_ARGS__);\
     } while (false)
 
+#if (__cplusplus < 201103L)
+   #define BOOST_ARRAYBYTES_FILL(obj, val) (obj).assign((val));
+#else
+   #define BOOST_ARRAYBYTES_FILL(obj, val) (obj).fill((val));
+#endif
 
 
 class MiscUtils {
