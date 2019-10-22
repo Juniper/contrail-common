@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a8d11879_a0f46709",
+        "filename": "base/misc_utils.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2019-10-22T17:50:52Z",
+      "side": 1,
+      "message": "s/obj/(obj)\ns/val/(val)\n\nWhy extra spaces between val) and obj. ?",
+      "revId": "0112eb7fdc6c1f6439eb2b1ef24e860007d2dedf",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
