@@ -27,6 +27,11 @@ extern SandeshTraceBufferPtr VersionTraceBuf;
                                   SandeshLevel::SYS_INFO, __FILE__, __LINE__, ##__VA_ARGS__);\
     } while (false)
 
+#if (__cplusplus < 201103L)
+   #define IP6ADDRESS_FILL_BYTES(obj, val)   obj.assign(val);
+#else
+   #define IP6ADDRESS_FILL_BYTES(obj, val)   obj.fill(val);
+#endif
 
 
 class MiscUtils {
