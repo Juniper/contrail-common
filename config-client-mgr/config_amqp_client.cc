@@ -199,7 +199,7 @@ void ConfigAmqpClient::RabbitMQReader::ConnectToRabbitMQ(bool queue_delete) {
                 amqpclient_->module_name() + "." + amqpclient_->hostname();
 
             if (queue_delete) {
-                channel_->DeleteQueue(queue_name, true, true);
+                channel_->DeleteQueue(queue_name, false, false);
             }
 
             // passive = false, durable = false,
