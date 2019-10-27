@@ -28,9 +28,11 @@ extern SandeshTraceBufferPtr VersionTraceBuf;
     } while (false)
 
 #if (__cplusplus < 201103L)
-   #define ARRAYBYTES_FILL(obj, val) (obj).assign((val));
+   #define ARRAYBYTES_FILL(obj, val) (obj).assign((val))
+   #define RAW_ARRAY(obj) (obj).c_array()
 #else
-   #define ARRAYBYTES_FILL(obj, val) (obj).fill((val));
+   #define ARRAYBYTES_FILL(obj, val) (obj).fill((val))
+   #define RAW_ARRAY(obj) (obj).data()
 #endif
 
 
