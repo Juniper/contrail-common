@@ -15,6 +15,7 @@
 #include <cassandra.h>
 
 #include <base/logging.h>
+#include <base/misc_utils.h>
 #include <base/task.h>
 #include <base/timer.h>
 #include <base/string_util.h>
