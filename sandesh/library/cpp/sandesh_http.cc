@@ -371,6 +371,7 @@ SandeshHttp::Init(EventManager *evm, const string module,
     sslConfig.ca_cert = config.ca_cert;
     sslConfig.certfile = config.certfile;
     sslConfig.keyfile = config.keyfile;
+    sslConfig.ssl_insecure = config.introspect_ssl_insecure;
     hServ_ = new HttpServer(evm, sslConfig, dscp);
     httpreqcb = reqcb;
     index_ss << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"" << 

@@ -43,13 +43,14 @@ class SandeshConfig(object):
                  system_logs_rate_limit=DEFAULT_SANDESH_SEND_RATELIMIT,
                  stats_collector=None, tcp_keepalive_enable=True,
                  tcp_keepalive_idle_time=7200, tcp_keepalive_interval=75,
-                 tcp_keepalive_probes=9):
+                 tcp_keepalive_probes=9, introspect_ssl_insecure=False):
         self.http_server_ip = http_server_ip
         self.keyfile = keyfile
         self.certfile = certfile
         self.ca_cert = ca_cert
         self.sandesh_ssl_enable = sandesh_ssl_enable
         self.introspect_ssl_enable = introspect_ssl_enable
+        self.introspect_ssl_insecure = introspect_ssl_insecure
         self.dscp_value = dscp_value
         self.disable_object_logs = disable_object_logs
         self.system_logs_rate_limit = system_logs_rate_limit
@@ -74,6 +75,7 @@ class SandeshConfig(object):
                         '/etc/contrail/ssl/certs/ca-cert.pem',
                     'sandesh_ssl_enable': False,
                     'introspect_ssl_enable': False,
+                    'introspect_ssl_insecure': False,
                     'sandesh_dscp_value': 0,
                     'disable_object_logs': False,
                     'tcp_keepalive_enable': True,
@@ -115,6 +117,10 @@ class SandeshConfig(object):
                 parser_args.introspect_ssl_enable if parser_args and \
                 parser_args.introspect_ssl_enable is not None else \
                 default_opts['introspect_ssl_enable'],
+            introspect_ssl_insecure= \
+                parser_args.introspect_ssl_insecure if parser_args and \
+                parser_args.introspect_ssl_insecure is not None else \
+                default_opts['introspect_ssl_insecure'],
             dscp_value = parser_args.sandesh_dscp_value if parser_args and \
                 parser_args.sandesh_dscp_value is not None else \
                 default_opts['sandesh_dscp_value'],
@@ -163,6 +169,8 @@ class SandeshConfig(object):
             help="Enable SSL for sandesh connection")
         parser.add_argument("--introspect_ssl_enable", action="store_true",
             help="Enable SSL for introspect connection")
+        parser.add_argument("--introspect_ssl_insecure", action="store_true",
+            help="Enable insecure SSL for introspect connection")
         if add_dscp:
             parser.add_argument("--sandesh_dscp_value", type=int,
                 help="DSCP bits for IP header of Sandesh messages")
@@ -192,6 +200,9 @@ class SandeshConfig(object):
             if 'introspect_ssl_enable' in config.options('SANDESH'):
                 sandeshopts['introspect_ssl_enable'] = config.getboolean(
                     'SANDESH', 'introspect_ssl_enable')
+            if 'introspect_ssl_insecure' in config.options('SANDESH'):
+                sandeshopts['introspect_ssl_insecure'] = config.getboolean(
+                    'SANDESH', 'introspect_ssl_insecure')
             if 'disable_object_logs' in config.options('SANDESH'):
                 sandeshopts['disable_object_logs'] = config.getboolean(
                     'SANDESH', 'disable_object_logs')

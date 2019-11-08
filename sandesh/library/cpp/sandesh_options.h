@@ -18,6 +18,7 @@ struct SandeshConfig {
         stats_collector(),
         sandesh_ssl_enable(false),
         introspect_ssl_enable(false),
+        introspect_ssl_insecure(false),
         disable_object_logs(false),
         tcp_keepalive_enable(true),
         tcp_keepalive_idle_time(7200),
@@ -36,6 +37,7 @@ struct SandeshConfig {
     std::string stats_collector;
     bool sandesh_ssl_enable;
     bool introspect_ssl_enable;
+    bool introspect_ssl_insecure;
     bool disable_object_logs;
     bool tcp_keepalive_enable;
     int tcp_keepalive_idle_time;
