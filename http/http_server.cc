@@ -30,7 +30,8 @@ HttpServer::HttpServer(EventManager *evm, const SslConfig &config, uint8_t dscp)
         // CA certificate, used to verify if the peer certificate
         // is signed by a trusted CA
         std::string ca_cert_filename = config.ca_cert;
-        if (!ca_cert_filename.empty()) {
+        bool insecure = config.ssl_insecure;
+        if (!ca_cert_filename.empty() && !insecure) {
 
             // Verify peer has CA signed certificate
             ctx->set_verify_mode(boost::asio::ssl::verify_peer |
