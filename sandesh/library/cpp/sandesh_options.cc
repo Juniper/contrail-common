@@ -31,6 +31,9 @@ void AddOptions(opt::options_description *sandesh_options,
         ("SANDESH.introspect_ssl_enable",
          opt::bool_switch(&sandesh_config->introspect_ssl_enable),
          "Enable SSL for introspect connection")
+        ("SANDESH.introspect_ssl_insecure",
+         opt::bool_switch(&sandesh_config->introspect_ssl_insecure),
+         "Enable SSL insecure for introspect connection")
         ("SANDESH.disable_object_logs",
          opt::bool_switch(&sandesh_config->disable_object_logs),
          "Disable sending of object logs to collector")
@@ -72,6 +75,8 @@ void ProcessOptions(const opt::variables_map &var_map,
                       "SANDESH.sandesh_ssl_enable");
     GetOptValue<bool>(var_map, sandesh_config->introspect_ssl_enable,
                       "SANDESH.introspect_ssl_enable");
+    GetOptValue<bool>(var_map, sandesh_config->introspect_ssl_insecure,
+                      "SANDESH.introspect_ssl_insecure");
     GetOptValue<bool>(var_map, sandesh_config->disable_object_logs,
                       "SANDESH.disable_object_logs");
     GetOptValue<std::string>(var_map, sandesh_config->stats_collector,
