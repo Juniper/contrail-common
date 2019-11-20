@@ -23,9 +23,10 @@ struct SslConfig {
     std::string certfile;
     std::string ca_cert;
     bool ssl_enabled;
+    bool ssl_insecure;
 
     explicit SslConfig()
-	: keyfile(), certfile(), ca_cert(), ssl_enabled(false) {
+	: keyfile(), certfile(), ca_cert(), ssl_enabled(false), ssl_insecure(false) {
     }
     ~SslConfig() {
     }
