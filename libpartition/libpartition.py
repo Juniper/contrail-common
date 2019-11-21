@@ -1,3 +1,6 @@
+from builtins import str
+from builtins import range
+from builtins import object
 from kazoo.client import KazooClient
 from kazoo.client import KazooState
 from kazoo.exceptions import CancelledError
@@ -195,7 +198,7 @@ class PartitionClient(object):
 
     # get rid of finished spawned tasks from datastructures
     def _cleanup_greenlets(self):
-        for part in self._part_lock_task_dict.keys():
+        for part in list(self._part_lock_task_dict.keys()):
             if (self._part_lock_task_dict[part].ready()):
                 del self._part_lock_task_dict[part]
     #end _cleanup_greenlets 
@@ -221,7 +224,7 @@ class PartitionClient(object):
                             str(part))
                 else:
                     # I need to acquire lock for this partition before I own
-                    if (part in self._part_lock_task_dict.keys()):
+                    if (part in list(self._part_lock_task_dict.keys())):
                         try:
                             self._part_lock_task_dict[part].get(block=False)
                         except:
@@ -246,7 +249,7 @@ class PartitionClient(object):
                 # give up ownership of the partition
 
                 # cancel any lock acquisition which is ongoing 
-                if (part in self._part_lock_task_dict.keys()):
+                if (part in list(self._part_lock_task_dict.keys())):
                     try:
                         self._part_lock_task_dict[part].get(block=False)
                     except:
@@ -338,7 +341,7 @@ class PartitionClient(object):
             None
         """
         # clean up greenlets
-        for part in self._part_lock_task_dict.keys():
+        for part in list(self._part_lock_task_dict.keys()):
             try:
                 self._logger.error("libpartition greenlet cleanup %s" % str(part))
                 self._part_lock_task_dict[part].kill()

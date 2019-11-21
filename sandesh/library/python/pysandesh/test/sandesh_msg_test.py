@@ -8,6 +8,9 @@
 # sandesh_msg_test
 #
 
+from __future__ import absolute_import
+from builtins import map
+from builtins import range
 import unittest
 import sys
 import os
@@ -98,7 +101,7 @@ class SandeshMsgTest(unittest.TestCase):
         self._expected_hints = 0
         SandeshSystem.set_sandesh_send_rate_limit(10)
         time.sleep(1)
-        for i in xrange(0,15):
+        for i in range(0,15):
             systemlog_msg.send(sandesh=sandesh_global)
         self.assertEqual(5,sandesh_global.msg_stats(). \
              message_type_stats()['SystemLogTest']. \
@@ -132,7 +135,7 @@ class SandeshMsgTest(unittest.TestCase):
         # in the map is accounted which calculating the size of a map
         exp_system_log_size += sys.getsizeof(m1)
         exp_system_log_size += \
-            sum(map(sys.getsizeof, chain.from_iterable(m1.iteritems())))
+            sum(map(sys.getsizeof, chain.from_iterable(iter(m1.items()))))
         self.assertEqual(exp_system_log_size, system_log.__sizeof__())
 
         # test the size of struct
