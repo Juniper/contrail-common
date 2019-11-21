@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 #
 # Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
 #
@@ -10,10 +11,10 @@ import logging
 import logging.config
 import logging.handlers
 
-from gen_py.sandesh.ttypes import SandeshLevel
+from .gen_py.sandesh.ttypes import SandeshLevel
 
-import sandesh_base_logger
-import util
+from . import sandesh_base_logger
+from . import util
 
 
 def create_logger(generator, logger_class, logger_config_file=None):
@@ -69,9 +70,7 @@ class SandeshLogger(sandesh_base_logger.SandeshBaseLogger):
 
     @staticmethod
     def _get_sandesh_and_logging_levels(level):
-        if isinstance(level, unicode):
-            level = level.encode('utf-8')
-        if isinstance(level, str):
+        if isinstance(level, (str, basestring)):
             if level in SandeshLevel._NAMES_TO_VALUES:
                 level = SandeshLevel._NAMES_TO_VALUES[level]
             else:

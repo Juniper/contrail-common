@@ -8,6 +8,7 @@
 # sandesh_stats_test
 #
 
+from builtins import range
 import unittest
 import sys
 

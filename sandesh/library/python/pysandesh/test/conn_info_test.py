@@ -8,6 +8,7 @@
 # conn_info_test
 #
 
+from __future__ import absolute_import
 import sys
 import socket
 import unittest
