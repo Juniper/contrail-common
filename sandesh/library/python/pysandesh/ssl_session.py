@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 #
 # Copyright (c) 2017 Juniper Networks, Inc. All rights reserved.
 #
@@ -9,7 +10,7 @@
 from gevent import socket
 from gevent import ssl
 
-from tcp_session import TcpSession
+from .tcp_session import TcpSession
 
 
 class SslSession(TcpSession):

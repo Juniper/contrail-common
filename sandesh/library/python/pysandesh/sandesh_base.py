@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 #
 # Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
 #
@@ -6,6 +7,8 @@
 # Sandesh
 #
 
+from builtins import str
+from builtins import object
 import importlib
 import os
 import sys
@@ -21,19 +24,19 @@ except ImportError:
     # python 2.6 or earlier, use backport
     from ordereddict import OrderedDict
 
-import sandesh_logger as sand_logger
-import trace
-import util
+from . import sandesh_logger as sand_logger
+from . import trace
+from . import util
 import platform
 
-from gen_py.sandesh.ttypes import SandeshType, SandeshLevel, \
+from .gen_py.sandesh.ttypes import SandeshType, SandeshLevel, \
      SandeshTxDropReason
-from gen_py.sandesh.constants import *
-from sandesh_http import SandeshHttp
-from sandesh_trace import SandeshTraceRequestRunner
-from sandesh_client import SandeshClient
-from sandesh_uve import SandeshUVETypeMaps, SandeshUVEPerTypeMap
-from work_queue import WorkQueue
+from .gen_py.sandesh.constants import *
+from .sandesh_http import SandeshHttp
+from .sandesh_trace import SandeshTraceRequestRunner
+from .sandesh_client import SandeshClient
+from .sandesh_uve import SandeshUVETypeMaps, SandeshUVEPerTypeMap
+from .work_queue import WorkQueue
 
 class SandeshConfig(object):
 
@@ -240,7 +243,7 @@ class Sandesh(object):
     _DEFAULT_SYSLOG_FACILITY = (
         sand_logger.SandeshLogger._DEFAULT_SYSLOG_FACILITY)
 
-    class SandeshRole:
+    class SandeshRole(object):
         INVALID = 0
         GENERATOR = 1
         COLLECTOR = 2
@@ -293,7 +296,7 @@ class Sandesh(object):
                           logger_config_file=logger_config_file)
         self._logger.info('SANDESH: CONNECT TO COLLECTOR: %s',
                           connect_to_collector)
-        from sandesh_stats import SandeshMessageStatistics
+        from .sandesh_stats import SandeshMessageStatistics
         self._msg_stats = SandeshMessageStatistics()
         self._trace = trace.Trace()
         self._sandesh_request_map = {}
@@ -302,7 +305,7 @@ class Sandesh(object):
         self._uve_type_maps = SandeshUVETypeMaps(self._logger)
         # Initialize the request handling
         # Import here to break the cyclic import dependency
-        import sandesh_req_impl
+        from . import sandesh_req_impl
         sandesh_req_impl = sandesh_req_impl.SandeshReqImpl(self)
         self._sandesh_req_uve_pkg_list.append('pysandesh.gen_py')
         for pkg_name in self._sandesh_req_uve_pkg_list:
@@ -662,7 +665,7 @@ class Sandesh(object):
     # end drop_tx_sandesh
 
     def send_generator_info(self):
-        from gen_py.sandesh_uve.ttypes import SandeshClientInfo, \
+        from .gen_py.sandesh_uve.ttypes import SandeshClientInfo, \
             ModuleClientState, SandeshModuleClientTrace
         if not self._client or not self._client.connection():
             return

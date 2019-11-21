@@ -17,7 +17,14 @@
 # under the License.
 #
 
-from cStringIO import StringIO
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
+import six
+if six.PY2:
+    from StringIO import StringIO
+else:
+    from io import StringIO
 from struct import pack,unpack
 from pysandesh.Thrift import TException
 
@@ -35,7 +42,7 @@ class TTransportException(TException):
     TException.__init__(self, message)
     self.type = type
 
-class TTransportBase:
+class TTransportBase(object):
 
   """Base class for Thrift transport layer."""
 
@@ -71,7 +78,7 @@ class TTransportBase:
     pass
 
 # This class should be thought of as an interface.
-class CReadableTransport:
+class CReadableTransport(object):
   """base class for transports that are readable from C"""
 
   # TODO(dreiss): Think about changing this interface to allow us to use
@@ -98,7 +105,7 @@ class CReadableTransport:
     """
     pass
 
-class TServerTransportBase:
+class TServerTransportBase(object):
 
   """Base class for Thrift server transports."""
 
@@ -111,14 +118,14 @@ class TServerTransportBase:
   def close(self):
     pass
 
-class TTransportFactoryBase:
+class TTransportFactoryBase(object):
 
   """Base class for a Transport Factory"""
 
   def getTransport(self, trans):
     return trans
 
-class TBufferedTransportFactory:
+class TBufferedTransportFactory(object):
 
   """Factory transport that builds buffered transports"""
 
@@ -237,7 +244,7 @@ class TMemoryBuffer(TTransportBase, CReadableTransport):
     # only one shot at reading...
     raise EOFError()
 
-class TFramedTransportFactory:
+class TFramedTransportFactory(object):
 
   """Factory transport that builds framed transports"""
 
