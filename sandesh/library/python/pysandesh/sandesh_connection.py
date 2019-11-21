@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 #
 # Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
 #
@@ -6,15 +7,16 @@
 # Sandesh Connection
 #
 
+from builtins import object
 import gevent
 import os
-from transport import TTransport
-from protocol import TXMLProtocol
-from sandesh_session import SandeshSession, SandeshReader
-from sandesh_state_machine import SandeshStateMachine, Event
-from sandesh_uve import SandeshUVETypeMaps
-from gen_py.sandesh.ttypes import SandeshRxDropReason
-from gen_py.sandesh.constants import *
+from .transport import TTransport
+from .protocol import TXMLProtocol
+from .sandesh_session import SandeshSession, SandeshReader
+from .sandesh_state_machine import SandeshStateMachine, Event
+from .sandesh_uve import SandeshUVETypeMaps
+from .gen_py.sandesh.ttypes import SandeshRxDropReason
+from .gen_py.sandesh.constants import *
 
 class SandeshConnection(object):
 
@@ -63,9 +65,9 @@ class SandeshConnection(object):
     def handle_initialized(self, count):
         uve_types = []
         uve_global_map = self._sandesh_instance._uve_type_maps.get_uve_global_map()
-        for uve_type_key in uve_global_map.iterkeys():
+        for uve_type_key in uve_global_map.keys():
             uve_types.append(uve_type_key)
-        from gen_py.sandesh_ctrl.ttypes import SandeshCtrlClientToServer
+        from .gen_py.sandesh_ctrl.ttypes import SandeshCtrlClientToServer
         ctrl_msg = SandeshCtrlClientToServer(self._sandesh_instance.source_id(),
             self._sandesh_instance.module(), count, uve_types, os.getpid(), 0,
             self._sandesh_instance.node_type(), 
@@ -113,7 +115,7 @@ class SandeshConnection(object):
             transport = TTransport.TMemoryBuffer(msg[hdr_len:])
             protocol_factory = TXMLProtocol.TXMLProtocolFactory()
             protocol = protocol_factory.getProtocol(transport)
-            from gen_py.sandesh_ctrl.ttypes import SandeshCtrlServerToClient
+            from .gen_py.sandesh_ctrl.ttypes import SandeshCtrlServerToClient
             sandesh_ctrl_msg = SandeshCtrlServerToClient()
             if sandesh_ctrl_msg.read(protocol) == -1:
                 self._sandesh_instance.msg_stats().update_rx_stats(

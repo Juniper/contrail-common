@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements. See the NOTICE file
@@ -17,7 +18,8 @@
 # under the License.
 #
 
-from TProtocol import *
+from builtins import object
+from .TProtocol import *
 from struct import pack, unpack
 
 class TBinaryProtocol(TProtocolBase):
@@ -228,7 +230,7 @@ class TBinaryProtocol(TProtocolBase):
     str = self.trans.readAll(len)
     return str
 
-class TBinaryProtocolFactory:
+class TBinaryProtocolFactory(object):
   def __init__(self, strictRead=False, strictWrite=True):
     self.strictRead = strictRead
     self.strictWrite = strictWrite
@@ -262,6 +264,6 @@ class TBinaryProtocolAccelerated(TBinaryProtocol):
   pass
 
 
-class TBinaryProtocolAcceleratedFactory:
+class TBinaryProtocolAcceleratedFactory(object):
   def getProtocol(self, trans):
     return TBinaryProtocolAccelerated(trans)
