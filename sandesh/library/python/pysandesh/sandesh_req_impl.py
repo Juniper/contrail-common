@@ -6,6 +6,8 @@
 # Sandesh Request Implementation
 #
 
+from builtins import str
+from builtins import object
 from pysandesh.sandesh_uve import SandeshUVETypeMaps
 from pysandesh.sandesh_trace import SandeshTraceRequestRunner
 from pysandesh.gen_py.sandesh_uve.ttypes import SandeshUVECacheReq, \
@@ -187,7 +189,7 @@ class SandeshReqImpl(object):
     def sandesh_uve_types_req_handle_request(self, sandesh_req):
         uve_global_map = self._sandesh._uve_type_maps.get_uve_global_map()
         uve_type_info_list = []
-        for uve_type_key, uve_type_map in uve_global_map.iteritems():
+        for uve_type_key, uve_type_map in uve_global_map.items():
             if uve_type_map.sandesh_type() is SandeshType.UVE:
                 uve_type_info = SandeshUVETypeInfo(
                     uve_type_map.uve_data_type_name(),
@@ -201,7 +203,7 @@ class SandeshReqImpl(object):
         count = 0
         uve_global_map = self._sandesh._uve_type_maps.get_uve_global_map()
         if sandesh_req.table is not None:
-            for type_key, type_map in uve_global_map.iteritems():
+            for type_key, type_map in uve_global_map.items():
                 if type_map.sandesh_type() is not SandeshType.ALARM:
                     continue
                 if sandesh_req.name is not None:
@@ -249,7 +251,7 @@ class SandeshReqImpl(object):
         sandesh_msg_stats = self._sandesh.msg_stats()
         msg_type_stats = sandesh_msg_stats.message_type_stats()
         msg_stats_list = []
-        for msg_type, stats in msg_type_stats.iteritems():
+        for msg_type, stats in msg_type_stats.items():
             mtype_stat = SandeshMessageTypeStats(msg_type, stats)
             msg_stats_list.append(mtype_stat)
         gen_stats = SandeshGeneratorStats()
