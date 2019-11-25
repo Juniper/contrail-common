@@ -16,6 +16,7 @@ import mock
 import unittest
 import sys
 import socket
+import six
 
 sys.path.insert(1, sys.path[0]+'/../../../python')
 
@@ -322,27 +323,40 @@ class SandeshUVEAlarmTest(unittest.TestCase):
         expected_data1 = [{'seqnum': i+1, 'data': alarm_data[i][0]} \
                           for i in range(len(alarm_data))]
 
-        # verify alarms sync
+        # Sync alarms
         self.sandesh._uve_type_maps.sync_all_uve_types({}, self.sandesh)
 
         expected_data2 = [
-            {'seqnum': 7, 'data': alarm_data[6][0]},
+            {'seqnum': 2, 'data': alarm_data[1][0]},
             {'seqnum': 5, 'data': alarm_data[4][0]},
             {'seqnum': 6, 'data': alarm_data[5][0]},
-            {'seqnum': 2, 'data': alarm_data[1][0]}
+            {'seqnum': 7, 'data': alarm_data[6][0]},
         ]
 
         expected_data = expected_data1 + expected_data2
 
-        # verify the result
+        # get the result
         args_list = self.sandesh._client.send_uve_sandesh.call_args_list
         self.assertEqual(len(expected_data), len(args_list),
                          'args_list: %s' % str(args_list))
-        for i in range(len(expected_data)):
+
+        # Verify alarm traces for raised/cleared alarms
+        for i in range(len(expected_data1)):
             self.verify_uve_alarm_sandesh(args_list[i][0][0],
-                seqnum=expected_data[i]['seqnum'],
+                seqnum=expected_data1[i]['seqnum'],
                 sandesh_type=SandeshType.ALARM,
-                data=expected_data[i]['data'])
+                data=expected_data1[i]['data'])
+
+        # Verify alarm traces after alarms sync.
+        # It is observed that they come in different order for py2 and py3
+        for i in range(len(expected_data1), len(expected_data)):
+            for j in range(len(expected_data1), len(expected_data)):
+                if expected_data[i]['seqnum'] == args_list[j][0][0]._seqnum:
+                    self.verify_uve_alarm_sandesh(args_list[j][0][0],
+                        seqnum=expected_data[i]['seqnum'],
+                        sandesh_type=SandeshType.ALARM,
+                        data=expected_data[i]['data'])
+
     # end test_sandesh_alarm
 
 # end class SandeshUVEAlarmTest
