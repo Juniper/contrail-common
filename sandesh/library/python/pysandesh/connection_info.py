@@ -108,7 +108,7 @@ class ConnectionState(object):
             if ConnectionStatusNames[status] == ConnectionState._connection_map[conn_key].status and \
                     server_addrs == ConnectionState._connection_map[conn_key].server_addrs and \
                     message == ConnectionState._connection_map[conn_key].description:
-		return
+                return
         ConnectionState._connection_map[conn_key] = conn_info
         ConnectionState._send_uve()
     #end update

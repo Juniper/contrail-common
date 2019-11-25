@@ -6,6 +6,9 @@ import sys
 
 SandeshEnv = DefaultEnvironment().Clone()
 
+AddOption('--python3', dest='if_python3', action='store_true',
+          default=False, help='whether compile with python3')
+
 SandeshEnv.Append(CPPDEFINES='SANDESH')
 SandeshEnv.Replace(LIBS='')
 

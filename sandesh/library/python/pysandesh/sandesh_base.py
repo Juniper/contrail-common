@@ -1164,7 +1164,7 @@ class SandeshUVE(Sandesh):
                 # unbounded. Once the send queue's sending level reaches
                 # SandeshLevel.SYS_UVE we will reset the connection to the
                 # collector to initiate resync of the UVE cache
-                if SandeshLevel.SYS_UVE >= sandesh.send_level():
+                if SandeshLevel.SYS_UVE >= int(sandesh.send_level()):
                     sandesh._client.close_sm_session()
                 sandesh._client.send_uve_sandesh(self)
             else:
@@ -1209,7 +1209,7 @@ class SandeshAlarm(SandeshUVE):
                     token = {'host_ip': sandesh.host_ip(),
                              'http_port': sandesh._http_server.get_port(),
                              'timestamp': alarm.timestamp}
-                    alarm.token = base64.b64encode(json.dumps(token))
+                    alarm.token = base64.b64encode(json.dumps(token).encode('utf-8')).decode('utf-8')
         except Exception as e:
             sandesh._logger.error('Failed to encode token for sandesh alarm: %s'
                                   % (str(e)))
