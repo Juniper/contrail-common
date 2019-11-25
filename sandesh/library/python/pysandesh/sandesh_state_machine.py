@@ -91,7 +91,7 @@ class SandeshStateMachine(object):
             # clean up existing connection
             e.sm._delete_session()
             if e.sm._disable != True:
-	        e.sm._start_idle_hold_timer()
+                e.sm._start_idle_hold_timer()
             # update connection state
             _connection_state_down(e)
             e.sm._collector_name = None
