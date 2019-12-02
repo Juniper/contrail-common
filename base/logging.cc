@@ -13,7 +13,7 @@
 
 #include <boost/format.hpp>
 #include <boost/algorithm/string/predicate.hpp>
-
+//just a test for c++11
 using namespace log4cplus;
 
 static bool disabled_;
