@@ -5,9 +5,7 @@
 #ifndef __HTPP_CURL_INCLUDE__
 #define __HTPP_CURL_INCLUDE__
 
-#ifdef _WIN32
-#define NOEXCEPT noexcept
-#elif __cplusplus > 199711L
+#if __cplusplus > 199711L
 #define NOEXCEPT noexcept
 #else
 #define NOEXCEPT

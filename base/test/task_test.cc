@@ -1324,11 +1324,7 @@ TEST_F(TestUT, test9_0)
 #define TEST9_0_MAX_RUNS 2000
     task_ptr[0] = new TestTask(90, 1, 0, 2, TEST9_0_MAX_RUNS);
     TaskStats *stats;
-#ifndef _WIN32
     TestTask *task_seq_expected[] = {};
-#else
-    TestTask *task_seq_expected[] = { 0 };
-#endif
     TestInit(32, 0, task_seq_expected);
     scheduler->Enqueue(task_ptr[0]);
 
@@ -1349,11 +1345,7 @@ TEST_F(TestUT, test9_1)
 {
     task_ptr[0] = new TestTask(92, 1, 0, 2, 2);
     task_ptr[1] = new TestTask(92, 1, 1, 2, 2);
-#ifndef _WIN32
     TestTask *task_seq_expected[] = { };
-#else
-    TestTask *task_seq_expected[3] = { 0 };
-#endif
     TestInit(33, 3, task_seq_expected);
 
     scheduler->Enqueue(task_ptr[0]);

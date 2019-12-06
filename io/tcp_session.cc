@@ -818,7 +818,6 @@ error_code TcpSession::SetSocketKeepaliveOptions(int keepalive_time,
 // https://msdn.microsoft.com/en-us/library/windows/desktop/ms738596(v=vs.85).aspx
 // Issue similar to this one:
 // https://git.openstack.org/cgit/openstack/python-keystoneclient/commit/?id=33b24a6984c8de2f26af7900202bb85b6b5db125
-#ifndef _WIN32
 #ifdef TCP_KEEPINTVL
     typedef integer< IPPROTO_TCP, TCP_KEEPINTVL > keepalive_interval;
     keepalive_interval keepalive_interval_option(keepalive_intvl);
@@ -838,7 +837,6 @@ error_code TcpSession::SetSocketKeepaliveOptions(int keepalive_time,
             "keepalive_probes: " << keepalive_probes << " set error: " << ec);
         return ec;
     }
-#endif
 #endif
 #ifdef TCP_USER_TIMEOUT
     typedef integer< IPPROTO_TCP, TCP_USER_TIMEOUT > tcp_user_timeout;

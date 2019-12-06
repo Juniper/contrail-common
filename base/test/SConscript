@@ -17,11 +17,8 @@ env.Prepend(LIBS = ['base', 'gunit', 'task_test', 'io', 'sandesh', 'sandeshvns',
                     'nodeinfo', 'process_info', 'cpuinfo', 'base', 'ssl', 'http',
                     'io', 'crypto', 'http_parser', 'curl', 'pugixml', 'boost_program_options'])
 
-if sys.platform not in ['win32', 'darwin']:
+if sys.platform not in ['darwin']:
     env.Append(LIBS = ['rt'])
-
-if sys.platform == 'win32':
-    env.Append(LIBS = ['advapi32', 'gdi32', 'user32'])
 
 libtask_test = env.Library('task_test',
                            ['task_test_util.cc',

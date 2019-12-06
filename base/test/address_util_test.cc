@@ -12,10 +12,6 @@
 #include <string>
 #include <boost/algorithm/string.hpp>
 
-#ifdef _WIN32
-#define popen _popen
-#define pclose _pclose
-#endif // _WIN32
 
 using namespace std;
 
@@ -58,17 +54,7 @@ TEST_F(AddressUtilsTest, AddressToStringTest) {
 }
 
 string GetFqdn() {
-#ifdef _WIN32
-    string hostname(getenv("COMPUTERNAME"));
-    auto dns = getenv("USERDNSDOMAIN");
-    if (dns) {
-        hostname += '.';
-        hostname += dns;
-    }
-    return hostname;
-#else
     return exec("hostname -f");
-#endif
 }
 
 TEST_F(AddressUtilsTest, ResolveCanonicalNameTest) {
