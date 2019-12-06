@@ -66,18 +66,10 @@ SandeshLibs = [
     'log4cplus',
 ]
 
-if sys.platform == 'win32':
-    SandeshLibs.append([
-        'advapi32',
-        'user32',
-        'gdi32',
-        'contrail-windows',
-    ])
-else:
-    SandeshLibs.extend([
-        'pthread',
-        'xslt',
-    ])
+SandeshLibs.extend([
+    'pthread',
+    'xslt',
+])
 
 if env.UseSystemTBB():
     SandeshLibs.append('tbb')
@@ -91,7 +83,7 @@ if env['OPT'] == 'coverage':
 
 env.Prepend(LIBS = SandeshLibs)
 
-if sys.platform not in ['win32', 'darwin']:
+if sys.platform not in ['darwin']:
     env.Append(LIBS = ['rt'])
 
 if sys.platform.startswith('freebsd'):

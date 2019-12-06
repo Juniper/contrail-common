@@ -30,23 +30,15 @@ typedef EventManagerTest EventManagerDeathTest;
 TEST_F(EventManagerDeathTest, Poll) {
     while (!evm_.IsRunning())
         usleep(1000);
-#ifdef _WIN32
-    TASK_UTIL_EXPECT_DEATH(evm_.Poll(), ".*try_lock.*");
-#else
     TASK_UTIL_EXPECT_EXIT(evm_.Poll(), ::testing::KilledBySignal(SIGABRT),
                           ".*Lock.*");
-#endif
 }
 
 TEST_F(EventManagerDeathTest, RunOnce) {
     while (!evm_.IsRunning())
         usleep(1000);
-#ifdef _WIN32
-    TASK_UTIL_EXPECT_DEATH(evm_.RunOnce(), ".*try_lock.*");
-#else
     TASK_UTIL_EXPECT_EXIT(evm_.RunOnce(), ::testing::KilledBySignal(SIGABRT),
                           ".*Lock.*");
-#endif
 }
 
 int main(int argc, char **argv) {

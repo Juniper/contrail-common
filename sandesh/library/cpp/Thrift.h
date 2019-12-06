@@ -54,10 +54,6 @@
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_convertible.hpp>
 
-#ifdef _WIN32
-#include <posix_time.h>
-#endif
-
 /**
  * Helper macros to allow function overloading even when using
  * boost::shared_ptr.

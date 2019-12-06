@@ -22,19 +22,7 @@
  * is different for the non-POSIX MinGW/MSVC
  */
 
-#if defined(MINGW)
-#include <io.h>
-#elif defined(_WIN32)
-#include <direct.h>
-#else
 #include <sys/types.h>
 #include <sys/stat.h>
-#endif
 
-#if defined(MINGW)
-#define MKDIR(x) mkdir(x)
-#elif defined(_WIN32)
-#define MKDIR(x) _mkdir(x)
-#else
 #define MKDIR(x) mkdir(x, S_IRWXU | S_IRWXG | S_IRWXO)
-#endif

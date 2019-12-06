@@ -29,11 +29,6 @@
 #include <unistd.h>
 #endif
 
-#ifdef _WIN32
-#include <io.h>
-typedef ptrdiff_t ssize_t;
-#endif
-
 #include <base/logging.h>
 
 using namespace std;
