@@ -16,6 +16,11 @@ from .gen_py.sandesh.ttypes import SandeshLevel
 from . import sandesh_base_logger
 from . import util
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 
 def create_logger(generator, logger_class, logger_config_file=None):
     l_class = util.import_class(logger_class)

@@ -49,9 +49,16 @@ gen_test_pkg += env.SandeshGenPy('#src/contrail-common/base/sandesh/process_info
 gen_test_pkg += env.SandeshGenPy('#src/contrail-common/base/sandesh/cpuinfo.sandesh', 'gen_py/nodeinfo/', False)
 env.Depends(test_modules_rules, gen_test_pkg)
 
-venv = env.setup_venv('pysandesh_test', 'pysandesh_test')
+venv = env.setup_venv('pysandesh_test', 'pysandesh_test',
+                       is_py3=GetOption('is_py3'))
 env['env_venv'] = venv
-pip_pkgs = ['greenlet==0.4.1', 'gevent==1.1a2', 'eventlet==0.9.17',
+
+if GetOption('is_py3'):
+    pip_pkgs = ['greenlet', 'gevent', 'eventlet',
+                'testtools', 'geventhttpclient', 'bottle',
+                'mock']
+else:
+    pip_pkgs = ['greenlet==0.4.1', 'gevent==1.1a2', 'eventlet==0.9.17',
         'testtools==0.9.21', 'geventhttpclient==1.0a', 'bottle==0.11.6',
         'mock==1.0.1']
 
