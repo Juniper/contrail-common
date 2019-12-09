@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "43c434d9_88ccb70e",
+        "filename": "sandesh/library/python/pysandesh/test/SConscript",
+        "patchSetId": 2
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 213
+      },
+      "writtenOn": "2019-12-09T03:30:48Z",
+      "side": 1,
+      "message": "Nit: maybe this should also be named is_python3 or is_py3 itself?",
+      "range": {
+        "startLine": 53,
+        "startChar": 41,
+        "endLine": 53,
+        "endChar": 51
+      },
+      "revId": "36bc203011ca2ca71dcd93bcea4d5c13891f6903",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "943db774_cbb9869c",
+        "filename": "sandesh/library/python/pysandesh/test/sandesh_uve_alarm_test.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 351,
+      "author": {
+        "id": 213
+      },
+      "writtenOn": "2019-12-09T03:30:48Z",
+      "side": 1,
+      "message": "This part is little unclear on what exactly are you doing here, maybe we can syncup offline to understand this",
+      "range": {
+        "startLine": 351,
+        "startChar": 9,
+        "endLine": 351,
+        "endChar": 29
+      },
+      "revId": "36bc203011ca2ca71dcd93bcea4d5c13891f6903",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

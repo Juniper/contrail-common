@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "971e43e5_4ce0735e",
+        "filename": "sandesh/library/python/pysandesh/test/SConscript",
+        "patchSetId": 2
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 213
+      },
+      "writtenOn": "2019-12-09T03:30:48Z",
+      "side": 0,
+      "message": "we dont want specific packages any more? Can this have any impact on testcases if the packages change? I think you have done this because versions may be different for py3 but still, should we not be using fix versions?",
+      "range": {
+        "startLine": 54,
+        "startChar": 21,
+        "endLine": 54,
+        "endChar": 27
+      },
+      "revId": "78a8e92edd6820c217abd6444b739dc0321819fd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
