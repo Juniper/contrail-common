@@ -4,10 +4,6 @@
 
 #include <sys/wait.h>
 
-#ifdef _WIN32
-#include <posix_string.h>
-#endif
-
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>

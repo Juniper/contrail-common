@@ -8,9 +8,6 @@
 #include <sstream>
 #include <string>
 #include <string.h>
-#ifdef _WIN32
-#include <strings.h> //from the windowsstubs repo
-#endif
 
 #include "base/util.h"
 #include "base/string_util.h"

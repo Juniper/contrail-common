@@ -4,9 +4,6 @@
 
 #include <iostream>
 #include <fstream>
-#ifdef _WIN32
-#include <stdlib.h>
-#endif
 #include "tbb/atomic.h"
 #include "io/test/event_manager_test.h"
 #include "base/test/task_test_util.h"
@@ -352,11 +349,7 @@ TEST_F(TimerUT, reschedule_failed_2) {
 int main(int argc, char *argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     // Run timer test with one thread
-#ifdef _WIN32
-    _putenv_s("TBB_THREAD_COUNT", "1");
-#else
     setenv("TBB_THREAD_COUNT", "1", 1);
-#endif
     scheduler = TaskScheduler::GetInstance();
     LoggingInit();
     return RUN_ALL_TESTS();

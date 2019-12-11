@@ -2,10 +2,6 @@
  * Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
  */
 
-#ifdef _WIN32
-#define TBB_PREVIEW_WAITING_FOR_WORKERS 1
-#endif
-
 #include <assert.h>
 #include <fstream>
 #include <map>
@@ -877,7 +873,6 @@ TaskStats *TaskScheduler::GetTaskStats(int task_id, int instance_id) {
     return group->GetTaskStats(instance_id);
 }
 
-#ifndef _WIN32
 //
 // Platfrom-dependent subroutine in Linux and FreeBSD implementations,
 // used only in TaskScheduler::WaitForTerminateCompletion()
@@ -970,7 +965,7 @@ void TaskScheduler::WaitForTerminateCompletion() {
         usleep(10000);
     }
 }
-#endif /* _WIN32 */
+
 void TaskScheduler::Terminate() {
     if (task_monitor_) {
         task_monitor_->Terminate();
@@ -989,15 +984,8 @@ void TaskScheduler::Terminate() {
         tbb_awake_task_ = NULL;
     }
     evm_ = NULL;
-#ifdef _WIN32
-    if (!singleton_->task_scheduler_.blocking_terminate(std::nothrow_t{})) {
-        LOG(ERROR, "could not terminate tbb windows worker threads");
-        assert(0);
-    }
-#else
     singleton_->task_scheduler_.terminate();
     WaitForTerminateCompletion();
-#endif
     singleton_.reset(NULL);
 }
 

@@ -44,12 +44,6 @@
 #include <errno.h>
 #include <limits.h>
 
-#ifdef _WIN32
-#include <Windows.h> /* for GetFullPathName */
-#define PATH_MAX (MAX_PATH)
-#define strtok_r strtok_s
-#endif
-
 // Careful: must include globals first for extern definitions
 #include "globals.h"
 

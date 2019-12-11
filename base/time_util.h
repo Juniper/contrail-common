@@ -9,9 +9,6 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
-#ifdef _WIN32
-#include <posix_time.h>
-#endif
 /* timestamp - returns usec since epoch */
 static inline uint64_t UTCTimestampUsec() {
     struct timespec ts;

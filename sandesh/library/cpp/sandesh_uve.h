@@ -269,18 +269,6 @@ public:
         return true;
     }
 
-// Disable C4724: Potential mod by 0.
-// The compiler incorrectly assumes that the division by zero may occur
-// after template instantiation, but it is safe in this case because of
-// the check 'TM != 0'. The warning has to be disabled for the whole function,
-// it cannot be disabled just for faulting line using
-// 'pragma warning(suppress : 4724)'. This is a limitation of all
-// warnings associated with code generation (range 4700-4999):
-// https://docs.microsoft.com/en-us/cpp/preprocessor/warning?view=vs-2015
-#ifdef _WIN32
-#pragma warning(push)
-#pragma warning(disable : 4724)
-#endif
     uint32_t SyncUVE(const std::string &table,
             SandeshUVE::SendType st,
             uint32_t seqno, uint32_t cycle,
@@ -330,9 +318,6 @@ public:
         }
         return count;
     }
-#ifdef _WIN32
-#pragma warning(pop)
-#endif
 
     bool SendUVE(const std::string& table, const std::string& name,
                  const std::string& ctx) const {

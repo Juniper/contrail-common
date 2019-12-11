@@ -60,17 +60,12 @@ static inline void TaskUtilPauseTest() {
     static bool d_pause_ = getenv("TASK_UTIL_PAUSE_AFTER_FAILURE") != NULL;
     if (!d_pause_)
         return;
-#ifndef _WIN32
     std::cout << "Test PAUSED. Exit (Ctrl-d) python shell to resume";
     pid_t pid;
     if (!(pid = fork()))
         execl("/usr/bin/python", "/usr/bin/python", NULL);
     int status;
     waitpid(pid, &status, 0);
-#else
-    std::cout << "Test PAUSED. Press enter to resume";
-    std::cin.get();
-#endif
 }
 
 // Get all possible sub-sets of a given set of elements
