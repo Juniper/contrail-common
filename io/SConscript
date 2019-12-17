@@ -34,15 +34,10 @@ IoSrc = [
     'process_signal_common.cc',
 ]
 
-if platform.system() == 'Windows':
-    IoSrc += [
-        'windows/process_signal.cc'
-    ]
-else:
-    IoSrc += [
-        'nix/process_signal.cc',
-        usock_server,
-    ]
+IoSrc += [
+    'nix/process_signal.cc',
+    usock_server,
+]
 
 # IO
 contrail_common_io_doc_files = []

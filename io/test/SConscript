@@ -21,11 +21,8 @@ env.Prepend(LIBS = ['gunit', 'task_test', 'io', 'sandesh', 'http',
                     'http_parser', 'curl',
                     'boost_program_options', 'pugixml', 'ssl', 'crypto'])
 
-if platform.system() not in ['Windows', 'Darwin']:
+if platform.system() not in ['Darwin']:
     env.Append(LIBS = ['rt'])
-
-if platform.system() == 'Windows':
-    env.Append(LIBS = ['advapi32', 'gdi32', 'user32'])
 
 event_manager_test = env.UnitTest('event_manager_test',
                                   ['event_manager_test.cc'],
@@ -88,8 +85,7 @@ test_suite = [
     udp_io_test,
 ]
 
-if platform.system() != "Windows":
-    test_suite += [process_signal_test,
+test_suite += [process_signal_test,
                    usock_io_test,]
 
 flaky_test_suite = [

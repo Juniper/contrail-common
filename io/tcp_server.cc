@@ -570,10 +570,6 @@ int TcpServer::SetKeepAliveSocketOption(int fd, const SandeshConfig &sandesh_con
         return retval;
     }
 
-/*https://docs.microsoft.com/en-gb/windows/desktop/WinSock/ipproto-tcp-socket-options
-TCP_KEEPIDLE and TCP_KEEPINTVL are supported on later version of windows. Windows 10, version 1709
-TCP_KEEPCNT are supported on Windows 10, version 1703 and later */
-
 #ifdef TCP_KEEPIDLE
     retval = setsockopt(fd, IPPROTO_TCP, TCP_KEEPIDLE,
                     reinterpret_cast<const char *>(&tcp_keepalive_idle_time), sizeof(tcp_keepalive_idle_time));

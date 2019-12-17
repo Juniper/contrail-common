@@ -20,10 +20,7 @@ include = ['#src/contrail-common', '#/build/include']
 libpath = ['#/build/lib']
 
 libs = ['boost_system', 'boost_thread', 'log4cplus']
-if sys.platform.startswith('win'):
-    libs.append('contrail-windows')
-else:
-    libs.append('pthread')
+libs.append('pthread')
 
 common = DefaultEnvironment().Clone()
 
@@ -35,10 +32,7 @@ else:
 common.Append(LIBPATH = libpath)
 common.Prepend(LIBS = libs)
 
-if platform.system() == 'Windows':
-    common.Append(CCFLAGS = ['/W2', '/WX'])
-else:
-    common.Append(CCFLAGS = ['-Wall', '-Werror', '-Wsign-compare'])
+common.Append(CCFLAGS = ['-Wall', '-Werror', '-Wsign-compare'])
 
 if not sys.platform.startswith('darwin'):
     if platform.system().startswith('Linux'):

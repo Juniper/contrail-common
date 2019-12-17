@@ -11,8 +11,7 @@ def MapBuildDir(list):
 
 env = BuildEnv.Clone()
 
-if platform.system() != 'Windows':
-    env.Append(CCFLAGS = '-fPIC')
+env.Append(CCFLAGS = '-fPIC')
 
 libhttpc = env.Library('httpc', ['http_client.cc', 'http_curl.cc'])
 
