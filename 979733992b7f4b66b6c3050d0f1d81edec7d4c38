@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b37fe705_42db18ac",
+        "filename": "sandesh/library/python/pysandesh/sandesh_base.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 360,
+      "author": {
+        "id": 382
+      },
+      "writtenOn": "2020-01-08T07:37:55Z",
+      "side": 1,
+      "message": "why not just encode the string?\n\nos.write(pipeout, (\u0027%d\\n\u0027 % port).encode())\n\n\u0027str\u0027 keyword is not good solution.",
+      "revId": "979733992b7f4b66b6c3050d0f1d81edec7d4c38",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
