@@ -356,7 +356,8 @@ class Sandesh(object):
         else:
             self._logger.error('Writing %s_port %d to %s'
                                % (name, port, pipe_name))
-            os.write(pipeout, '%d\n' % port)
+            port_str = str(port) + "\n"
+            os.write(pipeout, port_str.encode())
             os.close(pipeout)
 
     def logger(self):
