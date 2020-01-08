@@ -98,7 +98,7 @@ class SandeshReader(object):
     # Public functions
 
     def read_msg(self, rcv_buf):
-        self._read_buf += rcv_buf
+        self._read_buf += rcv_buf.decode('utf-8')
         while True:
             (ret, sandesh) = self._extract_sandesh()
             if ret < 0:

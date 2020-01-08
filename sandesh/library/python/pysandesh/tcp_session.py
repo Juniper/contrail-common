@@ -68,7 +68,7 @@ class TcpSession(object):
         if not self._connected:
             return -1
         try:
-            self._socket.sendall(data)
+            self._socket.sendall(data.encode())
         except socket.error as err_msg:
             self.close()
             return -1
