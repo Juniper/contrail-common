@@ -1,0 +1,412 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "86f82d42_49d03998",
+        "filename": "base/connection_info.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 244,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "Can do using std::vector at the top and avoid std:: in the .cc files, here and every where else..",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ef56ac22_876d9cac",
+        "filename": "base/connection_info.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 245,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "s/\u0026 / \u0026/g",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ce9d9ac2_9125d58a",
+        "filename": "base/connection_info.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 253,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "s/flag_cfg_itr it/const flag_cfg_itr \u0026it/",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8a8b7e24_7b8da9c2",
+        "filename": "base/connection_info.h",
+        "patchSetId": 12
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "Can you keep this sorted ?",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b338adc5_1bfe7564",
+        "filename": "base/connection_info.h",
+        "patchSetId": 12
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "s/\u0026 / \u0026/",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "14307672_fe0e884b",
+        "filename": "base/feature_flags.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "_WIN32 is gone.. You can take this out",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f7721f5d_672d2c99",
+        "filename": "base/feature_flags.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "s/GetInstance/LocateInstance/ ?",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4970fc9f_93bf5fe0",
+        "filename": "base/feature_flags.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 165,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "Same here. s/Get/Locate",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2e712906_51609f6b",
+        "filename": "base/feature_flags.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 195,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "s/Definitions/Implementations",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cadac407_8345d216",
+        "filename": "base/feature_flags.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 203,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "s/Get/Locate",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3bbaf8ed_8e069c9c",
+        "filename": "base/feature_flags.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 214,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "s/int/size_t",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b0f72969_1658d3a0",
+        "filename": "base/feature_flags.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 397,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "shouldn\u0027t you take lock right at the beginning.. otherwise name could be pointing to freed memory if unregister is called from another thread at the same time",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "37a074e1_627bb310",
+        "filename": "base/feature_flags.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 447,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "change to const \u0026it",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ce23099c_69be235c",
+        "filename": "base/feature_flags.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 455,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "s/int/size_t",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1ef6dc6a_b95ae839",
+        "filename": "base/feature_flags.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 468,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "const \u0026",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8fbd678c_363ec2e1",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 12
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "s/2013/2020/",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7ee88f1c_956a2706",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 12
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "s/state/value ?",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c8dfabce_c58004f9",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 12
+      },
+      "lineNbr": 89,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "s/process/contrail_process",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8bbb9b2a_ed96ee5d",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 12
+      },
+      "lineNbr": 112,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "Can you use EXPERIMENTAL instead of 0",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e5b8bdd9_794cb450",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 12
+      },
+      "lineNbr": 116,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "Same here.. use the enum types",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0d7108f4_9881da0f",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 12
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "Remove default and add an explicit case for UNKNOWN",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "958eeacb_7b76066b",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 12
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "variables should be declared towards the end of the struct/class (as private ?)",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8ad5e9b0_4eca5671",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 12
+      },
+      "lineNbr": 198,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "const bool doesn\u0027t mean much.. could be just bool",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f663d2b0_fd60947c",
+        "filename": "base/test/connection_info_test.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 5
+      },
+      "writtenOn": "2020-01-22T21:00:55Z",
+      "side": 1,
+      "message": "Can you move the tests to a separate file feature_manager_test.cc and build as feature_manager_test ?",
+      "revId": "21e7a0f9127dc3ddcbf2d0510ae526feeb1b7d6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
