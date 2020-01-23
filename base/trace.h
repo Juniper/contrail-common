@@ -61,6 +61,7 @@ public:
 
     void TraceBufCapacityReset(size_t size) {
         trace_buf_.rset_capacity(size);
+        trace_buf_size_ = size;
     }
 
     void TraceWrite(TraceEntryT *trace_entry) {
