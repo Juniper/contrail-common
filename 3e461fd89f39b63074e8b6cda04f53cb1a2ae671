@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "c3d7431d_f22c2f75",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 140,
+      "author": {
+        "id": 564
+      },
+      "writtenOn": "2020-01-28T21:56:06Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "0277651a_c7a57268",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5f3872ed_edfc812f",
         "filename": "base/feature_flags.h",
         "patchSetId": 3
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "d0581d38_d2a5ecec",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 191,
+      "author": {
+        "id": 564
+      },
+      "writtenOn": "2020-01-28T21:56:06Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "5f3872ed_edfc812f",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ee86a760_72a22164",
         "filename": "base/feature_flags.h",
         "patchSetId": 3
@@ -50,6 +86,24 @@
       "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "134019fc_6126945f",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 325,
+      "author": {
+        "id": 564
+      },
+      "writtenOn": "2020-01-28T21:56:06Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "ee86a760_72a22164",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -76,6 +130,30 @@
     },
     {
       "key": {
+        "uuid": "4304c770_fb273ff3",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 374,
+      "author": {
+        "id": 564
+      },
+      "writtenOn": "2020-01-28T21:56:06Z",
+      "side": 1,
+      "message": "Decoupled Flag class from sandesh entirely and introduced new classes for analytics/config handling.",
+      "parentUuid": "2f645a00_321e1344",
+      "range": {
+        "startLine": 374,
+        "startChar": 20,
+        "endLine": 374,
+        "endChar": 28
+      },
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1f6e4788_fc64a3e6",
         "filename": "base/feature_flags.h",
         "patchSetId": 3
@@ -90,6 +168,24 @@
       "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5b01415c_a4914122",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 381,
+      "author": {
+        "id": 564
+      },
+      "writtenOn": "2020-01-28T21:56:06Z",
+      "side": 1,
+      "message": ":)",
+      "parentUuid": "1f6e4788_fc64a3e6",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -110,6 +206,24 @@
     },
     {
       "key": {
+        "uuid": "f1f25b14_ce842860",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 386,
+      "author": {
+        "id": 564
+      },
+      "writtenOn": "2020-01-28T21:56:06Z",
+      "side": 1,
+      "message": "This was used for config handling. However, in the latest diffs, I have moved config handling out to a separate clas.",
+      "parentUuid": "9c6d27b9_3c7810a5",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "2f3ee1eb_6e412ca8",
         "filename": "base/feature_flags.h",
         "patchSetId": 3
@@ -124,6 +238,24 @@
       "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "07879e8e_d924fbde",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 393,
+      "author": {
+        "id": 564
+      },
+      "writtenOn": "2020-01-28T21:56:06Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "2f3ee1eb_6e412ca8",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -144,6 +276,24 @@
     },
     {
       "key": {
+        "uuid": "0f250ba8_10523bb3",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 420,
+      "author": {
+        "id": 564
+      },
+      "writtenOn": "2020-01-28T21:56:06Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "02416a5f_446861be",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "50146a95_3d1c183c",
         "filename": "base/feature_flags.h",
         "patchSetId": 3
@@ -158,6 +308,24 @@
       "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "79f2ac7e_09987426",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 446,
+      "author": {
+        "id": 564
+      },
+      "writtenOn": "2020-01-28T21:56:06Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "50146a95_3d1c183c",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -178,6 +346,24 @@
     },
     {
       "key": {
+        "uuid": "d069b448_19e8b779",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 459,
+      "author": {
+        "id": 564
+      },
+      "writtenOn": "2020-01-28T21:56:06Z",
+      "side": 1,
+      "message": "Not needed with the newer diffs.",
+      "parentUuid": "288cc88f_0de2d80a",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d0bc88e4_d1361967",
         "filename": "base/feature_flags.h",
         "patchSetId": 3
@@ -192,6 +378,24 @@
       "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b751036f_57c723f8",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 473,
+      "author": {
+        "id": 564
+      },
+      "writtenOn": "2020-01-28T21:56:06Z",
+      "side": 1,
+      "message": "This is needed to register Flags with the FlagManager",
+      "parentUuid": "d0bc88e4_d1361967",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -212,6 +416,24 @@
     },
     {
       "key": {
+        "uuid": "3ef53404_b934591c",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 480,
+      "author": {
+        "id": 564
+      },
+      "writtenOn": "2020-01-28T21:56:06Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "8efc216b_cdd14b24",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "77724cfd_37565622",
         "filename": "base/feature_flags.h",
         "patchSetId": 3
@@ -229,6 +451,24 @@
     },
     {
       "key": {
+        "uuid": "40d33d0c_c356332e",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 487,
+      "author": {
+        "id": 564
+      },
+      "writtenOn": "2020-01-28T21:56:06Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "77724cfd_37565622",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "54a4e96b_9db5a7d0",
         "filename": "base/feature_flags.h",
         "patchSetId": 3
@@ -243,6 +483,24 @@
       "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bf95f02e_cf940980",
+        "filename": "base/feature_flags.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 494,
+      "author": {
+        "id": 564
+      },
+      "writtenOn": "2020-01-28T21:56:06Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "54a4e96b_9db5a7d0",
+      "revId": "3e461fd89f39b63074e8b6cda04f53cb1a2ae671",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
