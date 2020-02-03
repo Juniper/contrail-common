@@ -10,11 +10,15 @@
 #include <boost/function.hpp>
 #include <boost/scoped_ptr.hpp>
 
-#include <tbb/mutex.h>
-
 #include <base/logging.h>
 #include <base/sandesh/process_info_constants.h>
 #include <base/sandesh/process_info_types.h>
+
+#include "rapidjson/document.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/writer.h"
+
+#include <tbb/mutex.h>
 
 /**
  * -----------------------------------------------------------------------------
@@ -334,6 +338,7 @@ typedef std::vector<Flag> FlagVec;
 class FlagConfigManager {
 public:
     static FlagConfigManager* GetInstance();
+    static void Initialize(const string &build_info);
 
     /**
      * API to set/update user config. Called when run-time updates are
@@ -353,6 +358,8 @@ private:
 
     static boost::scoped_ptr<FlagConfigManager> instance_;
     FlagManager *flag_manager_;
+
+    static std::string version_;
 
     DISALLOW_COPY_AND_ASSIGN(FlagConfigManager);
 };
