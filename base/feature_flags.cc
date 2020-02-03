@@ -10,6 +10,8 @@
 #include <sstream>
 
 using namespace std;
+using contrail_rapidjson::Document;
+using contrail_rapidjson::Value;
 
 namespace process {
 
@@ -28,8 +30,8 @@ bool debug_ = true;
 /**
  * Constructors/Destructor
  */
-Flag::Flag(FlagManager *manager, const std::string &name,
-           const std::string &description, bool enabled,
+Flag::Flag(FlagManager *manager, const string &name,
+           const string &description, bool enabled,
            ContextVec &context_infos)
     : name_(name),
       description_(description),
@@ -150,9 +152,27 @@ FlagConfigVec FlagUveManager::GetFlagInfos(bool lock) const {
  * FlagConfigManager instance
  */
 boost::scoped_ptr<FlagConfigManager> FlagConfigManager::instance_;
+string FlagConfigManager::version_;
 
 FlagConfigManager::FlagConfigManager(FlagManager* manager)
     : flag_manager_(manager) {
+}
+
+/**
+ * Initialize should be called from modules (for instance from main)
+ */
+void FlagConfigManager::Initialize(const string &build_info) {
+    if (instance_ == NULL) {
+        instance_.reset(new FlagConfigManager(FlagManager::GetInstance()));
+    }
+
+    Document d;
+    if ( d.Parse<0>(build_info.c_str()).HasParseError() ) {
+        FLAG_WARN("Parsing error");
+    } else {
+        const Value &v = d["build-info"];
+        version_ = v[0]["build-version"].GetString();
+    }
 }
 
 FlagConfigManager* FlagConfigManager::GetInstance() {
@@ -162,19 +182,26 @@ FlagConfigManager* FlagConfigManager::GetInstance() {
     return instance_.get();
 }
 
-void FlagConfigManager::Set(const std::string &name,
-                            const std::string &version, bool enabled,
+void FlagConfigManager::Set(const string &name,
+                            const string &version, bool enabled,
                             FlagState::Type state,
                             ContextVec &context_infos) {
     /**
      * Call FlagManager to add/update the configuration for this feature flag
-     * to its flag store.
+     * to its flag store if the version matches the module version.
+     * Otherwise ignore.
      */
+    if (version_ != version) {
+        FLAG_DEBUG("Flag " << name << "'s version " << version <<
+            " does not match with module version " << version_ <<
+            " Ignoring.");
+        return;
+    }
     flag_manager_->Set(name, version, enabled, state, context_infos);
     FlagUveManager::GetInstance()->SendUVE();
 }
 
-void FlagConfigManager::Unset(const std::string &name) {
+void FlagConfigManager::Unset(const string &name) {
     /**
      * User unconfigured the flag. Call FlagManager to remove the
      * user configuration for this feature flag from its flag store.
@@ -209,7 +236,7 @@ size_t FlagManager::GetFlagMapCount() const {
     return (flag_map_.size());
 }
 
-void FlagManager::Set(const std::string &name, const std::string &version,
+void FlagManager::Set(const string &name, const string &version,
                       bool enabled, FlagState::Type state,
                       ContextVec &context_infos) {
     /**
@@ -291,7 +318,7 @@ void FlagManager::Set(const std::string &name, const std::string &version,
     }
 }
 
-void FlagManager::Unset(const std::string& name) {
+void FlagManager::Unset(const string& name) {
     /**
      * Remove from FlagMap
      */
@@ -358,7 +385,7 @@ bool FlagManager::IsFlagEnabled(const string &name,
             result = false;
         }
         for (c_itr = c_vec.begin(); c_itr != c_vec.end(); ++c_itr) {
-            f_itr = std::find(f_vec.begin(), f_vec.end(), *c_itr);
+            f_itr = find(f_vec.begin(), f_vec.end(), *c_itr);
             if (f_itr == f_vec.end()) {
                 /**
                  *Context does not match

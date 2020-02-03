@@ -37,7 +37,16 @@ class ConnectionInfoTest : public ::testing::Test {
             GetInstance()->Init(*evm_.io_service(), "Test",
             "ConnectionInfoTest", "0", boost::bind(
             &process::GetProcessStateCb, _1, _2, _3, expected_connections), "ObjectTest");
+        string build = "{\"build-info\":                                           \
+                           [{                                                      \
+                             \"build-time\": \"2020-01-29 01:13:56.160282\",       \
+                             \"build-hostname\": \"ubuntu-build03\",               \
+                             \"build-user\": \"maheshskumar\",                     \
+                             \"build-version\": \"1910\"                           \
+                           }]                                                      \
+                        }";
         flag_config_mgr_ = FlagConfigManager::GetInstance();
+        flag_config_mgr_->Initialize(build);
         flag_mgr_ = FlagManager::GetInstance();
     }
     static void TearDownTestCase() {
@@ -112,9 +121,9 @@ class ConnectionInfoTest : public ::testing::Test {
     void CheckFlag(Flag *flag, bool res) {
         EXPECT_EQ(flag->enabled(), res);
     }
-    void ConfigureFlag(const std::string &name, bool enabled,
-                       ContextVec &c_vec) {
-        flag_config_mgr_->Set(name, "", enabled, FlagState::EXPERIMENTAL,
+    void ConfigureFlag(const std::string &name, const std::string version,
+                       bool enabled, ContextVec &c_vec) {
+        flag_config_mgr_->Set(name, version, enabled, FlagState::EXPERIMENTAL,
                               c_vec);
     }
     void UnconfigureFlag(const string& name) {
@@ -177,7 +186,7 @@ TEST_F(ConnectionInfoTest, FlagTest) {
 
     // -- Feature One --
     // Configure and enable a flag with no context info
-    ConfigureFlag("Feature One", true, c_vec);
+    ConfigureFlag("Feature One", "1910", true, c_vec);
     VerifyFlagInfoCount(0);
     VerifyFlagMapSize(1);
 
@@ -209,13 +218,13 @@ TEST_F(ConnectionInfoTest, FlagTest) {
 
     // -- Feature Two --
     // Configure and disable a flag with no context info
-    ConfigureFlag("Feature Two", false, c_vec);
+    ConfigureFlag("Feature Two", "1910", false, c_vec);
     VerifyFlagInfoCount(0);
     VerifyFlagMapSize(2);
     CheckFlag("Feature Two", c_vec, false);
 
     // Update "Feature Two" flag and change it to enabled
-    ConfigureFlag("Feature Two", true, c_vec);
+    ConfigureFlag("Feature Two", "1910", true, c_vec);
     VerifyFlagInfoCount(0);
     VerifyFlagMapSize(2);
     CheckFlag("Feature Two", c_vec, true);
@@ -240,7 +249,7 @@ TEST_F(ConnectionInfoTest, FlagTest) {
     c_vec.push_back(c_info1);
 
     // Configure and disable a flag with context info
-    ConfigureFlag("Feature Three", false, c_vec);
+    ConfigureFlag("Feature Three", "1910",  false, c_vec);
 
     // Check if flag is enabled for null context.
     CheckFlag("Feature Three", c_vec1, false);
@@ -251,7 +260,7 @@ TEST_F(ConnectionInfoTest, FlagTest) {
     FlagContext c_info2("interface", "two");
     c_vec.push_back(c_info2);
     c_vec1.push_back(c_info2);
-    ConfigureFlag("Feature Three", false, c_vec);
+    ConfigureFlag("Feature Three", "1910", false, c_vec);
 
     // Check if "Feature Three" is enabled on "interface two"
     VerifyFlagInfoCount(0);
@@ -277,7 +286,7 @@ TEST_F(ConnectionInfoTest, FlagTest) {
 
     // -- Feature Four --
     // Configure and disable a flag with context info
-    ConfigureFlag("Feature Four", false, c_vec);
+    ConfigureFlag("Feature Four", "1910", false, c_vec);
     VerifyFlagInfoCount(0);
     VerifyFlagMapSize(4);
     CheckFlag("Feature Four", c_vec, false);
@@ -293,7 +302,7 @@ TEST_F(ConnectionInfoTest, FlagTest) {
     c_vec2.push_back(c_info4);
 
     // Configure and enable a flag with context info
-    ConfigureFlag("Feature Five", true, c_vec);
+    ConfigureFlag("Feature Five", "1910", true, c_vec);
     VerifyFlagInfoCount(0);
     VerifyFlagMapSize(5);
     CheckFlag("Feature Five", c_vec1, true);
@@ -303,10 +312,16 @@ TEST_F(ConnectionInfoTest, FlagTest) {
 
     // -- Feature Six --
     // Configure and disable a flag with context info
-    ConfigureFlag("Feature Six", false, c_vec);
+    ConfigureFlag("Feature Six", "1910", false, c_vec);
     VerifyFlagInfoCount(0);
     VerifyFlagMapSize(6);
     CheckFlag("Feature Six", c_vec, false);
+
+    // Configure the same flag with different version and make sure it
+    // is ignored by the flag library
+    ConfigureFlag("Feature Six", "1911", false, c_vec);
+    VerifyFlagInfoCount(0);
+    VerifyFlagMapSize(6);
 
     // ------------------------------------------------------------------
 
