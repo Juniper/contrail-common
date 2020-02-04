@@ -25,7 +25,7 @@ else:
 import sys
 import os
 import socket
-import test_utils
+from .test_utils import get_free_port
 
 sys.path.insert(1, sys.path[0]+'/../../../python')
 
@@ -84,7 +84,7 @@ class SandeshReaderTest(unittest.TestCase):
     def setUpClass(cls):
         global sandesh_test_started
         if (not sandesh_test_started):
-            http_port = test_utils.get_free_port()
+            http_port = get_free_port()
             sandesh_global.init_generator('sandesh_session_test', 
                 socket.gethostname(), 'Test', 'Test', None,  
                 'sandesh_msg_test_ctxt', http_port)
@@ -154,9 +154,9 @@ class SandeshWriterTest(unittest.TestCase):
     def setUpClass(cls):
         global sandesh_test_started
         if (not sandesh_test_started):
-            http_port = test_utils.get_free_port()
+            http_port = get_free_port()
             sandesh_global.init_generator('sandesh_session_test', 
-                socket.gethostname(), None, 
+                socket.gethostname(), 'Test', 'Test', None,
                 'sandesh_msg_test_ctxt', http_port)
             sandesh_test_started = True
 

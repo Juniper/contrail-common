@@ -12,7 +12,7 @@ from __future__ import absolute_import
 import sys
 import socket
 import unittest
-import test_utils
+from .test_utils import get_free_port
 
 sys.path.insert(1, sys.path[0]+'/../../../python')
 from pysandesh.gen_py.process_info.constants import ConnectionTypeNames, \
@@ -20,7 +20,7 @@ from pysandesh.gen_py.process_info.constants import ConnectionTypeNames, \
 from pysandesh.gen_py.process_info.ttypes import ConnectionInfo, \
     ProcessStatus, ProcessState, ConnectionType, ConnectionStatus
 from pysandesh.connection_info import ConnectionState
-from gen_py.nodeinfo.ttypes import NodeStatusUVE, NodeStatus
+from .gen_py.nodeinfo.ttypes import NodeStatusUVE, NodeStatus
 from pysandesh.sandesh_base import Sandesh
 
 class ConnInfoTest(unittest.TestCase):
@@ -28,7 +28,7 @@ class ConnInfoTest(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None
         self._sandesh = Sandesh()
-        http_port = test_utils.get_free_port()
+        http_port = get_free_port()
         self._sandesh.init_generator('conn_info_test', socket.gethostname(),
             'Test', 'Test', None, 'conn_info_test_ctxt', http_port)
     #end setUp

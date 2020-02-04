@@ -17,7 +17,7 @@ import unittest
 import sys
 import os
 import socket
-import test_utils
+from .test_utils import get_free_port
 import time
 import urllib.request, urllib.error, urllib.parse
 import gevent
@@ -30,14 +30,14 @@ from pysandesh.sandesh_base import *
 class SandeshHttpTest(unittest.TestCase):
 
     def setUp(self):
-        self.http_port = test_utils.get_free_port()
+        self.http_port = get_free_port()
         sandesh_global.init_generator('sandesh_http_test', socket.gethostname(),
                 'Test', 'Test', None, 'sandesh_http_test_ctxt', self.http_port,
                 sandesh_req_uve_pkg_list = [],
                 connect_to_collector=False)
         time.sleep(1) # Let http server up
-        import sandesh_req_impl
-        self.sandesh_req_impl = sandesh_req_impl.SandeshHttpRequestImp(sandesh_global)
+        from .sandesh_req_impl import SandeshHttpRequestImp
+        self.sandesh_req_impl = SandeshHttpRequestImp(sandesh_global)
         self.assertTrue(sandesh_global.client() is None)
     #end setUp
 
