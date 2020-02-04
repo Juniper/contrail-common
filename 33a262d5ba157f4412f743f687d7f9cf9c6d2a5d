@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "e790118e_c471f2ec",
+        "filename": "base/feature_flags.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 194,
+      "author": {
+        "id": 564
+      },
+      "writtenOn": "2020-02-04T21:37:41Z",
+      "side": 1,
+      "message": "Current design is to have config sent for both old and new versions for all flags. Hence, it is sufficient if we only process the flags that match the module\u0027s version.",
+      "parentUuid": "6266cc1c_553bc228",
+      "revId": "33a262d5ba157f4412f743f687d7f9cf9c6d2a5d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "20ee5154_f8b8b061",
         "filename": "base/feature_flags.cc",
         "patchSetId": 1
@@ -33,6 +51,24 @@
       "revId": "33a262d5ba157f4412f743f687d7f9cf9c6d2a5d",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a82b7dbf_9e3eefca",
+        "filename": "base/feature_flags.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 321,
+      "author": {
+        "id": 564
+      },
+      "writtenOn": "2020-02-04T21:37:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "20ee5154_f8b8b061",
+      "revId": "33a262d5ba157f4412f743f687d7f9cf9c6d2a5d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
