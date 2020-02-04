@@ -21,7 +21,7 @@ sys.path.insert(1, sys.path[0]+'/../../../python')
 from pysandesh.sandesh_base import *
 from pysandesh.sandesh_client import *
 from pysandesh.util import *
-from gen_py.msg_test.ttypes import *
+from .gen_py.msg_test.ttypes import *
 
 class SandeshClientTest(unittest.TestCase):
 

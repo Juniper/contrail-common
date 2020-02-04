@@ -20,13 +20,13 @@ import six
 
 sys.path.insert(1, sys.path[0]+'/../../../python')
 
-import test_utils
+from .test_utils import get_free_port
 from pysandesh.sandesh_base import *
 from pysandesh.sandesh_client import SandeshClient
 from pysandesh.util import UTCTimestampUsec
 from pysandesh.gen_py.sandesh_alarm.ttypes import *
-from gen_py.sandesh_alarm_base.ttypes import *
-from gen_py.uve_alarm_test.ttypes import *
+from .gen_py.sandesh_alarm_base.ttypes import *
+from .gen_py.uve_alarm_test.ttypes import *
 
 class SandeshUVEAlarmTest(unittest.TestCase):
 
@@ -35,7 +35,7 @@ class SandeshUVEAlarmTest(unittest.TestCase):
         self.sandesh = Sandesh()
         self.sandesh.init_generator('sandesh_uve_alarm_test',
             socket.gethostname(), 'Test', '0', None, '',
-            test_utils.get_free_port(),
+            get_free_port(),
             connect_to_collector=False)
         # mock the sandesh client object
         self.sandesh._client = mock.MagicMock(spec=SandeshClient)

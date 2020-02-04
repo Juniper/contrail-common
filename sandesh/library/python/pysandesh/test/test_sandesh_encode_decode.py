@@ -19,7 +19,7 @@ sys.path.insert(1, sys.path[0]+'/../../../python')
 from pysandesh.transport import TTransport
 from pysandesh.protocol import TXMLProtocol
 from pysandesh.protocol import TJSONProtocol
-from gen_py.encode_decode_test.ttypes import *
+from .gen_py.encode_decode_test.ttypes import *
 
 class SandeshJSONEncodeDecodeTest(unittest.TestCase):
     def setUp(self):
