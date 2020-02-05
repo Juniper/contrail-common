@@ -5,3 +5,6 @@ testtools
 geventhttpclient
 bottle
 mock
+junitxml
+python-subunit
+testrepository
