@@ -46,6 +46,30 @@
       "revId": "9107297c5bef8a105e367a1d3a7a4c9b7873a964",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7fa5ae7a_fd42c343",
+        "filename": "sandesh/library/python/pysandesh/sandesh_session.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 101,
+      "author": {
+        "id": 213
+      },
+      "writtenOn": "2020-02-07T15:58:19Z",
+      "side": 0,
+      "message": "Ack",
+      "parentUuid": "2415b162_df5278ae",
+      "range": {
+        "startLine": 101,
+        "startChar": 31,
+        "endLine": 101,
+        "endChar": 42
+      },
+      "revId": "9107297c5bef8a105e367a1d3a7a4c9b7873a964",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
