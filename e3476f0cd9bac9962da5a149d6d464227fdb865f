@@ -1,0 +1,119 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3372a44e_9e8771cf",
+        "filename": "sandesh/library/SConscript",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 213
+      },
+      "writtenOn": "2020-02-07T04:03:26Z",
+      "side": 1,
+      "message": "dont we need to add returned testcases to test_suite?",
+      "range": {
+        "startLine": 12,
+        "startChar": 2,
+        "endLine": 12,
+        "endChar": 9
+      },
+      "revId": "e3476f0cd9bac9962da5a149d6d464227fdb865f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "06ee5fcc_44534111",
+        "filename": "sandesh/library/python/SConscript",
+        "patchSetId": 1
+      },
+      "lineNbr": 189,
+      "author": {
+        "id": 213
+      },
+      "writtenOn": "2020-02-07T04:03:26Z",
+      "side": 1,
+      "message": "Nit: this comment is needed? if not, please remove it.",
+      "range": {
+        "startLine": 189,
+        "startChar": 0,
+        "endLine": 189,
+        "endChar": 9
+      },
+      "revId": "e3476f0cd9bac9962da5a149d6d464227fdb865f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ef521d3d_84ace8c6",
+        "filename": "sandesh/library/python/SConscript",
+        "patchSetId": 1
+      },
+      "lineNbr": 208,
+      "author": {
+        "id": 213
+      },
+      "writtenOn": "2020-02-07T04:03:26Z",
+      "side": 1,
+      "message": "how are we using this variable? it seems to be getting reassigned in the next line",
+      "range": {
+        "startLine": 208,
+        "startChar": 0,
+        "endLine": 208,
+        "endChar": 9
+      },
+      "revId": "e3476f0cd9bac9962da5a149d6d464227fdb865f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a61f3ace_b7f2f3a9",
+        "filename": "sandesh/library/python/tox.ini",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 213
+      },
+      "writtenOn": "2020-02-07T04:03:26Z",
+      "side": 1,
+      "message": "I am assuming this is being used by tox somehow to run the tests for both envs. But somehow I could not figure out, how. I can sync up offline for that",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 9,
+        "endChar": 7
+      },
+      "revId": "e3476f0cd9bac9962da5a149d6d464227fdb865f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "33330a81_04b80c26",
+        "filename": "sandesh/library/python/tox.ini",
+        "patchSetId": 1
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 213
+      },
+      "writtenOn": "2020-02-07T04:03:26Z",
+      "side": 1,
+      "message": "it will be good to add pep8 checks also, right? Do you plan to do it in future? If so, lets file a bug. If not, lets remove these comments.",
+      "range": {
+        "startLine": 36,
+        "startChar": 10,
+        "endLine": 43,
+        "endChar": 18
+      },
+      "revId": "e3476f0cd9bac9962da5a149d6d464227fdb865f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

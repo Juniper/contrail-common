@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d649f328_954ba243",
+        "filename": "sandesh/library/python/pysandesh/sandesh_session.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 101,
+      "author": {
+        "id": 213
+      },
+      "writtenOn": "2020-02-07T04:03:26Z",
+      "side": 0,
+      "message": "was it not added for py3 support? if not, then I am not sure why was it there in first place?",
+      "range": {
+        "startLine": 101,
+        "startChar": 31,
+        "endLine": 101,
+        "endChar": 42
+      },
+      "revId": "9107297c5bef8a105e367a1d3a7a4c9b7873a964",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
