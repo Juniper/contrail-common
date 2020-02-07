@@ -234,6 +234,30 @@
       "revId": "e3476f0cd9bac9962da5a149d6d464227fdb865f",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "84adb21a_4d701158",
+        "filename": "sandesh/library/python/tox.ini",
+        "patchSetId": 1
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 752
+      },
+      "writtenOn": "2020-02-07T05:45:49Z",
+      "side": 1,
+      "message": "Filed a new bug - CEM-12550",
+      "parentUuid": "b8fbad2e_57fbf578",
+      "range": {
+        "startLine": 36,
+        "startChar": 10,
+        "endLine": 43,
+        "endChar": 18
+      },
+      "revId": "e3476f0cd9bac9962da5a149d6d464227fdb865f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
