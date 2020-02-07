@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "8f67ed35_7b3d8edd",
+        "filename": "sandesh/library/SConscript",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 752
+      },
+      "writtenOn": "2020-02-07T04:19:20Z",
+      "side": 1,
+      "message": "I tried that but somehow scons doesn\u0027t understand the returned testcase and it was doing full scons. So, I added a target in next line which is defined in this python/SConscript.",
+      "parentUuid": "3372a44e_9e8771cf",
+      "range": {
+        "startLine": 12,
+        "startChar": 2,
+        "endLine": 12,
+        "endChar": 9
+      },
+      "revId": "e3476f0cd9bac9962da5a149d6d464227fdb865f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "06ee5fcc_44534111",
         "filename": "sandesh/library/python/SConscript",
         "patchSetId": 1
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "b2c82728_b2ec11b1",
+        "filename": "sandesh/library/python/SConscript",
+        "patchSetId": 1
+      },
+      "lineNbr": 189,
+      "author": {
+        "id": 752
+      },
+      "writtenOn": "2020-02-07T04:19:20Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "06ee5fcc_44534111",
+      "range": {
+        "startLine": 189,
+        "startChar": 0,
+        "endLine": 189,
+        "endChar": 9
+      },
+      "revId": "e3476f0cd9bac9962da5a149d6d464227fdb865f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ef521d3d_84ace8c6",
         "filename": "sandesh/library/python/SConscript",
         "patchSetId": 1
@@ -59,6 +107,30 @@
       "writtenOn": "2020-02-07T04:03:26Z",
       "side": 1,
       "message": "how are we using this variable? it seems to be getting reassigned in the next line",
+      "range": {
+        "startLine": 208,
+        "startChar": 0,
+        "endLine": 208,
+        "endChar": 9
+      },
+      "revId": "e3476f0cd9bac9962da5a149d6d464227fdb865f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5173c88f_3bd1386f",
+        "filename": "sandesh/library/python/SConscript",
+        "patchSetId": 1
+      },
+      "lineNbr": 208,
+      "author": {
+        "id": 752
+      },
+      "writtenOn": "2020-02-07T04:19:20Z",
+      "side": 1,
+      "message": "I\u0027ll add more details about using this API and why is it done like this.",
+      "parentUuid": "ef521d3d_84ace8c6",
       "range": {
         "startLine": 208,
         "startChar": 0,
@@ -94,6 +166,30 @@
     },
     {
       "key": {
+        "uuid": "b43ecaec_2499dd8a",
+        "filename": "sandesh/library/python/tox.ini",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 752
+      },
+      "writtenOn": "2020-02-07T04:19:20Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "a61f3ace_b7f2f3a9",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 9,
+        "endChar": 7
+      },
+      "revId": "e3476f0cd9bac9962da5a149d6d464227fdb865f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "33330a81_04b80c26",
         "filename": "sandesh/library/python/tox.ini",
         "patchSetId": 1
@@ -114,6 +210,30 @@
       "revId": "e3476f0cd9bac9962da5a149d6d464227fdb865f",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b8fbad2e_57fbf578",
+        "filename": "sandesh/library/python/tox.ini",
+        "patchSetId": 1
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 752
+      },
+      "writtenOn": "2020-02-07T04:19:20Z",
+      "side": 1,
+      "message": "Ok. I\u0027ll file a new bug and handle this separately as this will bring too many formatting changes.",
+      "parentUuid": "33330a81_04b80c26",
+      "range": {
+        "startLine": 36,
+        "startChar": 10,
+        "endLine": 43,
+        "endChar": 18
+      },
+      "revId": "e3476f0cd9bac9962da5a149d6d464227fdb865f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
