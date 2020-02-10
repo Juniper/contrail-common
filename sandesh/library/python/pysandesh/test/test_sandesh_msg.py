@@ -15,7 +15,7 @@ import unittest
 import sys
 import os
 import socket
-import test_utils
+from .test_utils import get_free_port
 import time
 import uuid
 from itertools import chain
@@ -25,7 +25,7 @@ sys.path.insert(1, sys.path[0]+'/../../../python')
 from pysandesh.sandesh_base import *
 from pysandesh.sandesh_client import *
 from pysandesh.sandesh_session import *
-from gen_py.msg_test.ttypes import *
+from .gen_py.msg_test.ttypes import *
 
 class SandeshSessionTestHelper(SandeshSession):
 
@@ -44,7 +44,7 @@ class SandeshSessionTestHelper(SandeshSession):
 class SandeshMsgTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        http_port = test_utils.get_free_port()
+        http_port = get_free_port()
         sandesh_global.init_generator('sandesh_msg_test', socket.gethostname(), 
                 'Test', 'Test', None, 'sandesh_msg_test_ctxt', http_port,
                 connect_to_collector=False)

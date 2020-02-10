@@ -3,5 +3,4 @@
 #
 
 recursive-include pysandesh *
-recursive-exclude pysandesh/test *
 recursive-exclude pysandesh/example *

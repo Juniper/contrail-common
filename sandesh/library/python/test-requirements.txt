@@ -1,0 +1,7 @@
+greenlet
+gevent
+eventlet
+testtools
+geventhttpclient
+bottle
+mock

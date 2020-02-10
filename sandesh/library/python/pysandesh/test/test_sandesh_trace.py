@@ -12,17 +12,17 @@ from __future__ import absolute_import
 import sys
 import socket
 import unittest
-import test_utils
+from .test_utils import get_free_port
 
 sys.path.insert(1, sys.path[0]+'/../../../python')
 from pysandesh.sandesh_base import *
-from gen_py.msg_test.ttypes import *
+from .gen_py.msg_test.ttypes import *
 
 class SandeshTraceTest(unittest.TestCase):
 
     def setUp(self):
         self._sandesh = Sandesh()
-        http_port = test_utils.get_free_port()
+        http_port = get_free_port()
         self._sandesh.init_generator('sandesh_trace_test', socket.gethostname(),
             'Test', 'Test', None, 'trace_test_ctxt', http_port)
         self._sandesh.set_logging_params(level=SandeshLevel.SYS_DEBUG,
