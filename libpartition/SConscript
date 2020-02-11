@@ -5,6 +5,7 @@
 #
 
 import sys
+import os
 
 Import('BuildEnv')
 PartEnv = BuildEnv.Clone()
@@ -35,6 +36,10 @@ sdist_gen = PartEnv.Command('dist/libpartition-0.1dev.tar.gz', 'setup.py', cd_cm
 # install everything before building distribution
 PartEnv.Depends(sdist_gen, sdist_depends)
 
+# Adding a symlink to an existing file
+def SymLink(target, source, env):
+    os.symlink(os.path.abspath(str(source[0])), os.path.abspath(str(target[0])))
+
 if 'install' in BUILD_TARGETS:
     install_cmd = PartEnv.Command(None,
                                 'setup.py',
@@ -42,6 +47,16 @@ if 'install' in BUILD_TARGETS:
                                 PartEnv['PYTHON_INSTALL_OPT'])
     PartEnv.Depends(install_cmd, sdist_depends)
     PartEnv.Alias('install', install_cmd)
+
+    # Install libpartition package in python3 path
+    setup_link_cmd = env.Command('setup3.py', 'setup.py', SymLink)
+    PartEnv.Depends(setup_link_cmd, sdist_depends)
+    py3_install_cmd = PartEnv.Command(None,
+                                'setup3.py',
+                                cd_cmd + 'python3 setup.py install %s' %
+                                PartEnv['PYTHON_INSTALL_OPT'])
+    PartEnv.Depends(py3_install_cmd, sdist_depends)
+    PartEnv.Alias('install', py3_install_cmd)
 
 PartEnv['LIBPARTITION_PKG'] = sdist_gen
 #PartEnv.SConscript('test/SConscript', exports='PartEnv', duplicate = 0)
