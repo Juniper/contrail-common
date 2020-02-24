@@ -6,10 +6,9 @@
 # Sandesh UVE
 #
 
-from builtins import object
-import importlib
 import copy
-from pysandesh.gen_py.sandesh.ttypes import SandeshType
+from builtins import object
+
 
 class SandeshUVETypeMaps(object):
 
@@ -41,7 +40,8 @@ class SandeshUVETypeMaps(object):
             self._uve_data_type_map[uve_data_type_name] = uve_type_name
         else:
             self._logger.error('UVE data type "%s" to UVE "%s" already added' %
-                (uve_data_type_name, uve_type_name))
+                               (uve_data_type_name, uve_type_name))
+            print(uve_type)
             assert 0
     # end add_uve_data_type_mapping
 
@@ -52,6 +52,7 @@ class SandeshUVETypeMaps(object):
             self._uve_global_map[uve_type_name] = uve_type_map
         else:
             self._logger.error('UVE type "%s" already added' % (uve_type_name))
+            print(uve_map)
             assert 0
     # end register_uve_type_map
 
@@ -87,6 +88,7 @@ class SandeshUVETypeMaps(object):
 
 # end class SandeshUVETypeMaps
 
+
 class SandeshUVEPerTypeMap(object):
 
     class UVEMapEntry(object):
@@ -101,7 +103,7 @@ class SandeshUVEPerTypeMap(object):
     def __init__(self, sandesh, sandesh_type, uve_type, uve_data_type):
         self._sandesh = sandesh
         self._logger = self._sandesh.logger()
-        self._sandesh_type = sandesh_type # UVE or ALARM
+        self._sandesh_type = sandesh_type  # UVE or ALARM
         self._uve_type = uve_type
         self._uve_data_type = uve_data_type
         self._uve_map = {}
@@ -142,9 +144,9 @@ class SandeshUVEPerTypeMap(object):
         from pysandesh.sandesh_base import SandeshDynamicUVE
         uve_name = uve_sandesh.data.name
         uve_table = uve_sandesh.data._table
-        if uve_table is None or uve_table is '':
+        if uve_table is None or uve_table == '':
             self._logger.error('UVE update failed. Table None or "" for '
-                '<%s:%s>' % (self._uve_type.__name__, uve_name))
+                               '<%s:%s>' % (self._uve_type.__name__, uve_name))
             return False
         if self._uve_map.get(uve_table) is None:
             self._uve_map[uve_table] = {}
@@ -152,8 +154,8 @@ class SandeshUVEPerTypeMap(object):
             uve_entry = self._uve_map[uve_table][uve_name]
         except KeyError:
             self._logger.debug('Add uve <%s, %s> in the [%s:%s] map' %
-                (uve_name, uve_sandesh.seqnum(), uve_table,
-                 self._uve_type.__name__))
+                               (uve_name, uve_sandesh.seqnum(), uve_table,
+                                self._uve_type.__name__))
             uve_entry = SandeshUVEPerTypeMap.UVEMapEntry(
                 copy.deepcopy(uve_sandesh.data), uve_sandesh.seqnum())
             if isinstance(uve_sandesh, SandeshDynamicUVE):
@@ -166,17 +168,21 @@ class SandeshUVEPerTypeMap(object):
                     # and a new uve entry with the same key has been created.
                     # Replace the deleted uve entry in the cache with this
                     # new entry.
-                    self._logger.debug('Re-add uve <%s,%s> in [%s:%s] map' \
-                        % (uve_name, uve_sandesh.seqnum(), uve_table,
-                           self._uve_type.__name__))
+                    self._logger.debug(
+                        'Re-add uve <%s,%s> in [%s:%s] map' %
+                        (uve_name, uve_sandesh.seqnum(), uve_table,
+                         self._uve_type.__name__))
                     uve_entry = SandeshUVEPerTypeMap.UVEMapEntry(
                         copy.deepcopy(uve_sandesh.data), uve_sandesh.seqnum())
                     if isinstance(uve_sandesh, SandeshDynamicUVE):
                         uve_sandesh.update_uve(uve_entry.data)
                     self._uve_map[uve_table][uve_name] = uve_entry
                 else:
-                    # Duplicate uve delete. Do we need to update the seqnum here?
-                    self._logger.error('Duplicate uve delete <%s>' % (uve_name))
+                    # Duplicate uve delete. Do we need to update the seqnum
+                    # here?
+                    self._logger.error(
+                        'Duplicate uve delete <%s>' %
+                        (uve_name))
             else:
                 uve_entry.data = uve_sandesh.update_uve(uve_entry.data)
                 uve_entry.seqno = uve_sandesh.seqnum()
@@ -194,11 +200,15 @@ class SandeshUVEPerTypeMap(object):
                 if seqno == 0 or seqno < uve_entry.seqno:
                     sandesh_uve = self._uve_type(sandesh=sandesh_instance)
                     sandesh_uve.data = uve_entry.data
-                    self._logger.debug('send sync_uve <%s: %s> in the '
-                        '[%s:%s] map' % (uve_entry.data.name,
-                        uve_entry.seqno, uve_table, self._uve_type.__name__))
+                    self._logger.debug(
+                        'send sync_uve <%s: %s> in the '
+                        '[%s:%s] map' %
+                        (uve_entry.data.name,
+                         uve_entry.seqno,
+                         uve_table,
+                         self._uve_type.__name__))
                     sandesh_uve.send(True, uve_entry.seqno, ctx,
-                        more, sandesh_instance)
+                                     more, sandesh_instance)
                     count += 1
         return count
     # end sync_uve
@@ -212,7 +222,7 @@ class SandeshUVEPerTypeMap(object):
                 sandesh_uve = self._uve_type(sandesh_instance)
                 sandesh_uve.data = uve_entry.data
                 sandesh_uve.send(True, uve_entry.seqno, ctx, more,
-                    sandesh_instance)
+                                 sandesh_instance)
                 return True
         return False
     # end send_uve

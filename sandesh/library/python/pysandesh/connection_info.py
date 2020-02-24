@@ -3,22 +3,22 @@
 #
 
 #
-# Connection State 
+# Connection State
 #
 
-from builtins import str
 from builtins import object
-import gevent
+from builtins import str
 
-from .gen_py.process_info.constants import ConnectionTypeNames, \
-    ConnectionStatusNames, ProcessStateNames
+from .gen_py.process_info.constants import ConnectionStatusNames, \
+    ConnectionTypeNames, ProcessStateNames
 from .gen_py.process_info.ttypes import ConnectionInfo, \
-    ProcessStatus, ProcessState, ConnectionStatus
+    ConnectionStatus, ProcessState, ProcessStatus
+
 
 class ConnectionState(object):
-    _sandesh = None 
+    _sandesh = None
     _connection_map = {}
-    _hostname = None 
+    _hostname = None
     _module_id = None
     _instance_id = None
     _conn_status_cb = None
@@ -45,25 +45,25 @@ class ConnectionState(object):
         description += conn_description
 
         process_status = ProcessStatus(
-            module_id = ConnectionState._module_id,
-            instance_id = ConnectionState._instance_id,
-            state = ProcessStateNames[state_value],
-            connection_infos = conn_infos,
-            description = description)
+            module_id=ConnectionState._module_id,
+            instance_id=ConnectionState._instance_id,
+            state=ProcessStateNames[state_value],
+            connection_infos=conn_infos,
+            description=description)
         uve_data = ConnectionState._uve_data_type_cls(
-            name = ConnectionState._hostname,
-            process_status = [process_status])
+            name=ConnectionState._hostname,
+            process_status=[process_status])
         uve = ConnectionState._uve_type_cls(
-                table = ConnectionState._table,
-                data = uve_data,
-                sandesh = ConnectionState._sandesh)
-        uve.send(sandesh = ConnectionState._sandesh)
-    #end _send_uve
+                table=ConnectionState._table,
+                data=uve_data,
+                sandesh=ConnectionState._sandesh)
+        uve.send(sandesh=ConnectionState._sandesh)
+    # end _send_uve
 
     @staticmethod
     def init(sandesh, hostname, module_id, instance_id, conn_status_cb,
-             uve_type_cls, uve_data_type_cls, table = None,
-             process_status_cb = None):
+             uve_type_cls, uve_data_type_cls, table=None,
+             process_status_cb=None):
         ConnectionState._sandesh = sandesh
         ConnectionState._hostname = hostname
         ConnectionState._module_id = module_id
@@ -73,7 +73,7 @@ class ConnectionState(object):
         ConnectionState._uve_data_type_cls = uve_data_type_cls
         ConnectionState._table = table
         ConnectionState._process_status_cb = process_status_cb
-    #end init
+    # end init
 
     @staticmethod
     def get_conn_state_cb(conn_infos):
@@ -85,7 +85,7 @@ class ConnectionState(object):
                     message = conn_info.type
                 else:
                     message += ', ' + conn_info.type
-                if conn_info.name is not None and conn_info.name is not '':
+                if conn_info.name is not None and conn_info.name != '':
                     message += ':' + conn_info.name
                     message += '[' + str(conn_info.description) + ']'
                 is_cup = False
@@ -94,30 +94,33 @@ class ConnectionState(object):
         else:
             message += ' connection down'
             return (ProcessState.NON_FUNCTIONAL, message)
-    #end get_conn_state_cb
+    # end get_conn_state_cb
 
-    @staticmethod     
-    def update(conn_type, name, status, server_addrs = [], message = None):
+    @staticmethod
+    def update(conn_type, name, status, server_addrs=[], message=None):
         conn_key = (conn_type, name)
-        conn_info = ConnectionInfo(type = ConnectionTypeNames[conn_type],
-                                   name = name,
-                                   status = ConnectionStatusNames[status],
-                                   description = message,
-                                   server_addrs = server_addrs)
+        conn_info = ConnectionInfo(type=ConnectionTypeNames[conn_type],
+                                   name=name,
+                                   status=ConnectionStatusNames[status],
+                                   description=message,
+                                   server_addrs=server_addrs)
         if conn_key in ConnectionState._connection_map:
-            if ConnectionStatusNames[status] == ConnectionState._connection_map[conn_key].status and \
-                    server_addrs == ConnectionState._connection_map[conn_key].server_addrs and \
-                    message == ConnectionState._connection_map[conn_key].description:
+            if ConnectionStatusNames[status] == \
+               ConnectionState._connection_map[conn_key].status and \
+               server_addrs == \
+               ConnectionState._connection_map[conn_key].server_addrs and \
+               message == \
+               ConnectionState._connection_map[conn_key].description:
                 return
         ConnectionState._connection_map[conn_key] = conn_info
         ConnectionState._send_uve()
-    #end update
+    # end update
 
     @staticmethod
     def delete(conn_type, name):
         conn_key = (conn_type, name)
         ConnectionState._connection_map.pop(conn_key, 'None')
         ConnectionState._send_uve()
-    #end delete
+    # end delete
 
-#end class ConnectionState
+# end class ConnectionState
