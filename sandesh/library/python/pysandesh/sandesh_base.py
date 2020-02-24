@@ -7,17 +7,19 @@ from __future__ import absolute_import
 # Sandesh
 #
 
-from builtins import str
-from builtins import object
-import importlib
-import os
-import sys
-import pkgutil
-import gevent
-import json
 import base64
-import time
 import copy
+import importlib
+import json
+import os
+import pkgutil
+import sys
+import time
+from builtins import object
+from builtins import str
+
+import gevent
+
 try:
     from collections import OrderedDict
 except ImportError:
@@ -27,26 +29,37 @@ except ImportError:
 from . import sandesh_logger as sand_logger
 from . import trace
 from . import util
-import platform
-
-from .gen_py.sandesh.ttypes import SandeshType, SandeshLevel, \
-     SandeshTxDropReason
-from .gen_py.sandesh.constants import *
+from .gen_py.sandesh.constants import DEFAULT_SANDESH_SEND_RATELIMIT
+from .gen_py.sandesh.constants import SANDESH_CONTROL_HINT
+from .gen_py.sandesh.constants import SANDESH_SYNC_HINT
+from .gen_py.sandesh.ttypes import SandeshLevel, SandeshTxDropReason, \
+    SandeshType
+from .sandesh_client import SandeshClient
 from .sandesh_http import SandeshHttp
 from .sandesh_trace import SandeshTraceRequestRunner
-from .sandesh_client import SandeshClient
-from .sandesh_uve import SandeshUVETypeMaps, SandeshUVEPerTypeMap
+from .sandesh_uve import SandeshUVEPerTypeMap, SandeshUVETypeMaps
 from .work_queue import WorkQueue
+
 
 class SandeshConfig(object):
 
-    def __init__(self, http_server_ip=None, keyfile=None, certfile=None, ca_cert=None,
-                 sandesh_ssl_enable=False, introspect_ssl_enable=False,
-                 dscp_value=0, disable_object_logs=False,
-                 system_logs_rate_limit=DEFAULT_SANDESH_SEND_RATELIMIT,
-                 stats_collector=None, tcp_keepalive_enable=True,
-                 tcp_keepalive_idle_time=7200, tcp_keepalive_interval=75,
-                 tcp_keepalive_probes=9, introspect_ssl_insecure=False):
+    def __init__(
+            self,
+            http_server_ip=None,
+            keyfile=None,
+            certfile=None,
+            ca_cert=None,
+            sandesh_ssl_enable=False,
+            introspect_ssl_enable=False,
+            dscp_value=0,
+            disable_object_logs=False,
+            system_logs_rate_limit=DEFAULT_SANDESH_SEND_RATELIMIT,
+            stats_collector=None,
+            tcp_keepalive_enable=True,
+            tcp_keepalive_idle_time=7200,
+            tcp_keepalive_interval=75,
+            tcp_keepalive_probes=9,
+            introspect_ssl_insecure=False):
         self.http_server_ip = http_server_ip
         self.keyfile = keyfile
         self.certfile = certfile
@@ -61,7 +74,7 @@ class SandeshConfig(object):
         self.tcp_keepalive_enable = tcp_keepalive_enable
         self.tcp_keepalive_idle_time = tcp_keepalive_idle_time
         self.tcp_keepalive_interval = tcp_keepalive_interval
-        self.tcp_keepalive_probes= tcp_keepalive_probes
+        self.tcp_keepalive_probes = tcp_keepalive_probes
     # end __init__
 
     @staticmethod
@@ -70,11 +83,11 @@ class SandeshConfig(object):
         for section in sections:
             if section == 'SANDESH':
                 sandeshopts.update({
-                    'sandesh_keyfile': \
+                    'sandesh_keyfile':
                         '/etc/contrail/ssl/private/server-privkey.pem',
-                    'sandesh_certfile': \
+                    'sandesh_certfile':
                         '/etc/contrail/ssl/certs/server.pem',
-                    'sandesh_ca_cert': \
+                    'sandesh_ca_cert':
                         '/etc/contrail/ssl/certs/ca-cert.pem',
                     'sandesh_ssl_enable': False,
                     'introspect_ssl_enable': False,
@@ -85,11 +98,11 @@ class SandeshConfig(object):
                     'tcp_keepalive_idle_time': 7200,
                     'tcp_keepalive_interval': 75,
                     'tcp_keepalive_probes': 9,
-                    })
+                })
             if section == 'DEFAULTS':
-                sandeshopts.update({'sandesh_send_rate_limit': \
-                    DEFAULT_SANDESH_SEND_RATELIMIT,
-                    'http_server_ip': '0.0.0.0'})
+                sandeshopts.update({'sandesh_send_rate_limit':
+                                    DEFAULT_SANDESH_SEND_RATELIMIT,
+                                    'http_server_ip': '0.0.0.0'})
             if section == 'STATS':
                 sandeshopts.update({'stats_collector': None})
         return sandeshopts
@@ -98,64 +111,54 @@ class SandeshConfig(object):
     @classmethod
     def from_parser_arguments(cls, parser_args=None):
         default_opts = SandeshConfig.get_default_options(
-                sections=['SANDESH', 'DEFAULTS', 'STATS'])
+            sections=['SANDESH', 'DEFAULTS', 'STATS'])
         sandesh_config = cls(
-            http_server_ip = parser_args.http_server_ip if parser_args and \
-                parser_args.http_server_ip else \
-                default_opts['http_server_ip'],
-            keyfile = parser_args.sandesh_keyfile if parser_args and \
-                parser_args.sandesh_keyfile else \
-                default_opts['sandesh_keyfile'],
-            certfile = parser_args.sandesh_certfile if parser_args and \
-                parser_args.sandesh_certfile else \
-                default_opts['sandesh_certfile'],
-            ca_cert = parser_args.sandesh_ca_cert if parser_args and \
-                parser_args.sandesh_ca_cert else \
-                default_opts['sandesh_ca_cert'],
-            sandesh_ssl_enable = \
-                parser_args.sandesh_ssl_enable if parser_args and \
-                parser_args.sandesh_ssl_enable is not None else \
-                default_opts['sandesh_ssl_enable'],
-            introspect_ssl_enable = \
-                parser_args.introspect_ssl_enable if parser_args and \
-                parser_args.introspect_ssl_enable is not None else \
-                default_opts['introspect_ssl_enable'],
-            introspect_ssl_insecure= \
-                parser_args.introspect_ssl_insecure if parser_args and \
-                parser_args.introspect_ssl_insecure is not None else \
-                default_opts['introspect_ssl_insecure'],
-            dscp_value = parser_args.sandesh_dscp_value if parser_args and \
-                parser_args.sandesh_dscp_value is not None else \
-                default_opts['sandesh_dscp_value'],
-            disable_object_logs =
-                parser_args.disable_object_logs if parser_args and \
-                parser_args.disable_object_logs is not None else \
-                default_opts['disable_object_logs'],
-            system_logs_rate_limit =
-                parser_args.sandesh_send_rate_limit if parser_args and \
-                parser_args.sandesh_send_rate_limit is not None else \
-                default_opts['sandesh_send_rate_limit'],
-            stats_collector =
-                parser_args.stats_collector if parser_args and \
-                hasattr(parser_args, 'stats_collector') and \
-                parser_args.stats_collector is not None else \
-                default_opts['stats_collector'],
-            tcp_keepalive_enable =
-                parser_args.tcp_keepalive_enable if parser_args and \
-                parser_args.tcp_keepalive_enable is not None else \
-                default_opts['tcp_keepalive_enable'],
-            tcp_keepalive_idle_time =
-                parser_args.tcp_keepalive_idle_time if parser_args and \
-                parser_args.tcp_keepalive_idle_time is not None else \
-                default_opts['tcp_keepalive_idle_time'],
-            tcp_keepalive_interval =
-                parser_args.tcp_keepalive_interval if parser_args and \
-                parser_args.tcp_keepalive_interval is not None else \
-                default_opts['tcp_keepalive_interval'],
-            tcp_keepalive_probes =
-                parser_args.tcp_keepalive_probes if parser_args and \
-                parser_args.tcp_keepalive_probes is not None else \
-                default_opts['tcp_keepalive_probes'])
+           http_server_ip=parser_args.http_server_ip if parser_args and
+           parser_args.http_server_ip else
+           default_opts['http_server_ip'],
+           keyfile=parser_args.sandesh_keyfile if parser_args and
+           parser_args.sandesh_keyfile else
+           default_opts['sandesh_keyfile'],
+           certfile=parser_args.sandesh_certfile if parser_args and
+           parser_args.sandesh_certfile else
+           default_opts['sandesh_certfile'],
+           ca_cert=parser_args.sandesh_ca_cert if parser_args and
+           parser_args.sandesh_ca_cert else
+           default_opts['sandesh_ca_cert'],
+           sandesh_ssl_enable=parser_args.sandesh_ssl_enable if
+           parser_args and parser_args.sandesh_ssl_enable is not None else
+           default_opts['sandesh_ssl_enable'],
+           introspect_ssl_enable=parser_args.introspect_ssl_enable if
+           parser_args and parser_args.introspect_ssl_enable is not None else
+           default_opts['introspect_ssl_enable'],
+           introspect_ssl_insecure=parser_args.introspect_ssl_insecure if
+           parser_args and parser_args.introspect_ssl_insecure is not None else
+           default_opts['introspect_ssl_insecure'],
+           dscp_value=parser_args.sandesh_dscp_value if parser_args and
+           parser_args.sandesh_dscp_value is not None else
+           default_opts['sandesh_dscp_value'],
+           disable_object_logs=parser_args.disable_object_logs if
+           parser_args and parser_args.disable_object_logs is not None else
+           default_opts['disable_object_logs'],
+           system_logs_rate_limit=parser_args.sandesh_send_rate_limit if
+           parser_args and parser_args.sandesh_send_rate_limit is not None else
+           default_opts['sandesh_send_rate_limit'],
+           stats_collector=parser_args.stats_collector if parser_args and
+           hasattr(parser_args, 'stats_collector') and
+           parser_args.stats_collector is not None else
+           default_opts['stats_collector'],
+           tcp_keepalive_enable=parser_args.tcp_keepalive_enable if
+           parser_args and parser_args.tcp_keepalive_enable is not None else
+           default_opts['tcp_keepalive_enable'],
+           tcp_keepalive_idle_time=parser_args.tcp_keepalive_idle_time if
+           parser_args and parser_args.tcp_keepalive_idle_time is not None else
+           default_opts['tcp_keepalive_idle_time'],
+           tcp_keepalive_interval=parser_args.tcp_keepalive_interval if
+           parser_args and parser_args.tcp_keepalive_interval is not None else
+           default_opts['tcp_keepalive_interval'],
+           tcp_keepalive_probes=parser_args.tcp_keepalive_probes if
+           parser_args and parser_args.tcp_keepalive_probes is not None else
+           default_opts['tcp_keepalive_probes'])
 
         return sandesh_config
     # end get_sandesh_config
@@ -163,34 +166,36 @@ class SandeshConfig(object):
     @staticmethod
     def add_parser_arguments(parser, add_dscp=False):
         parser.add_argument("--sandesh_keyfile",
-            help="Sandesh SSL private key")
+                            help="Sandesh SSL private key")
         parser.add_argument("--sandesh_certfile",
-            help="Sandesh SSL certificate")
+                            help="Sandesh SSL certificate")
         parser.add_argument("--sandesh_ca_cert",
-            help="Sandesh CA SSL certificate")
+                            help="Sandesh CA SSL certificate")
         parser.add_argument("--sandesh_ssl_enable", action="store_true",
-            help="Enable SSL for sandesh connection")
+                            help="Enable SSL for sandesh connection")
         parser.add_argument("--introspect_ssl_enable", action="store_true",
-            help="Enable SSL for introspect connection")
+                            help="Enable SSL for introspect connection")
         parser.add_argument("--introspect_ssl_insecure", action="store_true",
-            help="Enable insecure SSL for introspect connection")
+                            help="Enable insecure SSL introspect connection")
         if add_dscp:
             parser.add_argument("--sandesh_dscp_value", type=int,
-                help="DSCP bits for IP header of Sandesh messages")
+                                help="IP DSCP bits of Sandesh messages")
         parser.add_argument("--disable_object_logs", action="store_true",
-            help="Disable sending of object logs to the oollector")
-        parser.add_argument("--sandesh_send_rate_limit", type=int,
-            help="System logs send rate limit in messages per second per message type")
+                            help="Disable sending object logs to collector")
+        parser.add_argument(
+            "--sandesh_send_rate_limit",
+            type=int,
+            help="System logs send rate limit in messages/second/message type")
         parser.add_argument("--stats_collector",
-            help="External Stats Collector")
+                            help="External Stats Collector")
         parser.add_argument("--tcp_keepalive_enable", action="store_true",
-            help="Enable keepalive for tcp connection")
+                            help="Enable keepalive for tcp connection")
         parser.add_argument("--tcp_keepalive_idle_time", type=int,
-            help="set the keepalive timer in seconds")
+                            help="set the keepalive timer in seconds")
         parser.add_argument("--tcp_keepalive_interval", type=int,
-            help="specify the tcp keepalive interval time")
+                            help="specify the tcp keepalive interval time")
         parser.add_argument("--tcp_keepalive_probes", type=int,
-            help="specify the tcp keepalive probes")
+                            help="specify the tcp keepalive probes")
     # end add_parser_arguments
 
     @staticmethod
@@ -213,30 +218,31 @@ class SandeshConfig(object):
                 try:
                     sandeshopts['sandesh_dscp_value'] = config.getint(
                         'SANDESH', 'sandesh_dscp_value')
-                except:
+                except BaseException:
                     pass
 
             if 'tcp_keepalive_enable' in config.options('SANDESH'):
                 sandeshopts['tcp_keepalive_enable'] = config.getboolean(
-                      'SANDESH', 'tcp_keepalive_enable')
+                    'SANDESH', 'tcp_keepalive_enable')
             if 'tcp_keepalive_idle_time' in config.options('SANDESH'):
                 sandeshopts['tcp_keepalive_idle_time'] = config.getint(
-                      'SANDESH', 'tcp_keepalive_idle_time')
+                    'SANDESH', 'tcp_keepalive_idle_time')
             if 'tcp_keepalive_interval' in config.options('SANDESH'):
                 sandeshopts['tcp_keepalive_interval'] = config.getint(
-                      'SANDESH', 'tcp_keepalive_interval')
+                    'SANDESH', 'tcp_keepalive_interval')
             if 'tcp_keepalive_probes' in config.options('SANDESH'):
                 sandeshopts['tcp_keepalive_probes'] = config.getint(
-                      'SANDESH', 'tcp_keepalive_probes')
+                    'SANDESH', 'tcp_keepalive_probes')
 
         if 'STATS' in config.sections():
             sandeshopts.update(dict(config.items('STATS')))
             if 'stats_collector' in config.options('STATS'):
                 sandeshopts['stats_collector'] = config.get('STATS',
-                    'stats_collector')
+                                                            'stats_collector')
     # end update_options
 
 # end class SandeshConfig
+
 
 class Sandesh(object):
     _DEFAULT_LOG_FILE = sand_logger.SandeshLogger._DEFAULT_LOG_FILE
@@ -325,7 +331,7 @@ class Sandesh(object):
 
     def run_introspect_server(self, http_port):
         self._logger.info('SANDESH: INTROSPECT IS ON: %s:%s',
-                    self._config.http_server_ip, http_port)
+                          self._config.http_server_ip, http_port)
         self._http_server = SandeshHttp(
             self, self._module, http_port,
             self._sandesh_req_uve_pkg_list, self._config,
@@ -430,8 +436,10 @@ class Sandesh(object):
 
     def disable_sending_object_logs(self, disable):
         if self._disable_sending_object_logs != disable:
-            self._logger.info("SANDESH: Disable Sending Object "
-                "Logs: %s -> %s", self._disable_sending_object_logs,
+            self._logger.info(
+                "SANDESH: Disable Sending Object "
+                "Logs: %s -> %s",
+                self._disable_sending_object_logs,
                 disable)
             self._disable_sending_object_logs = disable
     # end disable_sending_object_logs
@@ -442,7 +450,8 @@ class Sandesh(object):
 
     def disable_sending_all_messages(self, disable):
         if self._disable_sending_all_messages != disable:
-            self._logger.info("SANDESH: Disable Sending ALL Messages: "
+            self._logger.info(
+                "SANDESH: Disable Sending ALL Messages: "
                 "%s -> %s", self._disable_sending_all_messages, disable)
             self._disable_sending_all_messagess = disable
     # end disable_sending_all_messages
@@ -459,10 +468,10 @@ class Sandesh(object):
     # end set_send_queue
 
     def send_level(self):
-       session = self._get_client_session()
-       if session:
-           return session.send_level()
-       return SandeshLevel.INVALID
+        session = self._get_client_session()
+        if session:
+            return session.send_level()
+        return SandeshLevel.INVALID
     # end send_level
 
     def init_collector(self):
@@ -646,19 +655,20 @@ class Sandesh(object):
                 self.drop_tx_sandesh(tx_sandesh, SandeshTxDropReason.NoClient)
             else:
                 self.drop_tx_sandesh(tx_sandesh, SandeshTxDropReason.NoClient,
-                    tx_sandesh.level())
+                                     tx_sandesh.level())
     # end send_sandesh
 
     def drop_tx_sandesh(self, tx_sandesh, drop_reason, level=None):
         self._msg_stats.update_tx_stats(tx_sandesh.__class__.__name__,
-            sys.getsizeof(tx_sandesh), drop_reason)
+                                        sys.getsizeof(tx_sandesh), drop_reason)
         if self.is_logging_dropped_allowed(tx_sandesh):
             if level is not None:
                 self._logger.log(
                     sand_logger.SandeshLogger.get_py_logger_level(level),
                     tx_sandesh.log())
             else:
-                self._logger.error('SANDESH: [DROP: %s] %s' % \
+                self._logger.error(
+                    'SANDESH: [DROP: %s] %s' %
                     (SandeshTxDropReason._VALUES_TO_NAMES[drop_reason],
                      tx_sandesh.log()))
     # end drop_tx_sandesh
@@ -673,8 +683,9 @@ class Sandesh(object):
             client_start_time = self._start_time
         except Exception:
             self._start_time = util.UTCTimestampUsec()
+            client_start_time = self._start_time
         finally:
-            client_info.start_time = self._start_time
+            client_info.start_time = client_start_time
             client_info.pid = os.getpid()
             if self._http_server is not None:
                 client_info.http_port = self._http_server.get_port()
@@ -686,15 +697,19 @@ class Sandesh(object):
             client_info.status = self._client.connection().state()
             client_info.successful_connections = (
                 self._client.connection().statemachine().connect_count())
-            module_state = ModuleClientState(name=self._source + ':' +
-                                             self._node_type + ':' +
-                                             self._module + ':' +
-                                             self._instance_id,
-                                             client_info=client_info,
-                                             sm_queue_count=self._client.\
-                connection().statemachine()._event_queue.size(),
-                                             max_sm_queue_count=self._client.\
-                connection().statemachine()._event_queue.max_qlen())
+            module_state = ModuleClientState(
+                name=self._source +
+                ':' +
+                self._node_type +
+                ':' +
+                self._module +
+                ':' +
+                self._instance_id,
+                client_info=client_info,
+                sm_queue_count=self._client. connection().statemachine().
+                _event_queue.size(),
+                max_sm_queue_count=self._client. connection().statemachine().
+                _event_queue.max_qlen())
             generator_info = SandeshModuleClientTrace(
                 data=module_state, sandesh=self)
             generator_info.send(sandesh=self)
@@ -867,7 +882,7 @@ class Sandesh(object):
             # Register sandesh UVEs
             for uve_type, uve_data_type in sandesh_uve_list:
                 SandeshUVEPerTypeMap(self, SandeshType.UVE,
-                    uve_type, uve_data_type)
+                                     uve_type, uve_data_type)
     # end _add_sandesh_uve
 
     def _get_sandesh_alarm_list(self, imp_module):
@@ -894,7 +909,7 @@ class Sandesh(object):
             # Register sandesh Alarms
             for alarm_type, alarm_data_type in sandesh_alarm_list:
                 SandeshUVEPerTypeMap(self, SandeshType.ALARM, alarm_type,
-                    alarm_data_type)
+                                     alarm_data_type)
     # end _add_sandesh_alarm
 
     def _init_logger(self, module, logger_class=None,
@@ -914,8 +929,8 @@ class Sandesh(object):
 
 # end class Sandesh
 
-sandesh_global = Sandesh()
 
+sandesh_global = Sandesh()
 
 
 class SandeshAsync(Sandesh):
@@ -927,32 +942,32 @@ class SandeshAsync(Sandesh):
     def send(self, sandesh=sandesh_global):
         try:
             self.validate()
-        except e:
+        except Exception:
             sandesh.drop_tx_sandesh(self, SandeshTxDropReason.ValidationFailed)
             return -1
         if self.handle_test(sandesh):
             return 0
         # Check if sending is disabled
         if sandesh.is_sending_all_messages_disabled():
-            sandesh.drop_tx_sandesh(self,
-                SandeshTxDropReason.SendingDisabled, self.level())
+            sandesh.drop_tx_sandesh(
+                self, SandeshTxDropReason.SendingDisabled, self.level())
             return -1
         # For objectlog message, check if sending message is disabled
         if self._type == SandeshType.OBJECT and \
                 sandesh.is_sending_object_logs_disabled():
-            sandesh.drop_tx_sandesh(self,
-                SandeshTxDropReason.SendingDisabled, self.level())
+            sandesh.drop_tx_sandesh(
+                self, SandeshTxDropReason.SendingDisabled, self.level())
             return -1
         # For systemlog message, first check if sending message is disabled,
         # then check rate limit
         if self._type == SandeshType.SYSTEM:
             if SandeshSystem.get_sandesh_send_rate_limit() == 0:
-                sandesh.drop_tx_sandesh(self,
-                    SandeshTxDropReason.SendingDisabled, self.level())
+                sandesh.drop_tx_sandesh(
+                    self, SandeshTxDropReason.SendingDisabled, self.level())
                 return -1
             if (not self.is_rate_limit_pass(sandesh)):
                 sandesh.drop_tx_sandesh(self,
-                    SandeshTxDropReason.RatelimitDrop)
+                                        SandeshTxDropReason.RatelimitDrop)
                 return -1
         if self._level >= sandesh.send_level():
             sandesh.drop_tx_sandesh(self, SandeshTxDropReason.QueueLevel)
@@ -961,34 +976,35 @@ class SandeshAsync(Sandesh):
         sandesh.send_sandesh(self)
         return 0
 
-    def is_rate_limit_pass(self,sandesh):
-        #Check if buffer resize is reqd
-        if (self.__class__.rate_limit_buffer.maxlen != \
+    def is_rate_limit_pass(self, sandesh):
+        # Check if buffer resize is reqd
+        if (self.__class__.rate_limit_buffer.maxlen !=
                 SandeshSystem.get_sandesh_send_rate_limit()):
             temp_buffer = copy.deepcopy(self.__class__.rate_limit_buffer)
-            self.__class__.rate_limit_buffer = util.deque(temp_buffer, \
-                maxlen=SandeshSystem.get_sandesh_send_rate_limit())
+            self.__class__.rate_limit_buffer = util.deque(
+               temp_buffer, maxlen=SandeshSystem.get_sandesh_send_rate_limit())
             del temp_buffer
-        #If buffer size 0 return
+        # If buffer size 0 return
         if self.__class__.rate_limit_buffer.maxlen == 0:
             return False
-        cur_time=int(time.time())
-        #Check if circular buffer is full
+        cur_time = int(time.time())
+        # Check if circular buffer is full
         if len(self.__class__.rate_limit_buffer) == \
-            self.__class__.rate_limit_buffer.maxlen :
+                self.__class__.rate_limit_buffer.maxlen:
             # Read the element in buffer and compare with cur_time
             if(self.__class__.rate_limit_buffer[0] == cur_time):
-                #Sender generating more messages/sec than the
-                #buffer_threshold size
+                # Sender generating more messages/sec than the
+                # buffer_threshold size
                 if self.__class__.do_rate_limit_drop_log:
-                    sandesh._logger.error('SANDESH: Ratelimit Drop ' \
-                        '(%d messages/sec): for %s' % \
-                        (self.__class__.rate_limit_buffer.maxlen, \
+                    sandesh._logger.error(
+                        'SANDESH: Ratelimit Drop '
+                        '(%d messages/sec): for %s' %
+                        (self.__class__.rate_limit_buffer.maxlen,
                          self.__class__.__name__))
-                    #Disable logging
+                    # Disable logging
                     self.__class__.do_rate_limit_drop_log = False
                 return False
-        #If logging is disabled enable it
+        # If logging is disabled enable it
         self.__class__.do_rate_limit_drop_log = True
         self.__class__.rate_limit_buffer.append(cur_time)
         return True
@@ -1061,7 +1077,7 @@ class SandeshRequest(Sandesh):
     def request(self, context='', sandesh=sandesh_global):
         try:
             self.validate()
-        except e:
+        except Exception:
             sandesh.drop_tx_sandesh(self, SandeshTxDropReason.ValidationFailed)
             return -1
         if context == 'ctrl':
@@ -1088,7 +1104,7 @@ class SandeshResponse(Sandesh):
     def response(self, context='', more=False, sandesh=sandesh_global):
         try:
             self.validate()
-        except e:
+        except Exception:
             sandesh.drop_tx_sandesh(self, SandeshTxDropReason.ValidationFailed)
             return -1
         self._context = context
@@ -1120,7 +1136,7 @@ class SandeshUVE(Sandesh):
              level=SandeshLevel.SYS_NOTICE):
         try:
             self.validate()
-        except e:
+        except Exception:
             sandesh.drop_tx_sandesh(self, SandeshTxDropReason.ValidationFailed)
             return -1
         if self._type == SandeshType.UVE and \
@@ -1133,16 +1149,18 @@ class SandeshUVE(Sandesh):
             uve_type_map = sandesh._uve_type_maps.get_uve_type_map(
                 self.__class__.__name__)
             if uve_type_map is None:
-                sandesh._logger.error('sandesh uve <%s> not registered %s'\
-                    % (self.__class__.__name__, str(sandesh._uve_type_maps._uve_global_map)))
+                sandesh._logger.error(
+                    'sandesh uve <%s> not registered %s' %
+                    (self.__class__.__name__, str(
+                        sandesh._uve_type_maps._uve_global_map)))
                 sandesh.drop_tx_sandesh(self,
-                    SandeshTxDropReason.ValidationFailed)
+                                        SandeshTxDropReason.ValidationFailed)
                 return -1
             self._seqnum = self.next_seqnum()
             if not uve_type_map.update_uve(self):
                 sandesh._logger.error('Failed to update sandesh in cache')
                 sandesh.drop_tx_sandesh(self,
-                    SandeshTxDropReason.ValidationFailed)
+                                        SandeshTxDropReason.ValidationFailed)
                 return -1
         self._context = context
         self._more = more
@@ -1154,8 +1172,8 @@ class SandeshUVE(Sandesh):
                 return 0
             if sandesh._client:
                 if sandesh.is_sending_all_messages_disabled():
-                    sandesh.drop_tx_sandesh(self,
-                        SandeshTxDropReason.SendingDisabled, self.level())
+                    sandesh.drop_tx_sandesh(
+                       self, SandeshTxDropReason.SendingDisabled, self.level())
                     return -1
                 # SandeshUVE has an implicit send level of SandeshLevel.SYS_UVE
                 # which is irrespective of the level set by the user in the
@@ -1208,10 +1226,12 @@ class SandeshAlarm(SandeshUVE):
                     token = {'host_ip': sandesh.host_ip(),
                              'http_port': sandesh._http_server.get_port(),
                              'timestamp': alarm.timestamp}
-                    alarm.token = base64.b64encode(json.dumps(token).encode('utf-8')).decode('utf-8')
+                    alarm.token = base64.b64encode(
+                        json.dumps(token).encode('utf-8')).decode('utf-8')
         except Exception as e:
-            sandesh._logger.error('Failed to encode token for sandesh alarm: %s'
-                                  % (str(e)))
+            sandesh._logger.error(
+                'Failed to encode token for sandesh alarm: %s' %
+                (str(e)))
             sandesh.drop_tx_sandesh(self, SandeshTxDropReason.ValidationFailed)
             return -1
         else:
@@ -1235,7 +1255,7 @@ class SandeshTrace(Sandesh):
                    sandesh=sandesh_global):
         try:
             self.validate()
-        except e:
+        except Exception:
             sandesh.drop_tx_sandesh(self, SandeshTxDropReason.ValidationFailed)
             return -1
         self._context = context
