@@ -6,10 +6,11 @@
 # Work Queue
 #
 
-from builtins import object
-import gevent
-from gevent.queue import Queue, Empty
 import bisect
+from builtins import object
+
+import gevent
+from gevent.queue import Empty, Queue
 
 
 class Runner(object):

@@ -6,12 +6,13 @@
 # sandesh_stats.py
 #
 
-from builtins import str
 from builtins import object
-from pysandesh.sandesh_base import Sandesh
+from builtins import str
+
+from pysandesh.gen_py.sandesh.ttypes import SandeshRxDropReason, \
+    SandeshTxDropReason
 from pysandesh.gen_py.sandesh_uve.ttypes import SandeshMessageStats
-from pysandesh.gen_py.sandesh.ttypes import SandeshTxDropReason, \
-    SandeshRxDropReason
+
 
 class SandeshMessageStatistics(object):
 
@@ -138,14 +139,16 @@ class SandeshMessageStatistics(object):
             elif drop_reason is SandeshTxDropReason.SessionNotConnected:
                 if msg_stats.messages_sent_dropped_session_not_connected:
                     msg_stats.messages_sent_dropped_session_not_connected += 1
-                    msg_stats.bytes_sent_dropped_session_not_connected += nbytes
+                    msg_stats.bytes_sent_dropped_session_not_connected += \
+                        nbytes
                 else:
                     msg_stats.messages_sent_dropped_session_not_connected = 1
                     msg_stats.bytes_sent_dropped_session_not_connected = nbytes
             elif drop_reason is SandeshTxDropReason.WrongClientSMState:
                 if msg_stats.messages_sent_dropped_wrong_client_sm_state:
                     msg_stats.messages_sent_dropped_wrong_client_sm_state += 1
-                    msg_stats.bytes_sent_dropped_wrong_client_sm_state += nbytes
+                    msg_stats.bytes_sent_dropped_wrong_client_sm_state += \
+                        nbytes
                 else:
                     msg_stats.messages_sent_dropped_wrong_client_sm_state = 1
                     msg_stats.bytes_sent_dropped_wrong_client_sm_state = nbytes
@@ -158,7 +161,7 @@ class SandeshMessageStatistics(object):
                     msg_stats.bytes_sent_dropped_rate_limited = nbytes
             elif drop_reason is SandeshTxDropReason.SendingDisabled:
                 if msg_stats.messages_sent_dropped_sending_disabled:
-                    msg_stats.messages_sent_dropped_sending_disabled+= 1
+                    msg_stats.messages_sent_dropped_sending_disabled += 1
                     msg_stats.bytes_sent_dropped_sending_disabled += nbytes
                 else:
                     msg_stats.messages_sent_dropped_sending_disabled = 1
@@ -206,10 +209,12 @@ class SandeshMessageStatistics(object):
             elif drop_reason is SandeshRxDropReason.ControlMsgFailed:
                 if msg_stats.messages_received_dropped_control_msg_failed:
                     msg_stats.messages_received_dropped_control_msg_failed += 1
-                    msg_stats.bytes_received_dropped_control_msg_failed += nbytes
+                    msg_stats.bytes_received_dropped_control_msg_failed += \
+                        nbytes
                 else:
                     msg_stats.messages_received_dropped_control_msg_failed = 1
-                    msg_stats.bytes_received_dropped_control_msg_failed = nbytes
+                    msg_stats.bytes_received_dropped_control_msg_failed = \
+                        nbytes
             elif drop_reason is SandeshRxDropReason.CreateFailed:
                 if msg_stats.messages_received_dropped_create_failed:
                     msg_stats.messages_received_dropped_create_failed += 1
