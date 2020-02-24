@@ -9,33 +9,40 @@
 #
 
 from __future__ import division
-from builtins import range
-from past.utils import old_div
-import unittest
-import sys
+
 import socket
+import sys
+import unittest
+from builtins import range
+
 import mock
 
-sys.path.insert(1, sys.path[0]+'/../../../python')
+from past.utils import old_div
 
-from pysandesh.sandesh_base import *
-from pysandesh.sandesh_client import *
-from pysandesh.util import *
-from .gen_py.msg_test.ttypes import *
+from pysandesh.sandesh_base import SandeshLevel, SandeshSystem, sandesh_global
+from pysandesh.sandesh_client import SandeshClient
+from pysandesh.util import UTCTimestampUsec
+
+from .gen_py.msg_test.ttypes import SystemLogTest
+
+sys.path.insert(1, sys.path[0] + '/../../../python')
+
 
 class SandeshClientTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        sandesh_global.init_generator('sandesh_client_test', socket.gethostname(),
-                'Test', 'Test', None, 'sandesh_client_test_ctxt', -1,
-                connect_to_collector=False)
+        sandesh_global.init_generator('sandesh_client_test',
+                                      socket.gethostname(),
+                                      'Test', 'Test', None,
+                                      'sandesh_client_test_ctxt', -1,
+                                      connect_to_collector=False)
     # end setUpClass
 
     def test_sandesh_queue_level_drop(self):
         # Increase rate limit
         SandeshSystem.set_sandesh_send_rate_limit(100)
-        levels = list(range(SandeshLevel.SYS_EMERG,SandeshLevel.SYS_DEBUG))
+        levels = list(range(SandeshLevel.SYS_EMERG, SandeshLevel.SYS_DEBUG))
         queue_level_drop = 0
         mlevels = list(levels)
         mlevels.append(SandeshLevel.SYS_DEBUG)
@@ -46,9 +53,9 @@ class SandeshClientTest(unittest.TestCase):
                 systemlog.send()
                 if sandesh_level >= send_level:
                     queue_level_drop += 1
-                self.assertEqual(queue_level_drop, sandesh_global.\
-                    msg_stats().aggregate_stats().\
-                    messages_sent_dropped_queue_level)
+                self.assertEqual(queue_level_drop, sandesh_global.
+                                 msg_stats().aggregate_stats().
+                                 messages_sent_dropped_queue_level)
     # end test_sandesh_queue_level_drop
 
     def test_close_sm_session(self):
@@ -80,8 +87,8 @@ class SandeshClientTest(unittest.TestCase):
             close_time_usec - (1.5 * last_close_interval_usec),
             last_close_interval_usec)
         self.assertTrue(close)
-        self.assertEqual(old_div((last_close_interval_usec * 2),1000),
-            close_interval_msec)
+        self.assertEqual(old_div((last_close_interval_usec * 2), 1000),
+                         close_interval_msec)
         # Close event time is between 2 * last close interval and 4 * last
         # close interval
         last_close_interval_usec = (initial_close_interval_msec * 3) * 1000
@@ -90,7 +97,11 @@ class SandeshClientTest(unittest.TestCase):
             close_time_usec - (3 * last_close_interval_usec),
             last_close_interval_usec)
         self.assertTrue(close)
-        self.assertEqual(old_div(last_close_interval_usec,1000), close_interval_msec)
+        self.assertEqual(
+            old_div(
+                last_close_interval_usec,
+                1000),
+            close_interval_msec)
         # Close event ime is beyond 4 * last close interval
         last_close_interval_usec = (initial_close_interval_msec * 2) * 1000
         (close, close_interval_msec) = SandeshClient._do_close_sm_session(
@@ -100,18 +111,19 @@ class SandeshClientTest(unittest.TestCase):
         self.assertTrue(close)
         self.assertEqual(initial_close_interval_msec, close_interval_msec)
         # Maximum close interval
-        last_close_interval_usec = \
-            old_div((SandeshClient._MAX_SM_SESSION_CLOSE_INTERVAL_MSEC * 1000),2)
+        last_close_interval_usec = old_div(
+            (SandeshClient._MAX_SM_SESSION_CLOSE_INTERVAL_MSEC * 1000), 2)
         (close, close_interval_msec) = SandeshClient._do_close_sm_session(
             close_time_usec,
             close_time_usec - (1.5 * last_close_interval_usec),
             last_close_interval_usec)
         self.assertTrue(close)
         self.assertEqual(SandeshClient._MAX_SM_SESSION_CLOSE_INTERVAL_MSEC,
-            close_interval_msec)
+                         close_interval_msec)
     # end test_close_sm_session
 
 # end class SandeshClientTest
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2, catchbreak=True)

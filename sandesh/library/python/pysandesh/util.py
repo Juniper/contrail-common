@@ -7,18 +7,20 @@ from __future__ import division
 # util
 #
 
-from builtins import zip
-from builtins import range
-from past.utils import old_div
+import collections
 import datetime
 import sys
 import traceback
-import collections
+from builtins import range
+from builtins import zip
+
+from past.utils import old_div
+
 
 def UTCTimestampUsec():
     epoch = datetime.datetime.utcfromtimestamp(0)
     now = datetime.datetime.utcnow()
-    delta = now-epoch
+    delta = now - epoch
     return (delta.microseconds +
             (delta.seconds + delta.days * 24 * 3600) * 10**6)
 # end UTCTimestampUsec
@@ -26,7 +28,7 @@ def UTCTimestampUsec():
 
 def UTCTimestampUsecToString(utc_usec):
     return datetime.datetime.fromtimestamp(
-        old_div(utc_usec,1000000)).strftime('%Y-%m-%d %H:%M:%S')
+        old_div(utc_usec, 1000000)).strftime('%Y-%m-%d %H:%M:%S')
 # end UTCTimestampUsecToString
 
 
@@ -47,13 +49,14 @@ def import_class(import_str):
                           (class_str,
                            traceback.format_exception(*sys.exc_info())))
 
+
 class deque(collections.deque):
     def __init__(self, iterable=(), maxlen=None):
         super(deque, self).__init__(iterable, maxlen)
         self._maxlen = maxlen
+
     @property
     def maxlen(self):
         return self._maxlen
 
 # end class deque
-

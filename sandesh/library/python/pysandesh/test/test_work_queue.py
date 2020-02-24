@@ -8,15 +8,18 @@
 # work_queue_test
 #
 
-from builtins import range
-from builtins import object
-import gevent
-import unittest
-import mock
 import functools
+import unittest
+from builtins import object
+from builtins import range
 
-from pysandesh.work_queue import WorkQueue, WaterMark
+import gevent
+
+import mock
+
 from pysandesh import util
+from pysandesh.work_queue import WaterMark, WorkQueue
+
 
 class WorkQueueEntry(object):
 
@@ -173,7 +176,7 @@ class WorkQueueTest(unittest.TestCase):
         workq = WorkQueue(self.worker, max_work_load=max_workload)
         self.assertFalse(workq.runner().running())
         num_iterations = 3
-        total_work_items = max_workload*num_iterations
+        total_work_items = max_workload * num_iterations
         self.enqueue_entries(workq, total_work_items)
         self.assertEqual(total_work_items, workq.size())
         self.assertEqual(total_work_items, workq.num_enqueues())
@@ -195,24 +198,42 @@ class WorkQueueTest(unittest.TestCase):
     def test_watermarks(self):
         workq = WorkQueue(self.worker)
 
-        hw1 = WaterMark(5, functools.partial(self.wm_cb_info.callback,
-                                wm_cb_type=WaterMarkCbInfo.cb_type.HWM1))
-        hw2 = WaterMark(11, functools.partial(self.wm_cb_info.callback,
-                                wm_cb_type=WaterMarkCbInfo.cb_type.HWM2))
-        hw3 = WaterMark(17, functools.partial(self.wm_cb_info.callback,
-                                wm_cb_type=WaterMarkCbInfo.cb_type.HWM3))
+        hw1 = WaterMark(
+            5,
+            functools.partial(
+                self.wm_cb_info.callback,
+                wm_cb_type=WaterMarkCbInfo.cb_type.HWM1))
+        hw2 = WaterMark(
+            11,
+            functools.partial(
+                self.wm_cb_info.callback,
+                wm_cb_type=WaterMarkCbInfo.cb_type.HWM2))
+        hw3 = WaterMark(
+            17,
+            functools.partial(
+                self.wm_cb_info.callback,
+                wm_cb_type=WaterMarkCbInfo.cb_type.HWM3))
         # set high watermarks with duplicates and in unsorted order
         workq.set_high_watermarks([hw1, hw3, hw1, hw2])
-        # verify that duplicates are removed and the list is sorted 
+        # verify that duplicates are removed and the list is sorted
         self.assertEqual([hw1, hw2, hw3], workq.high_watermarks())
         self.assertEqual((-1, -1), workq.watermark_indices())
 
-        lw1 = WaterMark(14, functools.partial(self.wm_cb_info.callback,
-                                wm_cb_type=WaterMarkCbInfo.cb_type.LWM1))
-        lw2 = WaterMark(8, functools.partial(self.wm_cb_info.callback,
-                                wm_cb_type=WaterMarkCbInfo.cb_type.LWM2))
-        lw3 = WaterMark(2, functools.partial(self.wm_cb_info.callback,
-                                wm_cb_type=WaterMarkCbInfo.cb_type.LWM3))
+        lw1 = WaterMark(
+            14,
+            functools.partial(
+                self.wm_cb_info.callback,
+                wm_cb_type=WaterMarkCbInfo.cb_type.LWM1))
+        lw2 = WaterMark(
+            8,
+            functools.partial(
+                self.wm_cb_info.callback,
+                wm_cb_type=WaterMarkCbInfo.cb_type.LWM2))
+        lw3 = WaterMark(
+            2,
+            functools.partial(
+                self.wm_cb_info.callback,
+                wm_cb_type=WaterMarkCbInfo.cb_type.LWM3))
         # set low watermarks with duplicates and in unsorted order
         workq.set_low_watermarks([lw2, lw2, lw1, lw3, lw3])
         # verify that duplicates are removed and the list is sorted
@@ -465,9 +486,9 @@ class WorkQueueTest(unittest.TestCase):
         self.assertEqual(4, workq.max_qlen())
         self.dequeue_entries(workq, 4)
         # check max_size for bounded queue
-        b_workq = WorkQueue(self.worker, max_qsize = 4)
-        b_workq.set_bounded(True);
-        self.enqueue_entries(b_workq,5)
+        b_workq = WorkQueue(self.worker, max_qsize=4)
+        b_workq.set_bounded(True)
+        self.enqueue_entries(b_workq, 5)
         self.assertEqual(4, b_workq.max_qlen())
         self.dequeue_entries(workq, 5)
     # end test_queue_params
