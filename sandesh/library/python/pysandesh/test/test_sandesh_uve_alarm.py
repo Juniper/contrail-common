@@ -8,33 +8,46 @@
 # sandesh_uve_alarm_test
 #
 
-from __future__ import print_function
 from __future__ import absolute_import
-from builtins import str
-from builtins import range
-import mock
-import unittest
-import sys
+from __future__ import print_function
+
+import json
 import socket
-import six
+import sys
+import unittest
+from builtins import range
+from builtins import str
 
-sys.path.insert(1, sys.path[0]+'/../../../python')
+import mock
 
-from .test_utils import get_free_port
-from pysandesh.sandesh_base import *
+from pysandesh.gen_py.sandesh.constants import SANDESH_KEY_HINT
+from pysandesh.gen_py.sandesh_alarm.ttypes import SandeshType
+from pysandesh.sandesh_base import Sandesh
 from pysandesh.sandesh_client import SandeshClient
 from pysandesh.util import UTCTimestampUsec
-from pysandesh.gen_py.sandesh_alarm.ttypes import *
-from .gen_py.sandesh_alarm_base.ttypes import *
-from .gen_py.uve_alarm_test.ttypes import *
+
+from .gen_py.sandesh_alarm_base.ttypes import AlarmAndList, AlarmCondition, \
+    AlarmConditionMatch, AlarmMatch, AlarmOperand2, AlarmRules, AlarmTrace, \
+    UVEAlarmInfo, UVEAlarms
+from .gen_py.uve_alarm_test.ttypes import Config, ConfigTest, ConfigTestUVE, \
+    ConfigUVE, SandeshUVEData, SandeshUVETest
+from .test_utils import get_free_port
+
+sys.path.insert(1, sys.path[0] + '/../../../python')
+
 
 class SandeshUVEAlarmTest(unittest.TestCase):
 
     def setUp(self):
         self.maxDiff = None
         self.sandesh = Sandesh()
-        self.sandesh.init_generator('sandesh_uve_alarm_test',
-            socket.gethostname(), 'Test', '0', None, '',
+        self.sandesh.init_generator(
+            'sandesh_uve_alarm_test',
+            socket.gethostname(),
+            'Test',
+            '0',
+            None,
+            '',
             get_free_port(),
             connect_to_collector=False)
         # mock the sandesh client object
@@ -76,7 +89,7 @@ class SandeshUVEAlarmTest(unittest.TestCase):
             uve_test = SandeshUVETest(data=uve_data[i], sandesh=self.sandesh)
             uve_test.send(sandesh=self.sandesh)
 
-        expected_data = [{'seqnum': i+1, 'data': uve_data[i]} \
+        expected_data = [{'seqnum': i + 1, 'data': uve_data[i]}
                          for i in range(len(uve_data))]
 
         # send UVE with different key
@@ -91,68 +104,68 @@ class SandeshUVEAlarmTest(unittest.TestCase):
         dynamic_uve_data = [
             # add uve
             {
-                'type' : (ConfigUVE, Config),
-                'table' : 'CollectorInfo',
-                'name' : 'node1',
-                'elements' : {'log_level' : 'SYS_INFO'},
-                'expected_elements' : {'log_level' : 'SYS_INFO'},
-                'seqnum' : 1
+                'type': (ConfigUVE, Config),
+                'table': 'CollectorInfo',
+                'name': 'node1',
+                'elements': {'log_level': 'SYS_INFO'},
+                'expected_elements': {'log_level': 'SYS_INFO'},
+                'seqnum': 1
             },
             # update uve
             {
-                'type' : (ConfigUVE, Config),
-                'table' : 'CollectorInfo',
-                'name' : 'node1',
-                'elements' : {'log_local' : 'True'},
-                'expected_elements' : {'log_local' : 'True'},
-                'seqnum' : 2
+                'type': (ConfigUVE, Config),
+                'table': 'CollectorInfo',
+                'name': 'node1',
+                'elements': {'log_local': 'True'},
+                'expected_elements': {'log_local': 'True'},
+                'seqnum': 2
             },
             # add another uve
             {
-                'type' : (ConfigUVE, Config),
-                'table' : 'ControlInfo',
-                'name' : 'node1',
-                'elements' : {'log_category' : 'Redis'},
-                'expected_elements' : {'log_category' : 'Redis'},
-                'seqnum' : 3
+                'type': (ConfigUVE, Config),
+                'table': 'ControlInfo',
+                'name': 'node1',
+                'elements': {'log_category': 'Redis'},
+                'expected_elements': {'log_category': 'Redis'},
+                'seqnum': 3
             },
             # delete uve
             {
-                'type' : (ConfigUVE, Config),
-                'table' : 'ControlInfo',
-                'name' : 'node1',
-                'deleted' : True,
-                'seqnum' : 4
+                'type': (ConfigUVE, Config),
+                'table': 'ControlInfo',
+                'name': 'node1',
+                'deleted': True,
+                'seqnum': 4
             },
             # add deleted uve
             {
-                'type' : (ConfigUVE, Config),
-                'table' : 'ControlInfo',
-                'name' : 'node1',
-                'elements' : {'log_level' : 'SYS_DEBUG',
-                              'log_file' : '/var/log/control.log'},
-                'expected_elements' : {'log_level' : 'SYS_DEBUG',
-                                       'log_file' : '/var/log/control.log'},
-                'seqnum' : 5
+                'type': (ConfigUVE, Config),
+                'table': 'ControlInfo',
+                'name': 'node1',
+                'elements': {'log_level': 'SYS_DEBUG',
+                             'log_file': '/var/log/control.log'},
+                'expected_elements': {'log_level': 'SYS_DEBUG',
+                                      'log_file': '/var/log/control.log'},
+                'seqnum': 5
             },
             #  add another uve - different type
             {
-                'type' : (ConfigTestUVE, ConfigTest),
-                'table' : 'CollectorInfo',
-                'name' : 'node2',
-                'elements' : {'param1' : 'val1', 'param2' : 'val2'},
-                'expected_elements' : {'param1' : 'val1', 'param2' : 'val2'},
-                'seqnum' : 1
+                'type': (ConfigTestUVE, ConfigTest),
+                'table': 'CollectorInfo',
+                'name': 'node2',
+                'elements': {'param1': 'val1', 'param2': 'val2'},
+                'expected_elements': {'param1': 'val1', 'param2': 'val2'},
+                'seqnum': 1
             },
             # delete uve, set elements to []
             {
-                'type' : (ConfigTestUVE, ConfigTest),
-                'table' : 'CollectorInfo',
-                'name' : 'node2',
-                'deleted' : True,
-                'elements' : {},
-                'expected_elements' : {},
-                'seqnum' : 2
+                'type': (ConfigTestUVE, ConfigTest),
+                'table': 'CollectorInfo',
+                'name': 'node2',
+                'deleted': True,
+                'elements': {},
+                'expected_elements': {},
+                'seqnum': 2
             },
         ]
 
@@ -167,7 +180,7 @@ class SandeshUVEAlarmTest(unittest.TestCase):
             elts_exp = uve.get('expected_elements')
             if elts_exp is not None:
                 uve_data = uve_data_type(name=uve['name'], elements=elts_exp,
-                        deleted=uve.get('deleted'))
+                                         deleted=uve.get('deleted'))
                 uve_data._table = uve['table']
             print(uve_data.__dict__)
             expected_data.extend([{'seqnum': uve['seqnum'], 'data': uve_data}])
@@ -179,9 +192,9 @@ class SandeshUVEAlarmTest(unittest.TestCase):
                          'args_list: %s' % str(args_list))
         for i in range(len(expected_data)):
             self.verify_uve_alarm_sandesh(args_list[i][0][0],
-                seqnum=expected_data[i]['seqnum'],
-                sandesh_type=SandeshType.UVE,
-                data=expected_data[i]['data'])
+                                          seqnum=expected_data[i]['seqnum'],
+                                          sandesh_type=SandeshType.UVE,
+                                          data=expected_data[i]['data'])
 
         # sync UVEs
         expected_data = []
@@ -193,7 +206,7 @@ class SandeshUVEAlarmTest(unittest.TestCase):
             {'data': SandeshUVEData(name='uve2'), 'table': 'OpserverInfo',
              'seqnum': 5},
             {'data': SandeshUVEData(name='uve1', xyz=345),
-             'table':'OpserverInfo', 'seqnum': 2}
+             'table': 'OpserverInfo', 'seqnum': 2}
         ]
         for uve_data in sync_uve_data:
             uve_data['data']._table = uve_data['table']
@@ -201,27 +214,27 @@ class SandeshUVEAlarmTest(unittest.TestCase):
                                    'data': uve_data['data']}])
         sync_dynamic_uve_data = [
             {
-                'type' : (ConfigTestUVE, ConfigTest),
-                'table' : 'CollectorInfo',
-                'name' : 'node2',
-                'deleted' : True,
-                'elements' : {},
-                'seqnum' : 2
+                'type': (ConfigTestUVE, ConfigTest),
+                'table': 'CollectorInfo',
+                'name': 'node2',
+                'deleted': True,
+                'elements': {},
+                'seqnum': 2
             },
             {
-                'type' : (ConfigUVE, Config),
-                'table' : 'ControlInfo',
-                'name' : 'node1',
-                'elements' : {'log_level' : 'SYS_DEBUG',
-                              'log_file' : '/var/log/control.log'},
-                'seqnum' : 5
+                'type': (ConfigUVE, Config),
+                'table': 'ControlInfo',
+                'name': 'node1',
+                'elements': {'log_level': 'SYS_DEBUG',
+                             'log_file': '/var/log/control.log'},
+                'seqnum': 5
             },
             {
-                'type' : (ConfigUVE, Config),
-                'table' : 'CollectorInfo',
-                'name' : 'node1',
-                'elements' : {'log_local' : 'True'},
-                'seqnum' : 2
+                'type': (ConfigUVE, Config),
+                'table': 'CollectorInfo',
+                'name': 'node1',
+                'elements': {'log_local': 'True'},
+                'seqnum': 2
             }
         ]
         for uve in sync_dynamic_uve_data:
@@ -233,7 +246,8 @@ class SandeshUVEAlarmTest(unittest.TestCase):
             expected_data.extend([{'seqnum': uve['seqnum'], 'data': uve_data}])
 
         # verify the result
-        args_list = self.sandesh._client.send_uve_sandesh.call_args_list[args_len:]
+        args_list = self.sandesh._client.send_uve_sandesh.\
+            call_args_list[args_len:]
         args_sandesh_list = [args[0][0] for args in args_list]
         args_dlist = [{'source': sandesh._source,
                        'node_type': sandesh._node_type,
@@ -270,9 +284,11 @@ class SandeshUVEAlarmTest(unittest.TestCase):
     def _create_uve_alarm_info(self):
         uve_alarm_info = UVEAlarmInfo()
         uve_alarm_info.type = 'ProcessStatus'
-        condition = AlarmCondition(operation='==',
+        condition = AlarmCondition(
+            operation='==',
             operand1='NodeStatus.process_info.process_state',
-            operand2=AlarmOperand2(json_value=json.dumps('null')))
+            operand2=AlarmOperand2(
+                json_value=json.dumps('null')))
         match1 = AlarmMatch(json_operand1_value=json.dumps('null'))
         condition_match = AlarmConditionMatch(condition, [match1])
         and_list = AlarmAndList(and_list=[condition_match])
@@ -307,7 +323,7 @@ class SandeshUVEAlarmTest(unittest.TestCase):
              'ObjectVRouterInfo'),
             # add alarm with deleted flag set
             (UVEAlarms(name='alarm3', alarms=[self._create_uve_alarm_info()],
-                      deleted=True), 'ObjectCollectorInfo'),
+                       deleted=True), 'ObjectCollectorInfo'),
             # add alarm with same key and different table
             (UVEAlarms(name='alarm3', alarms=[self._create_uve_alarm_info()]),
              'ObjectVRouterInfo')
@@ -320,7 +336,7 @@ class SandeshUVEAlarmTest(unittest.TestCase):
                                     sandesh=self.sandesh)
             alarm_test.send(sandesh=self.sandesh)
 
-        expected_data1 = [{'seqnum': i+1, 'data': alarm_data[i][0]} \
+        expected_data1 = [{'seqnum': i + 1, 'data': alarm_data[i][0]}
                           for i in range(len(alarm_data))]
 
         # Sync alarms
@@ -343,16 +359,17 @@ class SandeshUVEAlarmTest(unittest.TestCase):
         # Verify alarm traces for raised/cleared alarms
         for i in range(len(expected_data1)):
             self.verify_uve_alarm_sandesh(args_list[i][0][0],
-                seqnum=expected_data1[i]['seqnum'],
-                sandesh_type=SandeshType.ALARM,
-                data=expected_data1[i]['data'])
+                                          seqnum=expected_data1[i]['seqnum'],
+                                          sandesh_type=SandeshType.ALARM,
+                                          data=expected_data1[i]['data'])
 
         # Verify alarm traces after alarms sync.
         # It is observed that they come in different order for py2 and py3
         for i in range(len(expected_data1), len(expected_data)):
             for j in range(len(expected_data1), len(expected_data)):
                 if expected_data[i]['seqnum'] == args_list[j][0][0]._seqnum:
-                    self.verify_uve_alarm_sandesh(args_list[j][0][0],
+                    self.verify_uve_alarm_sandesh(
+                        args_list[j][0][0],
                         seqnum=expected_data[i]['seqnum'],
                         sandesh_type=SandeshType.ALARM,
                         data=expected_data[i]['data'])

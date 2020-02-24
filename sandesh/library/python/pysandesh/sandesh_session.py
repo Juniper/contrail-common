@@ -7,17 +7,19 @@ from __future__ import absolute_import
 # Sandesh Session
 #
 
-from builtins import str
-from builtins import object
 import socket
 import sys
+from builtins import object
+from builtins import str
 from functools import partial
-from .transport import TTransport
-from .protocol import TXMLProtocol, TJSONProtocol
-from .work_queue import WorkQueue, WaterMark
-from .ssl_session import SslSession
+
+from .gen_py.sandesh.ttypes import SandeshLevel, \
+                                   SandeshTxDropReason, SandeshType
+from .protocol import TJSONProtocol, TXMLProtocol
 from .sandesh_logger import SandeshLogger
-from .gen_py.sandesh.ttypes import SandeshLevel, SandeshType, SandeshTxDropReason
+from .ssl_session import SslSession
+from .transport import TTransport
+from .work_queue import WaterMark, WorkQueue
 
 _XML_SANDESH_OPEN = '<sandesh length="0000000000">'
 _XML_SANDESH_OPEN_ATTR_LEN = '<sandesh length="'
@@ -29,11 +31,11 @@ class StatsClient(object):
 
     def __init__(self, session, stats_collector):
         self._logger = session._logger
-        if not ':' in stats_collector:
+        if ':' not in stats_collector:
             self._stats_server = stats_collector
             self._socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
         else:
-            remote_endpoint = stats_collector.rsplit(':',1)
+            remote_endpoint = stats_collector.rsplit(':', 1)
             if len(remote_endpoint) != 2:
                 self._logger.error('INVALID STATS COLLECTOR CONFIGURATION')
             self._stats_server = (remote_endpoint[0], int(remote_endpoint[1]))
@@ -74,12 +76,13 @@ class StatsClient(object):
             if not self._is_connected:
                 return
         try:
-            ret = self._socket.sendall(buf)
+            self._socket.sendall(buf)
         except Exception as e:
             self._is_connected = False
             self._logger.error('Error Sending data to external collector: ' +
                                str(e))
         return
+
 
 class SandeshReader(object):
 
@@ -229,14 +232,14 @@ class SandeshWriter(object):
         # write the sandesh header
         if sandesh_hdr.write(protocol) < 0:
             if sandesh_instance is not None:
-                sandesh_instance.drop_tx_sandesh(sandesh,
-                    SandeshTxDropReason.HeaderWriteFailed)
+                sandesh_instance.drop_tx_sandesh(
+                    sandesh, SandeshTxDropReason.HeaderWriteFailed)
             return None
         # write the sandesh
         if sandesh.write(protocol) < 0:
             if sandesh_instance is not None:
-                sandesh_instance.drop_tx_sandesh(sandesh,
-                    SandeshTxDropReason.WriteFailed)
+                sandesh_instance.drop_tx_sandesh(
+                    sandesh, SandeshTxDropReason.WriteFailed)
             return None
         # get the message
         msg = transport.getvalue()
@@ -296,14 +299,14 @@ class SandeshSendQueue(WorkQueue):
 
     _SENDQ_WATERMARKS = [
         # (size, sandesh_level, is_high_watermark)
-        (50*1024*1024, SandeshLevel.SYS_UVE,True),
-        (30*1024*1024, SandeshLevel.SYS_EMERG, True),
-        (20*1024*1024, SandeshLevel.SYS_ERR, True),
-        (1*1024*1024, SandeshLevel.SYS_DEBUG, True),
-        (35*1024*1024, SandeshLevel.SYS_EMERG, False),
-        (25*1024*1024, SandeshLevel.SYS_ERR, False),
-        (15*1024*1024, SandeshLevel.SYS_DEBUG, False),
-        (2*1024, SandeshLevel.INVALID, False)]
+        (50 * 1024 * 1024, SandeshLevel.SYS_UVE, True),
+        (30 * 1024 * 1024, SandeshLevel.SYS_EMERG, True),
+        (20 * 1024 * 1024, SandeshLevel.SYS_ERR, True),
+        (1 * 1024 * 1024, SandeshLevel.SYS_DEBUG, True),
+        (35 * 1024 * 1024, SandeshLevel.SYS_EMERG, False),
+        (25 * 1024 * 1024, SandeshLevel.SYS_ERR, False),
+        (15 * 1024 * 1024, SandeshLevel.SYS_DEBUG, False),
+        (2 * 1024, SandeshLevel.INVALID, False)]
 
     class Element(object):
         def __init__(self, sandesh):
@@ -328,14 +331,19 @@ class SandeshSession(SslSession):
     _KEEPALIVE_INTERVAL = 3  # in secs
     _KEEPALIVE_PROBES = 5
     _TCP_USER_TIMEOUT_OPT = 18
-    _TCP_USER_TIMEOUT_VAL = 30000 # ms
+    _TCP_USER_TIMEOUT_VAL = 30000  # ms
 
     def __init__(self, sandesh_instance, server, event_handler,
                  sandesh_msg_handler):
         sandesh_config = sandesh_instance.config()
-        super(SandeshSession, self).__init__(server,
-            sandesh_config.sandesh_ssl_enable, sandesh_config.keyfile,
-            sandesh_config.certfile, sandesh_config.ca_cert)
+        super(
+            SandeshSession,
+            self).__init__(
+            server,
+            sandesh_config.sandesh_ssl_enable,
+            sandesh_config.keyfile,
+            sandesh_config.certfile,
+            sandesh_config.ca_cert)
         self._dscp_value = sandesh_config.dscp_value
         self._sandesh_instance = sandesh_instance
         self._logger = sandesh_instance._logger
@@ -351,7 +359,7 @@ class SandeshSession(SslSession):
 
     def _set_send_level(self, count, sandesh_level):
         if self._send_level != sandesh_level:
-            self._logger.info('Sandesh Send Level [%s] -> [%s]' % \
+            self._logger.info('Sandesh Send Level [%s] -> [%s]' %
                               (SandeshLevel._VALUES_TO_NAMES[self._send_level],
                                SandeshLevel._VALUES_TO_NAMES[sandesh_level]))
             self._send_level = sandesh_level
@@ -372,10 +380,10 @@ class SandeshSession(SslSession):
         for wm in watermarks:
             if wm[2] is True:
                 high_wm.append(WaterMark(wm[0], partial(wm_callback,
-                                    sandesh_level=wm[1])))
+                                                        sandesh_level=wm[1])))
             else:
                 low_wm.append(WaterMark(wm[0], partial(wm_callback,
-                                    sandesh_level=wm[1])))
+                                                       sandesh_level=wm[1])))
         self._send_queue.set_high_watermarks(high_wm)
         self._send_queue.set_low_watermarks(low_wm)
     # end set_send_queue_watermarks
@@ -407,8 +415,9 @@ class SandeshSession(SslSession):
         dscp = 0
         try:
             dscp = self._socket.getsockopt(socket.IPPROTO_IP, socket.IP_TOS)
-        except :
-            self._logger.error('Error fetching DSCP value from Sandesh session')
+        except BaseException:
+            self._logger.error(
+                'Error fetching DSCP value from Sandesh session')
         return dscp
     # end dscp_value
 
@@ -443,20 +452,23 @@ class SandeshSession(SslSession):
                 socket.IPPROTO_TCP, socket.TCP_KEEPINTVL,
                 self._KEEPALIVE_INTERVAL)
         if hasattr(socket, 'IP_TOS') and (self._dscp_value != 0):
-            #The 'value' argument is expected to have DSCP value between 0 and
-            #63 ie., in the lower order 6 bits of a byte. However, setsockopt
-            #expects DSCP value in upper 6 bits of a byte. Hence left shift the
-            #value by 2 digits before passing it to setsockopt
+            # The 'value' argument is expected to have DSCP value between 0 and
+            # 63 ie., in the lower order 6 bits of a byte. However, setsockopt
+            # expects DSCP value in upper 6 bits of a byte. Hence left shift
+            # value by 2 digits before passing it to setsockopt
             value = self._dscp_value << 2
             self._socket.setsockopt(socket.IPPROTO_IP, socket.IP_TOS, value)
         if hasattr(socket, 'TCP_KEEPCNT'):
             self._socket.setsockopt(
                 socket.IPPROTO_TCP, socket.TCP_KEEPCNT, self._KEEPALIVE_PROBES)
         try:
-            self._socket.setsockopt(socket.IPPROTO_TCP,
-                self._TCP_USER_TIMEOUT_OPT, self._TCP_USER_TIMEOUT_VAL)
-        except:
-            self._logger.error('setsockopt failed: option %d, value %d' %
+            self._socket.setsockopt(
+                socket.IPPROTO_TCP,
+                self._TCP_USER_TIMEOUT_OPT,
+                self._TCP_USER_TIMEOUT_VAL)
+        except BaseException:
+            self._logger.error(
+                'setsockopt failed: option %d, value %d' %
                 (self._TCP_USER_TIMEOUT_OPT, self._TCP_USER_TIMEOUT_VAL))
     # end _set_socket_options
 
@@ -472,15 +484,15 @@ class SandeshSession(SslSession):
             if self._sandesh_instance.is_logging_dropped_allowed(sandesh):
                 self._logger.error(
                     "SANDESH: %s: %s" % ("Not connected", sandesh.log()))
-            self._sandesh_instance.drop_tx_sandesh(sandesh,
-                SandeshTxDropReason.SessionNotConnected)
+            self._sandesh_instance.drop_tx_sandesh(
+                sandesh, SandeshTxDropReason.SessionNotConnected)
             return
         if sandesh.is_logging_allowed(self._sandesh_instance):
             self._logger.log(
                 SandeshLogger.get_py_logger_level(sandesh.level()),
                 sandesh.log())
         self._writer.send_msg(sandesh, more)
-        if self._stats_client and  sandesh.type() == SandeshType.UVE:
+        if self._stats_client and sandesh.type() == SandeshType.UVE:
             self._stats_client.send_msg(sandesh)
     # end _send_sandesh
 

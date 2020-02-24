@@ -7,7 +7,9 @@
 #
 
 from builtins import object
+
 from gevent import socket
+
 
 class TcpSession(object):
 
@@ -22,7 +24,7 @@ class TcpSession(object):
         self._server = server
         self._socket = None
         self._connected = False
-    #end __init__
+    # end __init__
 
     # Public functions
 
@@ -30,7 +32,7 @@ class TcpSession(object):
         if not self._connected:
             try:
                 self._socket = socket.create_connection(self._server, timeout)
-            except socket.error as err_msg:
+            except socket.error:
                 self._socket = None
                 self._handle_event(self.SESSION_ERROR)
                 return -1
@@ -41,14 +43,14 @@ class TcpSession(object):
                 self._handle_event(self.SESSION_ESTABLISHED)
                 return 0
         return 0
-    #end connect
+    # end connect
 
     def close(self):
         if self._connected:
             self._socket.close()
             self._connected = False
             self._handle_event(self.SESSION_CLOSE)
-    #end close
+    # end close
 
     def read(self):
         while self._connected:
@@ -59,35 +61,35 @@ class TcpSession(object):
                 else:
                     self.close()
                     break
-            except socket.error as err_msg:
+            except socket.error:
                 self.close()
                 break
-    #end read
+    # end read
 
     def write(self, data):
         if not self._connected:
             return -1
         try:
             self._socket.sendall(data.encode())
-        except socket.error as err_msg:
+        except socket.error:
             self.close()
             return -1
         else:
             return len(data)
-    #end write
+    # end write
 
     # Private functions
 
     def _set_socket_options(self):
         pass
-    #end _set_socket_options
+    # end _set_socket_options
 
     def _handle_event(self, event):
         pass
-    #end _handle_event
+    # end _handle_event
 
     def _on_read(self, read_buf):
         pass
-    #end _on_read
+    # end _on_read
 
-#end class TcpSession
+# end class TcpSession

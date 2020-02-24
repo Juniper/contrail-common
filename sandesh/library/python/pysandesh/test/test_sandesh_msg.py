@@ -9,28 +9,34 @@
 #
 
 from __future__ import absolute_import
+
+import socket
+import sys
+import time
+import unittest
+import uuid
 from builtins import map
 from builtins import range
-import unittest
-import sys
-import os
-import socket
-from .test_utils import get_free_port
-import time
-import uuid
 from itertools import chain
 
-sys.path.insert(1, sys.path[0]+'/../../../python')
+from pysandesh.gen_py.sandesh.constants import SANDESH_KEY_HINT
+from pysandesh.gen_py.sandesh.ttypes import SandeshType
+from pysandesh.sandesh_base import SandeshSystem, sandesh_global
+from pysandesh.sandesh_session import SandeshReader, SandeshSession, \
+    SandeshWriter
 
-from pysandesh.sandesh_base import *
-from pysandesh.sandesh_client import *
-from pysandesh.sandesh_session import *
-from .gen_py.msg_test.ttypes import *
+from .gen_py.msg_test.ttypes import ObjectLogAnnTest, ObjectLogTest, \
+    StructKeyHint, StructObject, SystemLogTest
+from .test_utils import get_free_port
+
+sys.path.insert(1, sys.path[0] + '/../../../python')
+
 
 class SandeshSessionTestHelper(SandeshSession):
 
     def __init__(self):
-        SandeshSession.__init__(self, sandesh_global, ('127.0.0.1', 8086), None, None)
+        SandeshSession.__init__(
+            self, sandesh_global, ('127.0.0.1', 8086), None, None)
         self.write_buf = None
     # end __init__
 
@@ -41,13 +47,20 @@ class SandeshSessionTestHelper(SandeshSession):
 
 # end SandeshSessionTestHelper
 
+
 class SandeshMsgTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         http_port = get_free_port()
-        sandesh_global.init_generator('sandesh_msg_test', socket.gethostname(), 
-                'Test', 'Test', None, 'sandesh_msg_test_ctxt', http_port,
-                connect_to_collector=False)
+        sandesh_global.init_generator(
+            'sandesh_msg_test',
+            socket.gethostname(),
+            'Test',
+            'Test',
+            None,
+            'sandesh_msg_test_ctxt',
+            http_port,
+            connect_to_collector=False)
 
     def setUp(self):
         self.setUpClass()
@@ -58,7 +71,8 @@ class SandeshMsgTest(unittest.TestCase):
     # end setUp
 
     def sandesh_read_handler(self, session, sandesh_xml):
-        (hdr, hdr_len, sandesh_name) = SandeshReader.extract_sandesh_header(sandesh_xml)
+        (hdr, hdr_len, sandesh_name) = SandeshReader.\
+                                       extract_sandesh_header(sandesh_xml)
         self.assertEqual(self._expected_type, hdr.Type)
         self.assertEqual(self._expected_hints, hdr.Hints)
     # end sandesh_read_handler
@@ -101,11 +115,11 @@ class SandeshMsgTest(unittest.TestCase):
         self._expected_hints = 0
         SandeshSystem.set_sandesh_send_rate_limit(10)
         time.sleep(1)
-        for i in range(0,15):
+        for i in range(0, 15):
             systemlog_msg.send(sandesh=sandesh_global)
-        self.assertEqual(5,sandesh_global.msg_stats(). \
-             message_type_stats()['SystemLogTest']. \
-             messages_sent_dropped_rate_limited)
+        self.assertEqual(5, sandesh_global.msg_stats().
+                         message_type_stats()['SystemLogTest'].
+                         messages_sent_dropped_rate_limited)
         # try to set negative values to the rate limit
         SandeshSystem.set_sandesh_send_rate_limit(-10)
         self.assertEqual(SandeshSystem.get_sandesh_send_rate_limit(), 10)
@@ -169,6 +183,7 @@ class SandeshMsgTest(unittest.TestCase):
     # end test_sandesh_sizeof
 
 # end class SandeshMsgTest
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2, catchbreak=True)

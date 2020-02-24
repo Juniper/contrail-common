@@ -11,10 +11,10 @@ import logging
 import logging.config
 import logging.handlers
 
-from .gen_py.sandesh.ttypes import SandeshLevel
-
 from . import sandesh_base_logger
 from . import util
+from .gen_py.sandesh.ttypes import SandeshLevel
+
 
 try:
     basestring
