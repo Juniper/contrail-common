@@ -114,7 +114,7 @@ class SandeshHttp(object):
         if self._http_server:
             self._http_server.stop()
             self._http_server = None
-            self._logger.error('Stopped http server')
+            self._logger.info('Stopped http server')
     # end stop_http_server
 
     def start_http_server(self):
@@ -128,7 +128,7 @@ class SandeshHttp(object):
         else:
             self._http_port = sock.getsockname()[1]
             self._sandesh.record_port("http", self._http_port)
-            self._logger.error('Starting Introspect on HTTP Port %d' %
+            self._logger.info('Starting Introspect on HTTP Port %d' %
                 self._http_port)
             if self._sandesh_config:
                 if self._sandesh_config.tcp_keepalive_enable:
