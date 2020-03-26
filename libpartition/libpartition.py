@@ -7,7 +7,7 @@ from kazoo.exceptions import CancelledError
 import gevent
 import os
 from gevent import Greenlet
-from consistent_hash import ConsistentHash
+from .consistent_hash import ConsistentHash
 import logging
 from pysandesh.connection_info import ConnectionState
 from pysandesh.gen_py.process_info.ttypes import ConnectionStatus, \
