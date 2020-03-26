@@ -22,6 +22,7 @@ for file in setup_sources:
 local_sources = [
            '__init__.py',
            'libpartition.py',
+           'consistent_hash.py',
           ]
 
 local_sources_rules = []

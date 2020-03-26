@@ -15,8 +15,6 @@ setup(
     long_description="Partition Library Implementation",
     install_requires=[
         'gevent',
-        'pycassa',
         'kazoo',
-        'consistent_hash'
     ]
 )
