@@ -19,6 +19,7 @@ from .protocol import TJSONProtocol, TXMLProtocol
 from .sandesh_logger import SandeshLogger
 from .ssl_session import SslSession
 from .transport import TTransport
+from .util import convert_to_string
 from .work_queue import WaterMark, WorkQueue
 
 _XML_SANDESH_OPEN = '<sandesh length="0000000000">'
@@ -101,7 +102,7 @@ class SandeshReader(object):
     # Public functions
 
     def read_msg(self, rcv_buf):
-        self._read_buf += rcv_buf
+        self._read_buf += convert_to_string(rcv_buf)
         while True:
             (ret, sandesh) = self._extract_sandesh()
             if ret < 0:

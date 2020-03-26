@@ -1028,6 +1028,17 @@ void t_py_generator::generate_py_struct_definition(ofstream& out,
     out <<
       indent() << "return not (self == other)" << endl;
     indent_down();
+    out << endl;
+
+    // In python2 __hash__ function is implicit for user-defined objects
+    // For python3, return id of object as hash which is status quo in python2.
+    out <<
+      indent() << "def __hash__(self):" << endl;
+    indent_up();
+
+    out <<
+      indent() << "return id(self)" << endl;
+    indent_down();
   } else if (!gen_dynamic_) {
     // no base class available to implement __eq__ and __repr__ and __ne__ for us
     // so we must provide one that uses __slots__
