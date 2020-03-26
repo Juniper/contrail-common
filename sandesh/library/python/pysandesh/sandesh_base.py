@@ -632,7 +632,7 @@ class Sandesh(object):
         level = self._level
         if self._type == SandeshType.UVE:
             level = SandeshLevel.INVALID
-        level_allowed = logging_level >= level
+        level_allowed = int(logging_level) >= int(level)
 
         logging_category = sandesh_init.logging_category()
         if logging_category is None or len(logging_category) == 0:
