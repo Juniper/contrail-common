@@ -12,7 +12,7 @@
 #include <iostream>
 #include <list>
 #include <string>
-#include <boost/array.hpp>
+#include <array>
 #include <boost/bind.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>

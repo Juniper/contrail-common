@@ -89,7 +89,7 @@ public:
     }
 
     boost::asio::netlink::raw::socket socket_;
-    boost::array<char, 200> buff_;
+    std::array<char, 200> buff_;
     RtMsg msg_;
     int seqno_;
 };
