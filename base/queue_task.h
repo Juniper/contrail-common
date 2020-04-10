@@ -64,7 +64,7 @@ private:
         size_t count = 0;
         while (queue_->Dequeue(&entry)) {
             // Process the entry
-            if (!queue_->GetCallback()(entry)) {
+            if (!queue_->GetCallback()(std::ref(entry))) {
                 break;
             }
             if (++count == queue_->max_iterations_) {
@@ -111,7 +111,7 @@ public:
     static const int kMaxSize = 1024;
     static const int kMaxIterations = 32;
     typedef tbb::concurrent_queue<QueueEntryT> Queue;
-    typedef boost::function<bool (QueueEntryT)> Callback;
+    typedef boost::function<bool(std::reference_wrapper<QueueEntryT>)> Callback;
     typedef boost::function<bool (void)> StartRunnerFunc;
     typedef boost::function<void (bool)> TaskExitCallback;
     typedef boost::function<bool ()> TaskEntryCallback;

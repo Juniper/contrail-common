@@ -2713,13 +2713,17 @@ bool CqlIf::Db_AddColumn(std::auto_ptr<GenDb::ColList> cl,
     bool success;
     if (use_prepared_for_insert_ &&
         impl_->IsInsertIntoTablePrepareSupported(cfname)) {
-        success = impl_->InsertIntoTablePrepareAsync(cl, consistency,
-            boost::bind(&CqlIf::OnAsyncColumnAddCompletion, this, _1, _2, cfname,
-            cb));
+        success = impl_->InsertIntoTablePrepareAsync(
+            cl, consistency,
+            std::bind(&CqlIf::OnAsyncColumnAddCompletion, this,
+                      std::placeholders::_1, std::placeholders::_2, cfname,
+                      cb));
     } else {
-        success = impl_->InsertIntoTableAsync(cl, consistency,
-            boost::bind(&CqlIf::OnAsyncColumnAddCompletion, this, _1, _2, cfname,
-            cb));
+        success = impl_->InsertIntoTableAsync(
+            cl, consistency,
+            std::bind(&CqlIf::OnAsyncColumnAddCompletion, this,
+                      std::placeholders::_1, std::placeholders::_2, cfname,
+                      cb));
     }
     if (!success) {
         IncrementTableWriteFailStats(cfname);
@@ -2748,9 +2752,14 @@ bool CqlIf::Db_GetRowAsync(const std::string &cfname,
     const GenDb::DbDataValueVec &rowkey, const GenDb::ColumnNameRange &crange,
     GenDb::DbConsistency::type dconsistency, GenDb::GenDbIf::DbGetRowCb cb) {
     CassConsistency consistency(impl::Db2CassConsistency(dconsistency));
-    bool success(impl_->SelectFromTableClusteringKeyRangeAsync(cfname, rowkey,
-        crange, consistency, boost::bind(&CqlIf::OnAsyncRowGetCompletion, this,
-        _1, _2, cfname, cb)));
+    bool success(impl_->SelectFromTableClusteringKeyRangeAsync(
+        cfname, rowkey, crange, consistency,
+        std::bind(static_cast<void (CqlIf::*)(
+                      GenDb::DbOpResult::type, std::auto_ptr<GenDb::ColList>,
+                      std::string, GenDb::GenDbIf::DbGetRowCb)>(
+                      &CqlIf::OnAsyncRowGetCompletion),
+                  this, std::placeholders::_1, std::placeholders::_2,
+                  std::string(cfname), cb)));
     if (!success) {
         IncrementTableReadFailStats(cfname);
         IncrementErrors(GenDb::IfErrors::ERR_READ_COLUMN_FAMILY);
@@ -2763,9 +2772,14 @@ bool CqlIf::Db_GetRowAsync(const std::string &cfname,
     GenDb::DbConsistency::type dconsistency, int task_id, int task_instance,
     GenDb::GenDbIf::DbGetRowCb cb) {
     CassConsistency consistency(impl::Db2CassConsistency(dconsistency));
-    bool success(impl_->SelectFromTableClusteringKeyRangeAsync(cfname, rowkey,
-        crange, consistency, boost::bind(&CqlIf::OnAsyncRowGetCompletion, this,
-        _1, _2, cfname, cb, true, task_id, task_instance)));
+    bool success(impl_->SelectFromTableClusteringKeyRangeAsync(
+        cfname, rowkey, crange, consistency,
+        std::bind(static_cast<void (CqlIf::*)(
+                      GenDb::DbOpResult::type, std::auto_ptr<GenDb::ColList>,
+                      std::string, GenDb::GenDbIf::DbGetRowCb, bool, int, int)>(
+                      &CqlIf::OnAsyncRowGetCompletion),
+                  this, std::placeholders::_1, std::placeholders::_2,
+                  std::string(cfname), cb, true, task_id, task_instance)));
     if (!success) {
         IncrementTableReadFailStats(cfname);
         IncrementErrors(GenDb::IfErrors::ERR_READ_COLUMN_FAMILY);
@@ -2778,9 +2792,14 @@ bool CqlIf::Db_GetRowAsync(const std::string &cfname,
     GenDb::DbConsistency::type dconsistency,
     GenDb::GenDbIf::DbGetRowCb cb) {
     CassConsistency consistency(impl::Db2CassConsistency(dconsistency));
-    bool success(impl_->SelectFromTableAsync(cfname, rowkey,
-        consistency, boost::bind(&CqlIf::OnAsyncRowGetCompletion, this, _1, _2,
-        cfname, cb)));
+    bool success(impl_->SelectFromTableAsync(
+        cfname, rowkey, consistency,
+        std::bind(static_cast<void (CqlIf::*)(
+                      GenDb::DbOpResult::type, std::auto_ptr<GenDb::ColList>,
+                      std::string, GenDb::GenDbIf::DbGetRowCb)>(
+                      &CqlIf::OnAsyncRowGetCompletion),
+                  this, std::placeholders::_1, std::placeholders::_2, cfname,
+                  cb)));
     if (!success) {
         IncrementTableReadFailStats(cfname);
         IncrementErrors(GenDb::IfErrors::ERR_READ_COLUMN_FAMILY);
@@ -2793,9 +2812,14 @@ bool CqlIf::Db_GetRowAsync(const std::string &cfname,
     GenDb::DbConsistency::type dconsistency, int task_id, int task_instance,
     GenDb::GenDbIf::DbGetRowCb cb) {
     CassConsistency consistency(impl::Db2CassConsistency(dconsistency));
-    bool success(impl_->SelectFromTableAsync(cfname, rowkey,
-        consistency, boost::bind(&CqlIf::OnAsyncRowGetCompletion, this, _1, _2,
-        cfname, cb, true, task_id, task_instance)));
+    bool success(impl_->SelectFromTableAsync(
+        cfname, rowkey, consistency,
+        std::bind(static_cast<void (CqlIf::*)(
+                      GenDb::DbOpResult::type, std::auto_ptr<GenDb::ColList>,
+                      std::string, GenDb::GenDbIf::DbGetRowCb, bool, int, int)>(
+                      &CqlIf::OnAsyncRowGetCompletion),
+                  this, std::placeholders::_1, std::placeholders::_2, cfname,
+                  cb, true, task_id, task_instance)));
     if (!success) {
         IncrementTableReadFailStats(cfname);
         IncrementErrors(GenDb::IfErrors::ERR_READ_COLUMN_FAMILY);
@@ -2808,9 +2832,15 @@ bool CqlIf::Db_GetRowAsync(const std::string &cfname,
     const GenDb::WhereIndexInfoVec &where_vec,
     GenDb::DbConsistency::type dconsistency, GenDb::GenDbIf::DbGetRowCb cb) {
     CassConsistency consistency(impl::Db2CassConsistency(dconsistency));
-    bool success(impl_->SelectFromTableClusteringKeyRangeAndIndexValueAsync(cfname,
-        rowkey, crange, where_vec, GenDb::FieldNamesToReadVec(), consistency,
-        boost::bind(&CqlIf::OnAsyncRowGetCompletion, this, _1, _2, cfname, cb)));
+    bool success(impl_->SelectFromTableClusteringKeyRangeAndIndexValueAsync(
+        cfname, rowkey, crange, where_vec, GenDb::FieldNamesToReadVec(),
+        consistency,
+        std::bind(static_cast<void (CqlIf::*)(
+                      GenDb::DbOpResult::type, std::auto_ptr<GenDb::ColList>,
+                      std::string, GenDb::GenDbIf::DbGetRowCb)>(
+                      &CqlIf::OnAsyncRowGetCompletion),
+                  this, std::placeholders::_1, std::placeholders::_2, cfname,
+                  cb)));
     if (!success) {
         IncrementTableReadFailStats(cfname);
         IncrementErrors(GenDb::IfErrors::ERR_READ_COLUMN_FAMILY);

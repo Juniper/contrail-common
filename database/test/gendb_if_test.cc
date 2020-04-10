@@ -660,7 +660,7 @@ TEST_F(GenDbTest, Stats) {
     std::vector<GenDb::DbTableInfo> vdbti;
     GenDb::DbErrors adbe;
     GetStats(&vdbti, &adbe);
-    ASSERT_EQ(1, vdbti.size());
+    ASSERT_EQ(1U, vdbti.size());
     GenDb::DbTableInfo edbti;
     edbti.set_table_name(cfname);
     edbti.set_reads(1);
@@ -685,7 +685,7 @@ TEST_F(GenDbTest, Stats) {
     // Get and verify
     GenDb::DbErrors adbe_diffs;
     GetStats(&vdbti, &adbe_diffs);
-    ASSERT_EQ(1, vdbti.size());
+    ASSERT_EQ(1U, vdbti.size());
     GenDb::DbTableInfo edbti_diffs;
     edbti_diffs.set_table_name(cfname);
     edbti_diffs.set_writes(1);
@@ -704,19 +704,19 @@ TEST_F(GenDbTest, CumulativeStats) {
     std::vector<GenDb::DbTableInfo> vdbti;
     GenDb::DbErrors adbe;
     GetStats(&vdbti, &adbe);
-    ASSERT_EQ(1, vdbti.size());
+    ASSERT_EQ(1U, vdbti.size());
     vdbti.clear();
     GetCumulativeStats(&vdbti, &adbe);
-    ASSERT_EQ(1, vdbti.size());
+    ASSERT_EQ(1U, vdbti.size());
     vdbti.clear();
     // Update Cf stats again
     const std::string cfname2("FakeColumnFamily2");
     UpdateStatsAll(cfname2);
     GetStats(&vdbti, &adbe);
-    ASSERT_EQ(1, vdbti.size());
+    ASSERT_EQ(1U, vdbti.size());
     vdbti.clear();
     GetCumulativeStats(&vdbti, &adbe);
-    ASSERT_EQ(2, vdbti.size());
+    ASSERT_EQ(2U, vdbti.size());
     vdbti.clear();
     // Test if the idividual stats in the tables
     // are getting updated
