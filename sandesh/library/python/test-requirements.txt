@@ -1,0 +1,13 @@
+<<<<<<< HEAD   (f92dd5 Contrail collector is initializing state due to cassandra co)
+=======
+greenlet
+gevent==1.4.0
+eventlet
+testtools
+geventhttpclient
+bottle
+mock
+junitxml
+python-subunit
+testrepository
+>>>>>>> CHANGE (608b36 Pin gevent to version 1.4.0)

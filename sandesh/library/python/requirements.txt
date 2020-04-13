@@ -1,0 +1,9 @@
+<<<<<<< HEAD   (f92dd5 Contrail collector is initializing state due to cassandra co)
+=======
+gevent==1.4.0
+bottle
+netaddr>=0.7.5
+fysom
+future
+six
+>>>>>>> CHANGE (608b36 Pin gevent to version 1.4.0)
