@@ -1,5 +1,5 @@
 greenlet
-gevent
+gevent==1.4.0
 eventlet
 testtools
 geventhttpclient
