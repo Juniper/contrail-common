@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a020027f_162e7d17",
+        "filename": "io/netlink.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 299
+      },
+      "writtenOn": "2020-04-15T17:59:38Z",
+      "side": 1,
+      "message": "std::array introduced in c++11 hence not backward compatible.",
+      "revId": "bad70c8754629d67a1ef79fc20823a9bed6aa38f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "05047f89_66f0f921",
+        "filename": "io/usock_server.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 299
+      },
+      "writtenOn": "2020-04-15T17:59:38Z",
+      "side": 1,
+      "message": "new in c++11 , not backward compatible currently",
+      "revId": "bad70c8754629d67a1ef79fc20823a9bed6aa38f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
