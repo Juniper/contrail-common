@@ -1,0 +1,106 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "cb2f7e02_2e5f26a1",
+        "filename": "base/queue_task.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 299
+      },
+      "writtenOn": "2020-04-15T18:16:53Z",
+      "side": 1,
+      "message": "std::ref is a c++11 only feature. We can use it in the future.",
+      "revId": "b1e6f7b299b20f9784aa4df84e0c0c501f1bc26f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "58245e9f_98cc6bcb",
+        "filename": "base/queue_task.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 114,
+      "author": {
+        "id": 299
+      },
+      "writtenOn": "2020-04-15T18:16:53Z",
+      "side": 1,
+      "message": "std::reference_wrapper is c++11 and later only",
+      "revId": "b1e6f7b299b20f9784aa4df84e0c0c501f1bc26f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "892b48a8_441111da",
+        "filename": "database/cassandra/cql/cql_if.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 2718,
+      "author": {
+        "id": 299
+      },
+      "writtenOn": "2020-04-15T18:16:53Z",
+      "side": 1,
+      "message": "std::bind c++11 only",
+      "revId": "b1e6f7b299b20f9784aa4df84e0c0c501f1bc26f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d049e7b9_d010b2c8",
+        "filename": "database/cassandra/cql/cql_if.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 2761,
+      "author": {
+        "id": 299
+      },
+      "writtenOn": "2020-04-15T18:16:53Z",
+      "side": 1,
+      "message": "no backward compatible due to std::placeholders",
+      "revId": "b1e6f7b299b20f9784aa4df84e0c0c501f1bc26f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d0a2358c_2c7f66c7",
+        "filename": "database/cassandra/cql/cql_if.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 2801,
+      "author": {
+        "id": 299
+      },
+      "writtenOn": "2020-04-15T18:16:53Z",
+      "side": 1,
+      "message": "std::bind and std::placeholders are not backward compatible",
+      "revId": "b1e6f7b299b20f9784aa4df84e0c0c501f1bc26f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e8e7084b_715bfb7b",
+        "filename": "database/cassandra/cql/cql_if.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 2838,
+      "author": {
+        "id": 299
+      },
+      "writtenOn": "2020-04-15T18:16:53Z",
+      "side": 1,
+      "message": "std::bind and std::placeholder compatibility issues",
+      "revId": "b1e6f7b299b20f9784aa4df84e0c0c501f1bc26f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
