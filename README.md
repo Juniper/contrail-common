@@ -1,2 +1,1 @@
-# contrail-common
-Shared repo for common code such as schema, UVEs, libs, etc
+Content was moved to https://github.com/tungstenfabric/tf-common
