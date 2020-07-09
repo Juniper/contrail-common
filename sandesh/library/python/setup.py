@@ -37,5 +37,6 @@ setup(
                       'bottle',
                       'netaddr>=0.7.5',
                       'fysom',
+                      'zipp<3.1.0'
                      ]
 )
