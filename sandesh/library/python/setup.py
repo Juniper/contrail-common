@@ -37,5 +37,6 @@ setup(
                       'bottle',
                       'netaddr>=0.7.5',
                       'fysom',
+                      'pathlib2==2.3.5'
                      ]
 )
